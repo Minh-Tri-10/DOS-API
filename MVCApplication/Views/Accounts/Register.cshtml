@@ -1,16 +1,619 @@
 ﻿@{
-    Layout = "_CustomerLayout";
+    Layout = null;
 }
 @model MVCApplication.Models.RegisterViewModel
-<h2>Đăng ký</h2>
-<form asp-action="Register" method="post">
-    <label>Username</label><input asp-for="Username" /><br />
-    <label>Password</label><input asp-for="Password" type="password" /><br />
-    <label>Full Name</label><input asp-for="FullName" /><br />
-    <label>Email</label><input asp-for="Email" /><br />
-    <button type="submit">Đăng ký</button>
-</form>
-@if (ViewBag.Error != null)
-{
-     <p style="color:red">@ViewBag.Error</p>
-}
+<style>
+    /* ====== Login 2025 – Dark/Light theme in-page only ====== */
+    :root {
+        /* Dark (mặc định) */
+        --bg: #0b1020;
+        --panel: #101626b8;
+        --panel-border: rgba(148,163,184,.25);
+        --text: #e6eaf2;
+        --muted: #97a1b2;
+        --grad1: #60a5fa;
+        --grad2: #22d3ee;
+        --danger: #ef4444;
+        --sweep-alpha: .06; /* highlight sweep */
+        --panel-shadow: 0 24px 60px rgba(2,8,23,.55);
+        --field-bg: rgba(20,26,44,.6);
+        --field-bg-focus: rgba(24,30,52,.85);
+        --ring: rgba(96,165,250,.25);
+        --bg-grad-a: rgba(59,130,246,.18);
+        --bg-grad-b: rgba(34,211,238,.16);
+        --stars-visibility: 1;
+        --aurora-opacity: 1;
+    }
+
+    /* Light theme overrides */
+    [data-theme="light"] {
+        --bg: #f6f8fc; /* nhã, sáng */
+        --panel: rgba(255,255,255,.92);
+        --panel-border: rgba(15,23,42,.08);
+        --text: #0b1220;
+        --muted: #4b5563;
+        --grad1: #2563eb; /* xanh business hơn */
+        --grad2: #06b6d4;
+        --danger: #dc2626;
+        --sweep-alpha: .035;
+        --panel-shadow: 0 24px 48px rgba(2,8,23,.08);
+        --field-bg: rgba(15,23,42,.035);
+        --field-bg-focus: rgba(15,23,42,.06);
+        --ring: rgba(37,99,235,.20);
+        /* nền sáng: vệt gradient tinh tế hơn */
+        --bg-grad-a: rgba(37,99,235,.12);
+        --bg-grad-b: rgba(6,182,212,.10);
+        /* ẩn sao/aurora để không “đêm” quá */
+        --stars-visibility: 0;
+        --aurora-opacity: .3;
+    }
+
+
+
+    html, body {
+        height: 100%;
+        padding-bottom:30px;
+        overflow-y: hidden; /* ẩn cuộn dọc */
+    }
+
+    body {
+        min-height: 100vh;
+        margin: auto;
+        color: var(--text);
+        font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+        background: radial-gradient(1200px 600px at 10% -10%, var(--bg-grad-a), transparent 60%), radial-gradient(800px 500px at 110% 20%, var(--bg-grad-b), transparent 60%), var(--bg);
+        overflow-x: hidden;
+        transition: background .35s ease, color .2s ease;
+    }
+
+    /* ====== Background layer (stars + aurora) ====== */
+    .bg-wrap {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+    }
+
+    canvas#stars {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        filter: drop-shadow(0 0 2px #fff);
+        opacity: calc(.9 * var(--stars-visibility));
+        transition: opacity .35s ease;
+    }
+
+    .aurora {
+        position: absolute;
+        inset: -10%;
+        background: radial-gradient(60% 40% at 20% 10%, rgba(96,165,250,.15), transparent 60%), radial-gradient(50% 30% at 80% 25%, rgba(34,211,238,.12), transparent 60%), radial-gradient(40% 60% at 50% 80%, rgba(56,189,248,.10), transparent 60%);
+        animation: drift 18s linear infinite alternate;
+        filter: blur(18px) saturate(120%);
+        z-index: -1;
+        opacity: var(--aurora-opacity);
+        transition: opacity .35s ease, filter .35s ease;
+    }
+
+    @@keyframes drift {
+        0% {
+            transform: translate3d(-2%, -1%, 0) scale(1);
+        }
+
+        100% {
+            transform: translate3d(2%, 1%, 0) scale(1.05);
+        }
+    }
+
+    /* ====== Theme toggle button ====== */
+    .theme-toggle {
+        position: fixed;
+        right: 18px;
+        top: 18px;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--panel-border);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--panel-shadow);
+        backdrop-filter: blur(8px) saturate(120%);
+        transition: transform .06s ease, filter .15s ease, background .25s ease, color .2s ease;
+        user-select: none;
+    }
+
+        .theme-toggle:hover {
+            filter: brightness(1.05);
+        }
+
+        .theme-toggle:active {
+            transform: translateY(1px);
+        }
+
+        .theme-toggle .dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,var(--grad1),var(--grad2));
+            box-shadow: 0 0 0 3px var(--ring);
+        }
+
+    /* ====== Login card ====== */
+    .login-box {
+        max-width: 460px;
+        margin: 40px auto;
+        position: relative;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: var(--panel-shadow);
+        backdrop-filter: blur(10px) saturate(120%);
+        overflow: hidden;
+        transition: background .25s ease, border-color .2s ease, box-shadow .25s ease;
+    }
+
+        /* Glow border (pulse) */
+        .login-box::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(96,165,250,.9), rgba(34,211,238,.9));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: pulseGlow 2.2s ease-in-out infinite;
+            opacity: .55;
+            pointer-events: none;
+        }
+
+    @@keyframes pulseGlow {
+        0%, 100% {
+            opacity: .35;
+            box-shadow: 0 0 20px rgba(96,165,250,.25);
+        }
+
+        50% {
+            opacity: .9;
+            box-shadow: 0 0 38px rgba(34,211,238,.32);
+        }
+    }
+
+    /* Surface sweep */
+    .login-box::after {
+        content: "";
+        position: absolute;
+        left: -40%;
+        top: -60%;
+        width: 140%;
+        height: 220%;
+        background: linear-gradient(120deg, transparent 30%, rgba(0,0,0,var(--sweep-alpha)) 50%, transparent 70%);
+        transform: rotate(8deg);
+        animation: sweep 7s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    [data-theme="light"] .login-box::after {
+        background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,var(--sweep-alpha)) 50%, transparent 70%);
+    }
+
+    @@keyframes sweep {
+        0% {
+            transform: translateX(-15%) rotate(8deg);
+            opacity: .0;
+        }
+
+        30% {
+            opacity: .24;
+        }
+
+        55% {
+            transform: translateX(15%) rotate(8deg);
+            opacity: .12;
+        }
+
+        100% {
+            transform: translateX(35%) rotate(8deg);
+            opacity: .0;
+        }
+    }
+
+    .login-box h2 {
+        margin: 0 0 18px;
+        font-size: 26px;
+        text-align: center;
+        background: linear-gradient(135deg,var(--grad1) 0%,var(--grad2) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        letter-spacing: .2px;
+    }
+
+    /* Fields */
+    .field {
+        margin-bottom: 14px;
+    }
+
+        .field label {
+            display: block;
+            font-size: .92rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+    .input-wrap {
+        position: relative;
+    }
+
+        .input-wrap .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            opacity: .8;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+            background: var(--field-bg);
+            padding: 12px 14px 12px 38px;
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s, box-shadow .15s, background .2s, transform .06s;
+        }
+
+            .input-wrap input:focus {
+                border-color: var(--grad1);
+                box-shadow: 0 0 0 4px var(--ring);
+                background: var(--field-bg-focus);
+            }
+
+    button[type="submit"] {
+        width: 100%;
+        margin-top: 10px;
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-weight: 600;
+        color: #0b1220;
+        background: linear-gradient(135deg,var(--grad1) 0%,var(--grad2) 100%);
+        cursor: pointer;
+        transition: filter .15s, transform .06s;
+    }
+
+        button[type="submit"]:hover {
+            filter: brightness(1.05);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(1px);
+        }
+
+    .meta {
+        margin-top: 14px;
+        font-size: .95rem;
+        color: var(--muted);
+        text-align: center;
+    }
+
+        .meta a {
+            color: var(--grad2);
+            text-decoration: none;
+        }
+
+            .meta a:hover {
+                text-decoration: underline;
+            }
+
+    .error {
+        color: #fca5a5;
+        background: rgba(239,68,68,.08);
+        border: 1px solid rgba(239,68,68,.25);
+        padding: 8px 10px;
+        border-radius: 10px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    /* Mobile */
+    @@media (max-width: 520px) {
+        .login-box {
+            margin: 28px 14px;
+            padding: 22px;
+        }
+
+        .theme-toggle {
+            right: 12px;
+            top: 12px;
+        }
+    }
+    /* ===== Focus accent bên trái trong input (Dark/Light) ===== */
+
+    /* màu/độ sáng accent theo theme */
+    :root {
+        --accent-glow: rgba(34,211,238,.35); /* Dark: cyan glow */
+    }
+
+    [data-theme="light"] {
+        --accent-glow: rgba(37,99,235,.22); /* Light: xanh business, mềm hơn */
+    }
+
+    /* chừa chỗ cho accent nếu bạn từng bỏ icon */
+    .input-wrap input {
+        padding-left: 44px; /* trước là 38px; tăng nhẹ để không đè lên accent */
+    }
+
+    /* chấm tròn phát sáng (ở đúng khoảng trống trước dữ liệu) */
+    .input-wrap::before {
+        content: "";
+        position: absolute;
+        left: 14px; /* nằm trong vùng padding-left của input */
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 40%, var(--grad2), var(--grad1));
+        box-shadow: 0 0 14px var(--accent-glow), 0 0 28px var(--accent-glow);
+        transform: translateY(-50%) scale(.6);
+        opacity: 0;
+        transition: opacity .18s ease, transform .18s ease;
+    }
+
+    /* thanh dọc mảnh chạy sát bên trái chữ */
+    .input-wrap::after {
+        content: "";
+        position: absolute;
+        left: 30px; /* cách chấm tròn 16px để cân */
+        top: 8px;
+        bottom: 8px;
+        width: 3px;
+        border-radius: 3px;
+        background: linear-gradient(180deg, var(--grad1), var(--grad2));
+        box-shadow: 0 0 10px var(--accent-glow);
+        opacity: 0;
+        transform: translateZ(0);
+        transition: opacity .18s ease;
+    }
+
+    /* chỉ hiển thị khi field đang được nhập (focus) */
+    .input-wrap:focus-within::before {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+        animation: accent-breathe 1.8s ease-in-out infinite;
+    }
+
+    .input-wrap:focus-within::after {
+        opacity: .9;
+    }
+
+    @@keyframes accent-breathe {
+        0%,100%
+
+    {
+        transform: translateY(-50%) scale(1);
+        box-shadow: 0 0 10px var(--accent-glow), 0 0 22px var(--accent-glow);
+    }
+
+    50% {
+        transform: translateY(-50%) scale(1.12);
+        box-shadow: 0 0 16px var(--accent-glow), 0 0 36px var(--accent-glow);
+    }
+
+    }
+    /* ===== Hiệu ứng xuất hiện hộp (fade + slide) ===== */
+    .login-box {
+        opacity: 0;
+        transform: translateY(40px) scale(0.97);
+        animation: boxEnter .8s cubic-bezier(.25,.8,.25,1) forwards;
+    }
+
+    /* nếu muốn delay nhẹ để chờ nền load */
+   @@keyframes boxEnter {
+        0%
+
+    {
+        opacity: 0;
+        transform: translateY(40px) scale(0.97);
+        filter: blur(6px);
+    }
+
+    60% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.01);
+        filter: blur(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    }
+
+    :root {
+        --label-focus: #38bdf8; /* Dark: cyan sáng */
+    }
+
+    [data-theme="light"] {
+        --label-focus: #2563eb; /* Light: xanh business */
+    }
+
+    /* Khi input trong field đang focus, label đổi màu và có hiệu ứng */
+    .field:focus-within label {
+        color: var(--label-focus);
+        animation: labelGlow 1.6s ease-in-out infinite;
+    }
+
+    /* Nhấp nháy nhẹ */
+    @@keyframes labelGlow {
+        0%,100%
+
+    {
+        text-shadow: 0 0 2px var(--label-focus), 0 0 4px var(--label-focus);
+    }
+
+    50% {
+        text-shadow: 0 0 6px var(--label-focus), 0 0 12px var(--label-focus);
+    }
+
+    }
+
+    .field label {
+        transition: transform .25s ease, color .25s ease;
+    }
+
+    .field:focus-within label {
+        transform: translateY(-4px);
+    }
+    /* ===== Light theme: label glow nhẹ hơn ===== */
+    [data-theme="light"] .field:focus-within label {
+        color: #1d4ed8; /* xanh business sáng hơn một chút */
+        animation: labelGlowLight 2s ease-in-out infinite;
+    }
+
+    /* Glow dịu, spread rộng để mượt */
+    @@keyframes labelGlowLight {
+        0%,100%
+
+    {
+        text-shadow: 0 0 1px rgba(29,78,216,.45), /* viền xanh nhạt */
+        0 0 6px rgba(29,78,216,.35), 0 0 12px rgba(29,78,216,.25);
+    }
+
+    50% {
+        text-shadow: 0 0 2px rgba(29,78,216,.55), 0 0 10px rgba(29,78,216,.40), 0 0 18px rgba(29,78,216,.30);
+    }
+
+    }
+</style>
+
+<!-- Background layers -->
+<div class="bg-wrap">
+    <canvas id="stars"></canvas>
+    <div class="aurora"></div>
+</div>
+
+<!-- Theme toggle -->
+<button type="button" class="theme-toggle" id="themeBtn" aria-label="Chuyển đổi giao diện">
+    <span class="dot"></span>
+    <span id="themeText">Dark</span>
+</button>
+
+<div class="login-box">
+    <h2>Đăng ký</h2>
+    <form asp-action="Register" method="post" novalidate>
+        <div class="field">
+            <label for="Username">Tên đăng nhập</label>
+            <div class="input-wrap">
+                <input id="Username" asp-for="Username" type="text" autocomplete="username" />
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="Password">Mật khẩu</label>
+            <div class="input-wrap">
+                <input id="Password" asp-for="Password" type="password" autocomplete="new-password" />
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="FullName">Họ và tên</label>
+            <div class="input-wrap">
+                <input id="FullName" asp-for="FullName" type="text" autocomplete="name" />
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="Email">Email</label>
+            <div class="input-wrap">
+                <input id="Email" asp-for="Email" type="email" autocomplete="email" />
+            </div>
+        </div>
+
+        <button type="submit">Đăng ký</button>
+    </form>
+
+    @if (ViewBag.Error != null)
+    {
+        <p class="error">@ViewBag.Error</p>
+    }
+
+    <p class="meta">
+        Đã có tài khoản? <a asp-action="Login">Đăng nhập</a>
+    </p>
+</div>
+
+<script>
+    /* ====== Theme init & toggle (prefers-color-scheme + localStorage) ====== */
+    (() => {
+      const root = document.documentElement;
+      const btn  = document.getElementById('themeBtn');
+      const txt  = document.getElementById('themeText');
+      const KEY  = 'login-theme';
+
+      function apply(theme){
+        if(theme === 'light'){ root.setAttribute('data-theme','light'); txt.textContent = 'Light'; }
+        else { root.removeAttribute('data-theme'); txt.textContent = 'Dark'; }
+        localStorage.setItem(KEY, theme);
+      }
+
+      // initial
+      const saved = localStorage.getItem(KEY);
+      if(saved){ apply(saved); }
+      else {
+        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        apply(prefersLight ? 'light' : 'dark');
+      }
+
+      btn.addEventListener('click', () => {
+        const isLight = root.getAttribute('data-theme') === 'light';
+        apply(isLight ? 'dark' : 'light');
+      });
+    })();
+
+    /* ====== Tiny starfield (kept for dark; auto hides on light) ====== */
+    (() => {
+      const cvs = document.getElementById('stars');
+      const ctx = cvs.getContext('2d');
+      let w, h, dpr, stars;
+
+      function resize(){
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = cvs.width  = Math.floor(innerWidth  * dpr);
+        h = cvs.height = Math.floor(innerHeight * dpr);
+        cvs.style.width  = innerWidth + 'px';
+        cvs.style.height = innerHeight + 'px';
+        const count = Math.min(220, Math.floor((w*h)/(1200*1200) * 180) + 80);
+        stars = Array.from({length: count}, () => ({
+          x: Math.random()*w, y: Math.random()*h, z: Math.random()*1 + 0.2, r: Math.random()*1.2 + 0.4, t: Math.random()*Math.PI*2
+        }));
+      }
+      function tick(){
+        ctx.clearRect(0,0,w,h);
+        for(const s of stars){
+          s.t += 0.02 * s.z;
+          const tw = 0.65 + Math.sin(s.t)*0.35;
+          const r = s.r * (0.8 + s.z*0.4) * tw;
+          ctx.globalAlpha = 0.5 + 0.5*tw;
+          ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+          s.x += 0.06 * s.z; s.y += 0.01 * s.z;
+          if(s.x > w+5) s.x = -5; if(s.y > h+5) s.y = -5;
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(tick);
+      }
+      addEventListener('resize', resize, {passive:true});
+      resize(); requestAnimationFrame(tick);
+    })();
+</script>
