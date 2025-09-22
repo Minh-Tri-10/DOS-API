@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36408.4 d17.14
+VisualStudioVersion = 17.14.36408.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIGateways", "APIGateways\APIGateways.csproj", "{C0DB86AE-87B4-4CDC-81D5-E1FC7E9EDDAA}"
 EndProject
@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentAPI", "PaymentAPI\Pa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderAPI", "OrderAPI\OrderAPI.csproj", "{929D95C4-7A2D-4A4C-824B-C839D27A2759}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "WebApp\WebApp.csproj", "{B663130E-F55F-4C7B-B061-5464FDE2C768}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApplication", "MVCApplication\MVCApplication.csproj", "{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,10 +53,10 @@ Global
 		{929D95C4-7A2D-4A4C-824B-C839D27A2759}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{929D95C4-7A2D-4A4C-824B-C839D27A2759}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{929D95C4-7A2D-4A4C-824B-C839D27A2759}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B663130E-F55F-4C7B-B061-5464FDE2C768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B663130E-F55F-4C7B-B061-5464FDE2C768}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B663130E-F55F-4C7B-B061-5464FDE2C768}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B663130E-F55F-4C7B-B061-5464FDE2C768}.Release|Any CPU.Build.0 = Release|Any CPU
+		{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,159 @@
+﻿@{
+     // Lấy page hiện tại từ RouteData (Razor Pages)
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    // Chuẩn hoá nhẹ để tránh lỗi dấu "/"
+    if (currentPage.EndsWith("/") && currentPage.Length > 1) currentPage = currentPage.TrimEnd('/');
+
+    var isAuth = User?.Identity?.IsAuthenticated == true;
+    var userName = isAuth ? User.Identity?.Name : "Guest";
+    var userEmail = isAuth ? User.Claims.FirstOrDefault(c => c.Type.Contains("email"))?.Value ?? "guest@example.com" : "guest@example.com";
+    var avatarUrl = "https://i.pravatar.cc/128?img=5";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
+</head>
+<body class="layout-rail">
+
+    <!-- LEFT RAIL -->
+    <aside class="rail">
+        <!-- Avatar -> user popup -->
+        <button class="avatar-btn" data-bs-toggle="modal" data-bs-target="#userModal" aria-label="User profile">
+            <img src="@avatarUrl" alt="Avatar" class="avatar-img" />
+            <span class="status-dot"></span>
+        </button>
+
+        @{
+            // Lấy page hiện tại để so sánh
+        currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+            if (currentPage.EndsWith("/") && currentPage.Length > 1)
+                currentPage = currentPage.TrimEnd('/');
+        }
+
+        <!--So sánh để active icon của sidebar-->
+
+        <nav class="rail-nav">
+  
+            <!-- Nếu là đường dẫn là http(s):.../Index thì active icon Home -->
+            <a class="rail-item @(currentPage.Equals("/Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               asp-area=""
+               asp-page="/Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Dashboard"
+               aria-label="Dashboard">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                </svg>
+            </a>
+
+            <!-- Nếu là đường dẫn là http(s):.../Cart thì active icon Cart -->
+            <a class="rail-item @(currentPage.Equals("/Cart", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               asp-area=""
+               asp-page="/Cart/Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Cart"
+               aria-label="Cart">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M6 6h15l-1.5 9H7.5L6 6Z" />
+                    <path d="M6 6 5 3H3" />
+                    <circle cx="9" cy="20" r="1.5" />
+                    <circle cx="18" cy="20" r="1.5" />
+                </svg>
+            </a>
+        </nav>
+
+
+        <!-- Bottom: settings + sign out -->
+        <div class="rail-bottom">
+            <button class="rail-item" data-bs-toggle="modal" data-bs-target="#settingsModal" data-bs-title="Settings" aria-label="Settings">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V22a2 2 0 1 1-4 0v-.07a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4 15.4c0-.6-.24-1.18-.66-1.6l-.06-.06A2 2 0 1 1 6.1 10.9l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 13.1 6.1l-.06.06c-.42.42-.66 1-.66 1.6 0 .6.24 1.18.66 1.6l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 19.4 15Z" />
+                </svg>
+            </button>
+            <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                <button type="submit" class="rail-item" data-bs-toggle="tooltip" data-bs-title="Sign out" aria-label="Sign out">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <path d="M16 17l5-5-5-5" />
+                        <path d="M21 12H9" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+        @RenderBody()
+    </main>
+
+    <!-- USER MODAL (chỉ View Profile) -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content modal-surface">
+                <div class="modal-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="@avatarUrl" class="avatar-lg" alt="Avatar" />
+                        <div>
+                            <div class="fw-bold">@userName</div>
+                            <div class="text-muted small">@userEmail</div>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <a class="btn btn-outline-light-soft" asp-area="" asp-page="/Account/Profile">View Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK SETTINGS (Theme + Language) -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-surface">
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="modal-title">Quick Settings</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small">Theme</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-toggle" data-theme="light">Light</button>
+                                <button type="button" class="btn btn-toggle" data-theme="dark">Dark</button>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small">Language</label>
+                            <select id="langSelect" class="form-select">
+                                <option value="en">English</option>
+                                <option value="vi" selected>Tiếng Việt</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-primary-soft" data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

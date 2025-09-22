@@ -1,0 +1,197 @@
+﻿@{
+    // ====== Config cơ bản ======
+    var userName = "Sample Admin";
+    var userEmail = "admin@demo.com";
+    var avatarUrl = "https://i.pravatar.cc/128?img=47"; // avatar online placeholder
+
+    // Route hiện tại để set 'active'
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    if (currentPage.EndsWith("/") && currentPage.Length > 1) currentPage = currentPage.TrimEnd('/');
+
+    // Flags active cho 5 mục
+    bool isOrders = currentPage.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase);
+    bool isCategories = currentPage.StartsWith("/Categories", StringComparison.OrdinalIgnoreCase);
+    bool isProducts = currentPage.StartsWith("/Products", StringComparison.OrdinalIgnoreCase);
+    bool isAccounts = currentPage.StartsWith("/Accounts", StringComparison.OrdinalIgnoreCase);
+    bool isRevenue = currentPage.StartsWith("/Revenue", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="layout-rail">
+
+    <!-- ===== LEFT RAIL (Sidebar) ===== -->
+    <aside class="rail">
+        <!-- Avatar mở User Popup -->
+        <button class="avatar-btn" data-bs-toggle="modal" data-bs-target="#userModal" aria-label="User profile">
+            <img src="@avatarUrl" alt="Avatar" class="avatar-img" />
+            <span class="status-dot"></span>
+        </button>
+
+        <!-- NAV: 5 nút quản trị -->
+        <nav class="rail-nav" aria-label="Admin navigation">
+            <!-- Quản lý đơn hàng -->
+            <a class="rail-item @(isOrders ? "active" : "")"
+               asp-area=""
+               asp-page="/Orders/Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Quản lý đơn hàng"
+               aria-label="Quản lý đơn hàng">
+                <!-- icon: receipt / orders -->
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M6 2h12a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2-3-2V4a2 2 0 0 1 2-2Z" />
+                    <path d="M8 7h8M8 11h8M8 15h5" />
+                </svg>
+            </a>
+
+            <!-- Quản lí loại sản phẩm -->
+            <a class="rail-item @(isCategories ? "active" : "")"
+               asp-area=""
+               asp-page="/Categories/Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Quản lí loại sản phẩm"
+               aria-label="Quản lí loại sản phẩm">
+                <!-- icon: tags -->
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M7 7h5l7 7a2 2 0 0 1 0 3l-4 4a2 2 0 0 1-3 0L5 14V9a2 2 0 0 1 2-2Z" />
+                    <path d="M7.5 7.5h0" />
+                </svg>
+            </a>
+
+            <!-- Quản lí sản phẩm -->
+            <a class="rail-item @(isProducts ? "active" : "")"
+               asp-area=""
+               asp-page="/Products/Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Quản lí sản phẩm"
+               aria-label="Quản lí sản phẩm">
+                <!-- icon: box -->
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                    <path d="M3.3 7.3 12 12l8.7-4.7M12 22V12" />
+                </svg>
+            </a>
+
+            <!-- Quản lí tài khoản -->
+            <a class="rail-item @(isAccounts ? "active" : "")"
+               asp-area=""
+               asp-page="/Accounts/Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Quản lí tài khoản"
+               aria-label="Quản lí tài khoản">
+                <!-- icon: users -->
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </a>
+
+            <!-- Quản lí doanh thu -->
+            <a class="rail-item @(isRevenue ? "active" : "")"
+               asp-area=""
+               asp-page="/Revenue/Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Quản lí doanh thu"
+               aria-label="Quản lí doanh thu">
+                <!-- icon: revenue / chart -->
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M3 3v18h18" />
+                    <path d="M7 15l4-4 3 3 5-6" />
+                    <circle cx="7" cy="15" r="1.2" />
+                    <circle cx="11" cy="11" r="1.2" />
+                    <circle cx="14" cy="14" r="1.2" />
+                    <circle cx="19" cy="8" r="1.2" />
+                </svg>
+            </a>
+        </nav>
+
+        <!-- Bottom: Settings + Sign out -->
+        <div class="rail-bottom">
+            <button class="rail-item" data-bs-toggle="modal" data-bs-target="#settingsModal" aria-label="Settings">
+                <!-- gear -->
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V22a2 2 0 1 1-4 0v-.07a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4 15.4c0-.6-.24-1.18-.66-1.6l-.06-.06A2 2 0 1 1 6.1 10.9l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 13.1 6.1l-.06.06c-.42.42-.66 1-.66 1.6 0 .6.24 1.18.66 1.6l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 19.4 15Z" />
+                </svg>
+            </button>
+
+            <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                <button type="submit" class="rail-item" data-bs-toggle="tooltip" data-bs-title="Đăng xuất" aria-label="Đăng xuất">
+                    <!-- log-out -->
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <path d="M16 17l5-5-5-5" />
+                        <path d="M21 12H9" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- ===== CONTENT ===== -->
+    <main class="content">
+        @RenderBody()
+    </main>
+
+    <!-- ===== USER MODAL (chỉ View Profile) ===== -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content modal-surface">
+                <div class="modal-body p-4 text-center">
+                    <img src="@avatarUrl" class="avatar-lg mb-3" alt="Avatar" />
+                    <div class="fw-bold">@userName</div>
+                    <div class="text-muted small mb-3">@userEmail</div>
+                    <a class="btn btn-outline-light-soft w-100" asp-area="" asp-page="/Account/Profile">View Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== QUICK SETTINGS (Theme + Language) ===== -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-surface">
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="modal-title">Quick Settings</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small">Theme</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-toggle" data-theme="light">Light</button>
+                                <button type="button" class="btn btn-toggle" data-theme="dark">Dark</button>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small">Language</label>
+                            <select id="langSelect" class="form-select">
+                                <option value="en">English</option>
+                                <option value="vi" selected>Tiếng Việt</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-primary-soft" data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
