@@ -1,0 +1,16 @@
+﻿@{
+    Layout = "_CustomerLayout";
+}
+@model WebApp.Models.RegisterViewModel
+<h2>Đăng ký</h2>
+<form asp-action="Register" method="post">
+    <label>Username</label><input asp-for="Username" /><br />
+    <label>Password</label><input asp-for="Password" type="password" /><br />
+    <label>Full Name</label><input asp-for="FullName" /><br />
+    <label>Email</label><input asp-for="Email" /><br />
+    <button type="submit">Đăng ký</button>
+</form>
+@if (ViewBag.Error != null)
+{
+     <p style="color:red">@ViewBag.Error</p>
+}

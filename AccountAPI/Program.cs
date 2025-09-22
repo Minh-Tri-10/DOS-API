@@ -1,3 +1,10 @@
+﻿
+using AccountAPI.Repositories.Interfaces;
+using AccountAPI.Repositories;
+using AccountAPI.Services.Interfaces;
+using AccountAPI.Services;
+using AccountAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccountAPI
 {
@@ -8,12 +15,16 @@ namespace AccountAPI
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
+            builder.Services.AddMemoryCache(); // cho Forgot/Reset token tạm
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<DrinkOrderContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
 
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IAccountService, AccountService>();   // <-- Quan trọng
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
