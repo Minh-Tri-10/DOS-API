@@ -1,0 +1,11 @@
+﻿@{
+    Layout = "_CustomerLayout";
+}
+@model WebApp.Models.UserViewModel
+<h2>Thông tin tài khoản</h2>
+<p><b>Tên đăng nhập:</b> @Model.Username</p>
+<p><b>Họ tên:</b> @Model.FullName</p>
+<p><b>Email:</b> @Model.Email</p>
+<p><b>Role:</b> @Model.Role</p>
+<p><b>Trạng thái:</b> @(Model.IsBanned ? "Bị khóa" : "Hoạt động")</p>
+<a asp-action="Logout">Đăng xuất</a>
