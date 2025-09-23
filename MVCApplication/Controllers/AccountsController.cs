@@ -8,6 +8,7 @@ namespace MVCApplication.Controllers
     {
         private readonly IAccountService _service;
         private readonly IHttpContextAccessor _http;
+
         public AccountsController(IAccountService service, IHttpContextAccessor http)
         {
             _service = service;
@@ -29,11 +30,16 @@ namespace MVCApplication.Controllers
                 return View(dto);
             }
 
+            // Lưu session
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("Role", user.Role);
 
-            return RedirectToAction("Profile");
+            // Điều hướng theo Role
+            if (user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                return RedirectToAction("Index", "AdminAccounts");
+            else
+                return RedirectToAction("Profile", "Accounts");
         }
 
         [HttpGet]

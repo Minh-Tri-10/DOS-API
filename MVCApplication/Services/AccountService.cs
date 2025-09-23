@@ -25,5 +25,15 @@
 
         public Task<UserViewModel?> GetByIdAsync(int id) =>
             _http.GetFromJsonAsync<UserViewModel>($"api/accounts/{id}");
+        public async Task<IEnumerable<UserViewModel>> GetAllAsync()
+        {
+            return await _http.GetFromJsonAsync<IEnumerable<UserViewModel>>("api/accounts");
+        }
+        public async Task<bool> SetBanAsync(int id, bool isBanned)
+        {
+            var res = await _http.PatchAsJsonAsync($"api/accounts/{id}/ban", new { IsBanned = isBanned });
+            return res.IsSuccessStatusCode;
+        }
     }
+
 }
