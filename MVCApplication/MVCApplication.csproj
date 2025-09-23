@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Views\CustomerOrders\" />
     <Folder Include="wwwroot\js\" />
   </ItemGroup>
 
