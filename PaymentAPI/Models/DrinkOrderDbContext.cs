@@ -18,7 +18,7 @@ public partial class DrinkOrderDbContext : DbContext
     public virtual DbSet<Payment> Payments { get; set; }
 
    
-main
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
