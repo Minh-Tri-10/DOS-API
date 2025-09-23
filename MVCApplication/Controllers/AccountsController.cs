@@ -76,5 +76,67 @@ namespace MVCApplication.Controllers
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.Error = "Vui lòng nhập email.";
+                return View();
+            }
+
+            // Luôn trả message chung để tránh lộ email tồn tại
+            await _service.ForgotPasswordAsync(email);
+            ViewBag.Message = "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.";
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                ViewBag.Error = "Token không hợp lệ.";
+                return View();
+            }
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                ViewBag.Error = "Mật khẩu tối thiểu 6 ký tự.";
+                ViewBag.Token = token;
+                return View();
+            }
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Xác nhận mật khẩu không khớp.";
+                ViewBag.Token = token;
+                return View();
+            }
+
+            var ok = await _service.ResetPasswordAsync(token, newPassword);
+            if (!ok)
+            {
+                ViewBag.Error = "Token không hợp lệ hoặc đã hết hạn.";
+                ViewBag.Token = token;
+                return View();
+            }
+
+            TempData["Message"] = "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+            return RedirectToAction("Login");
+        }
     }
 }

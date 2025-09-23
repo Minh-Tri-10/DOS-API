@@ -34,6 +34,17 @@
             var res = await _http.PatchAsJsonAsync($"api/accounts/{id}/ban", new { IsBanned = isBanned });
             return res.IsSuccessStatusCode;
         }
+        public async Task<bool> ForgotPasswordAsync(string email)
+        {
+            var res = await _http.PostAsJsonAsync("api/accounts/forgot-password", new { Email = email });
+            return res.IsSuccessStatusCode; // 204 NoContent => true
+        }
+
+        public async Task<bool> ResetPasswordAsync(string token, string newPassword)
+        {
+            var res = await _http.PostAsJsonAsync("api/accounts/reset-password", new { Token = token, NewPassword = newPassword });
+            return res.IsSuccessStatusCode; // 204 NoContent => true
+        }
     }
 
 }
