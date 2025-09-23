@@ -1,34 +1,435 @@
 ﻿@model MVCApplication.DTOs.OrderDto
-
-<h2>Chi tiết Order #@Model.OrderId</h2>
-
-<p><strong>User:</strong> @Model.UserId</p>
-<p><strong>Status:</strong> @Model.OrderStatus</p>
-<p><strong>Payment:</strong> @Model.PaymentStatus</p>
-<p><strong>Total:</strong> @Model.TotalAmount</p>
-<p><strong>Ngày tạo:</strong> @Model.OrderDate.ToString("dd/MM/yyyy")</p>
-
-<h4>Danh sách sản phẩm</h4>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Số lượng</th>
-            <th>Giá</th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model.Items)
+@using System.Globalization
+@{
+    Layout = "_Layout.Admin";
+}
+@{
+    string StatusClass(string s)
     {
-        <tr>
-            <td>@item.ProductId</td>
-            <td>@item.Quantity</td>
-            <td>@item.UnitPrice</td>
-        </tr>
+        if (string.IsNullOrWhiteSpace(s)) return "od-pill neutral";
+        s = s.ToLowerInvariant();
+        if (s.Contains("pending") || s.Contains("processing")) return "od-pill warn";
+        if (s.Contains("completed") || s.Contains("shipped") || s.Contains("delivered")) return "od-pill ok";
+        if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "od-pill bad";
+        return "od-pill neutral";
     }
-    </tbody>
-</table>
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.OrderId" class="btn btn-primary">Chỉnh sửa</a>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+    string PayClass(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return "od-pill neutral";
+        s = s.ToLowerInvariant();
+        if (s.Contains("paid") || s.Contains("captured")) return "od-pill ok";
+        if (s.Contains("refunded") || s.Contains("partial")) return "od-pill warn";
+        if (s.Contains("unpaid") || s.Contains("failed")) return "od-pill bad";
+        return "od-pill neutral";
+    }
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+}
+
+<style>
+    /* ===== Order Details – glass + neon glow (dark default; light via :root[data-theme="light"]) ===== */
+    /* fallback variables (nếu layout chưa có) */
+    :root {
+        --bg: #0b1020;
+        --bg-soft: #0f172a;
+        --text: #e7ebf0;
+        --text-strong: #ffffff;
+        --muted: #9aa3b2;
+        --border: rgba(255,255,255,.14);
+        --accent: #22d3ee;
+        --accent2: #3b82f6;
+        --ok: #22c55e;
+        --warn: #f59e0b;
+        --bad: #ef4444;
+    }
+
+        :root[data-theme="light"] {
+            --bg: #f6f8fc;
+            --bg-soft: #ffffff;
+            --text: #0f172a;
+            --text-strong: #0b1220;
+            --muted: #475569;
+            --border: rgba(15,23,42,.12);
+            --accent: #0ea5e9;
+            --accent2: #2563eb;
+            --ok: #16a34a;
+            --warn: #d97706;
+            --bad: #dc2626;
+        }
+
+    .od-page {
+        max-width: 1100px;
+        margin: 26px auto;
+        padding: 0 16px;
+        color: var(--text);
+    }
+
+    .od-head {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 16px;
+    }
+
+        .od-head h2 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 26px;
+            letter-spacing: .2px;
+            line-height: 1.1
+        }
+
+        .od-head .under {
+            flex: 1;
+            min-width: 140px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 48%, transparent);
+        }
+
+    /* Card container với viền phát sáng + nền chuyển động */
+    .od-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: color-mix(in oklab,var(--bg-soft) 96%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 16px 36px rgba(2,8,23,.55), 0 1px 0 color-mix(in oklab,#fff 6%,transparent) inset;
+    }
+
+        .od-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 0deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+            filter: blur(14px) saturate(1.25);
+            opacity: .5;
+            animation: odGlow 14s linear infinite;
+        }
+
+        .od-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: -2;
+            background: radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 18%, transparent), transparent 60%), radial-gradient(900px 450px at 110% 20%, color-mix(in oklab,var(--accent2) 16%, transparent), transparent 60%), linear-gradient(135deg, color-mix(in oklab,var(--accent) 8%, transparent), color-mix(in oklab,var(--accent2) 8%, transparent));
+            background-size: 300% 300%;
+            animation: odBG 18s ease-in-out infinite alternate;
+            opacity: .35;
+            filter: saturate(1.2);
+        }
+    @@keyframes odGlow {
+        to
+
+    {
+        transform: rotate(1turn)
+    }
+
+    }
+    @@keyframes odBG {
+        0%
+
+    {
+        background-position: 0% 50%
+    }
+
+    50% {
+        background-position: 100% 50%
+    }
+
+    100% {
+        background-position: 0% 50%
+    }
+
+    }
+
+    /* section blocks */
+    .od-section {
+        padding: 18px;
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: saturate(1.02);
+    }
+
+    .od-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 14px 22px;
+    }
+
+    .od-field {
+        display: grid;
+        gap: 6px;
+    }
+
+    .od-label {
+        font-size: 12.5px;
+        color: var(--muted);
+        letter-spacing: .25px
+    }
+
+    .od-value {
+        font-weight: 800;
+        color: var(--text-strong)
+    }
+
+        .od-value.money {
+            font-variant-numeric: tabular-nums
+        }
+
+    /* Pills */
+    .od-pill {
+        display: inline-grid;
+        place-items: center;
+        min-width: 128px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 900;
+        letter-spacing: .25px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+        color: var(--text-strong);
+    }
+
+        .od-pill.ok {
+            background: linear-gradient(180deg, color-mix(in oklab,var(--ok) 26%, transparent), color-mix(in oklab,var(--ok) 10%, transparent));
+            border-color: color-mix(in oklab,var(--ok) 45%, var(--border) 55%);
+            color: #e6ffef;
+            text-shadow: 0 1px 0 rgba(0,0,0,.35)
+        }
+
+        .od-pill.warn {
+            background: linear-gradient(180deg, color-mix(in oklab,var(--warn) 26%, transparent), color-mix(in oklab,var(--warn) 10%, transparent));
+            border-color: color-mix(in oklab,var(--warn) 45%, var(--border) 55%);
+            color: #fff7df;
+            text-shadow: 0 1px 0 rgba(0,0,0,.35)
+        }
+
+        .od-pill.bad {
+            background: linear-gradient(180deg, color-mix(in oklab,var(--bad) 26%, transparent), color-mix(in oklab,var(--bad) 10%, transparent));
+            border-color: color-mix(in oklab,var(--bad) 45%, var(--border) 55%);
+            color: #ffe8e8;
+            text-shadow: 0 1px 0 rgba(0,0,0,.35)
+        }
+
+    :root[data-theme="light"] .od-pill.ok {
+        background: #bbf7d0;
+        color: #064e3b;
+        text-shadow: none;
+        border-color: rgba(22,163,74,.35)
+    }
+
+    :root[data-theme="light"] .od-pill.warn {
+        background: #fde68a;
+        color: #7c2d12;
+        text-shadow: none;
+        border-color: rgba(217,119,6,.35)
+    }
+
+    :root[data-theme="light"] .od-pill.bad {
+        background: #fecaca;
+        color: #7f1d1d;
+        text-shadow: none;
+        border-color: rgba(220,38,38,.35)
+    }
+
+    /* Cancel banner */
+    .od-cancel {
+        margin-top: 10px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in oklab,var(--bad) 45%, var(--border) 55%);
+        background: linear-gradient(180deg, color-mix(in oklab,var(--bad) 20%, transparent), color-mix(in oklab,var(--bad) 8%, transparent));
+        color: #ffecec;
+        font-weight: 700;
+    }
+
+    :root[data-theme="light"] .od-cancel {
+        background: #fee2e2;
+        color: #7f1d1d
+    }
+
+    /* Items table */
+    .od-table-wrap {
+        overflow: auto;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        margin-top: 6px
+    }
+
+    .od-table {
+        width: 100%;
+        min-width: 720px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .od-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(180deg, color-mix(in oklab,#fff 12%, transparent), transparent);
+            backdrop-filter: blur(6px);
+            text-align: left;
+            font-weight: 800;
+            color: var(--muted);
+            padding: 14px 16px;
+            font-size: 13.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+    :root[data-theme="light"] .od-table thead th {
+        background: #f8fafc;
+        color: #334155
+    }
+
+    .od-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px dashed var(--border);
+        vertical-align: middle
+    }
+
+    .od-table tbody tr:nth-child(even) {
+        background: linear-gradient(0deg, color-mix(in oklab,#fff 4%, transparent), transparent)
+    }
+
+    .od-table .qty {
+        font-variant-numeric: tabular-nums;
+        font-weight: 800
+    }
+
+    .od-table .price {
+        font-variant-numeric: tabular-nums;
+        font-weight: 900;
+        text-align: right
+    }
+
+    /* Footer actions */
+    .od-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        padding: 16px 18px;
+        border-top: 1px solid var(--border)
+    }
+
+    .od-btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 800;
+        color: var(--text);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+        cursor: pointer;
+        transition: transform .12s ease, filter .2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .od-btn:hover {
+            transform: translateY(-1px)
+        }
+
+        .od-btn.primary {
+            color: #0b1220;
+            border-color: transparent;
+            background: linear-gradient(135deg,var(--accent),var(--accent2));
+            box-shadow: 0 8px 18px color-mix(in oklab,#000 30%, transparent);
+        }
+
+    .od-money-strong {
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-strong)
+    }
+
+    @@media (max-width: 780px) {
+        .od-grid
+
+    {
+        grid-template-columns: 1fr
+    }
+
+    }
+</style>
+
+<div class="od-page">
+    <div class="od-head">
+        <h2>Chi tiết Order #@Model.OrderId</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="od-card">
+        <!-- Order summary -->
+        <div class="od-section">
+            <div class="od-grid">
+                <div class="od-field">
+                    <div class="od-label">User</div>
+                    <div class="od-value">@Model.UserId</div>
+                </div>
+                <div class="od-field">
+                    <div class="od-label">Ngày tạo</div>
+                    <div class="od-value">@Model.OrderDate.ToString("dd/MM/yyyy")</div>
+                </div>
+                <div class="od-field">
+                    <div class="od-label">Trạng thái</div>
+                    <div class="od-value"><span class="@StatusClass(Model.OrderStatus)">@Model.OrderStatus</span></div>
+                </div>
+                <div class="od-field">
+                    <div class="od-label">Thanh toán</div>
+                    <div class="od-value"><span class="@PayClass(Model.PaymentStatus)">@Model.PaymentStatus</span></div>
+                </div>
+                <div class="od-field">
+                    <div class="od-label">Tổng tiền</div>
+                    <div class="od-value money od-money-strong">@Model.TotalAmount.ToString("c0", vi)</div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.CancelReason))
+            {
+                <div class="od-cancel">
+                    🛑 Lý do hủy: @Model.CancelReason
+                </div>
+            }
+        </div>
+
+        <!-- Items -->
+        <div class="od-section">
+            <div class="od-label" style="margin-bottom:8px">Danh sách sản phẩm</div>
+            <div class="od-table-wrap">
+                <table class="od-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th style="width:160px">Số lượng</th>
+                            <th style="width:200px; text-align:right">Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td><strong>@item.ProductId</strong></td>
+                                <td class="qty">@item.Quantity</td>
+                                <td class="price">@item.UnitPrice.ToString("c0", vi)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="od-actions">
+            <a asp-action="Index" class="od-btn">← Quay lại danh sách</a>
+            <a asp-action="Edit" asp-route-id="@Model.OrderId" class="od-btn primary">Chỉnh sửa</a>
+        </div>
+    </div>
 </div>
