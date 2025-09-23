@@ -18,6 +18,10 @@ namespace MVCApplication
             {
                 c.BaseAddress = new Uri("https://localhost:7005/"); // ĐÚNG URL AccountAPI của bạn
             });
+            builder.Services.AddHttpClient<IOrderService, OrdersService>(c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7269/");
+            });
 
             var app = builder.Build();
 

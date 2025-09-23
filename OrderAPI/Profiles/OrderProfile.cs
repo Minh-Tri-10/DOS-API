@@ -20,8 +20,8 @@ namespace OrderAPI.Profiles
                 .ForMember(dest => dest.TotalAmount,
                            opt => opt.MapFrom(src => src.Items.Sum(i => i.Quantity * i.UnitPrice)))
                 .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
-                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(_ => "Pending"))
-                .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(_ => "Unpaid"));
+                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(_ => "pending"))
+                .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(_ => "unpaid"));
 
             CreateMap<CreateOrderItemDto, OrderItem>();
 
