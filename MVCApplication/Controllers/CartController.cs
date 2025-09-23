@@ -2,7 +2,7 @@
 
 namespace MVCApplication.Controllers
 {
-    public class AdminController : Controller
+    public class CartController : Controller
     {
         public IActionResult Index()
         {
