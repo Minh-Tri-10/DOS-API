@@ -10,5 +10,6 @@ namespace CategoriesAPI.Services.Interfaces
         Task<CategoryDTO> AddAsync(CreateCategoryDTO dto); // Thay đổi để return DTO
         Task UpdateAsync(int id, UpdateCategoryDTO dto);
         Task DeleteAsync(int id);
+        Task<bool> IsNameUniqueAsync(string name, int? excludeId = null);  // Mới: Kiểm tra unique
     }
 }
