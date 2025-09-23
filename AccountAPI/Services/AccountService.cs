@@ -3,22 +3,23 @@ using AccountAPI.DTOs.AccountAPI.DTOs;
 using AccountAPI.Models;
 using AccountAPI.Repositories.Interfaces;
 using AccountAPI.Services.Interfaces;
-using BCrypt.Net;
+using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Cryptography;
 
 namespace AccountAPI.Services
 {
-
     public class AccountService : IAccountService
     {
         private readonly IUserRepository _repo;
-        private readonly IMemoryCache _cache; // giữ token reset tạm
+        private readonly IMemoryCache _cache;   // giữ token reset tạm
+        private readonly IMapper _mapper;       // AutoMapper
 
-        public AccountService(IUserRepository repo, IMemoryCache cache)
+        public AccountService(IUserRepository repo, IMemoryCache cache, IMapper mapper)
         {
             _repo = repo;
             _cache = cache;
+            _mapper = mapper;
         }
 
         public async Task<UserDTO?> LoginAsync(LoginDTO dto)
@@ -27,46 +28,40 @@ namespace AccountAPI.Services
             if (user == null) return null;
             if ((user.IsBanned ?? false)) return null;
 
-            // Nếu hash cũ/invalid → coi như sai mật khẩu, KHÔNG Verify để tránh nổ
+            // Nếu hash cũ/invalid → coi như sai mật khẩu
             if (!IsBcryptHash(user.PasswordHash)) return null;
 
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return null;
 
-            return ToDTO(user);
+            return _mapper.Map<UserDTO>(user);
         }
 
         private static bool IsBcryptHash(string? hash) =>
-    !string.IsNullOrWhiteSpace(hash) &&
-    (hash!.StartsWith("$2a$") || hash.StartsWith("$2b$") || hash.StartsWith("$2y$"));
+            !string.IsNullOrWhiteSpace(hash) &&
+            (hash!.StartsWith("$2a$") || hash.StartsWith("$2b$") || hash.StartsWith("$2y$"));
 
         public async Task<UserDTO> RegisterAsync(RegisterDTO dto)
         {
             if (await _repo.GetByUsernameAsync(dto.Username) != null)
                 throw new Exception("Username already exists");
 
-            var user = new User
-            {
-                Username = dto.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                FullName = dto.FullName,
-                Email = dto.Email,
-                Role = "customer",
-                CreatedAt = DateTime.UtcNow
-                // IsBanned là null => coi như false
-            };
+            // map DTO -> User (các field Role, CreatedAt đã set trong MappingProfile)
+            var user = _mapper.Map<User>(dto);
+            // hash password riêng
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             await _repo.AddAsync(user);
-            return ToDTO(user);
+            return _mapper.Map<UserDTO>(user);
         }
 
         public async Task<IEnumerable<UserDTO>> GetAllAsync() =>
-            (await _repo.GetAllAsync()).Select(ToDTO);
+            (await _repo.GetAllAsync()).Select(u => _mapper.Map<UserDTO>(u));
 
         public async Task<UserDTO?> GetByIdAsync(int id)
         {
             var u = await _repo.GetByIdAsync(id);
-            return u == null ? null : ToDTO(u);
+            return u == null ? null : _mapper.Map<UserDTO>(u);
         }
 
         public async Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto)
@@ -74,14 +69,12 @@ namespace AccountAPI.Services
             var u = await _repo.GetByIdAsync(userId);
             if (u == null) return null;
 
-            u.FullName = dto.FullName ?? u.FullName;
-            u.Email = dto.Email ?? u.Email;
-            u.Phone = dto.Phone ?? u.Phone;
-            u.AvatarUrl = dto.AvatarUrl ?? u.AvatarUrl;
+            // chỉ map các field != null (đã cấu hình Condition trong MappingProfile)
+            _mapper.Map(dto, u);
             u.UpdatedAt = DateTime.UtcNow;
 
             await _repo.UpdateAsync(u);
-            return ToDTO(u);
+            return _mapper.Map<UserDTO>(u);
         }
 
         public async Task<bool> ChangePasswordAsync(ChangePasswordDTO dto)
@@ -89,9 +82,7 @@ namespace AccountAPI.Services
             var u = await _repo.GetByIdAsync(dto.UserId);
             if (u == null) return false;
 
-            // Nếu hash cũ/invalid thì yêu cầu user đăng nhập lại/đặt lại mật khẩu
             if (!IsBcryptHash(u.PasswordHash)) return false;
-
             if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, u.PasswordHash))
                 return false;
 
@@ -101,19 +92,18 @@ namespace AccountAPI.Services
             return true;
         }
 
-
         public async Task<bool> SetBanAsync(int userId, bool isBanned)
         {
             var u = await _repo.GetByIdAsync(userId);
             if (u == null) return false;
-            u.IsBanned = isBanned; // bool? trong model
+
+            u.IsBanned = isBanned;
             u.UpdatedAt = DateTime.UtcNow;
             await _repo.UpdateAsync(u);
             return true;
         }
 
-        // ===== Forgot/Reset password bằng MemoryCache (đơn giản để test) =====
-        // Cache key: "pwdreset:{token}" -> userId
+        // ===== Forgot/Reset password bằng MemoryCache =====
         public async Task<string?> ForgotPasswordAsync(ForgotPasswordDTO dto)
         {
             var u = await _repo.GetByEmailAsync(dto.Email);
@@ -127,8 +117,8 @@ namespace AccountAPI.Services
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15)
             });
 
-            // TODO: gửi email kèm token (hoặc link FE /reset?token=...)
-            return token; // trả về để bạn test nhanh trên Swagger
+            // TODO: gửi email kèm token (prod)
+            return token; // trả về để test nhanh
         }
 
         public async Task<bool> ResetPasswordAsync(ResetPasswordDTO dto)
@@ -147,18 +137,5 @@ namespace AccountAPI.Services
             _cache.Remove(cacheKey);
             return true;
         }
-
-        // helper map (giữ nguyên như trước)
-        private static UserDTO ToDTO(User u) => new UserDTO
-        {
-            UserId = u.UserId,
-            Username = u.Username,
-            FullName = u.FullName,
-            Email = u.Email,
-            Role = u.Role,
-            IsBanned = u.IsBanned ?? false,
-            CreatedAt = u.CreatedAt
-        };
     }
 }
-

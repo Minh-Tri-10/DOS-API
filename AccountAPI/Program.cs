@@ -17,6 +17,8 @@ namespace AccountAPI
             // Add services to the container.
             builder.Services.AddMemoryCache(); // cho Forgot/Reset token tạm
             builder.Services.AddControllers();
+            builder.Services.AddAutoMapper(typeof(AccountAPI.Mapping.MappingProfile));
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
