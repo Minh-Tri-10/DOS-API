@@ -466,6 +466,121 @@
     }
 
     }
+    /* === FIX RING for .orders-card (layering chuẩn) === */
+    .orders-card {
+        position: relative;
+        isolation: isolate;
+        z-index: 0;
+    }
+
+        /* Nội dung nằm trên cùng */
+        .orders-card > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* RING xoay quanh viền – nằm dưới nội dung */
+        .orders-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: 0; /* dưới content */
+            background: conic-gradient( from 0deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35% );
+            filter: blur(12px) saturate(1.15);
+            opacity: .35; /* ↓ chỉnh mờ/đậm ở đây */
+            animation: ordersGlow 14s linear infinite;
+        }
+
+        /* Nền trong card (nếu muốn giữ pattern động, để ở ::after và z-index:-1) */
+        .orders-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: -1; /* thấp nhất */
+            background: radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 14%, transparent), transparent 60%), radial-gradient(800px 400px at 110% 20%, color-mix(in oklab,var(--accent2) 12%, transparent), transparent 60%);
+            opacity: .28;
+            filter: saturate(1.1);
+            animation: ordersBG 18s ease-in-out infinite alternate;
+        }
+
+    /* Razor cần @@ */
+    @@keyframes ordersGlow {
+        to {
+            transform: rotate(1turn);
+        }
+    }
+
+    @@keyframes ordersBG {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    /* Nội dung luôn cao nhất */
+    .orders-card > * {
+        position: relative;
+        z-index: 3;
+    }
+
+    /* Vòng sáng xoay (đã có) */
+    .orders-card::before {
+        /* giữ như patch trước, chỉ chắc chắn z-index thấp hơn ly */
+        z-index: 0;
+    }
+
+    /* Ly nước + pattern */
+    .orders-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        z-index: 1; /* trên ring, dưới nội dung */
+        /* LAYER ORDER: đầu tiên = ly nước, sau = pattern */
+        background: url('/media/overlays/neon-drink.png') center 35% / 480px no-repeat, /* Ly nước */
+        radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 14%, transparent), transparent 60%), radial-gradient(800px 400px at 110% 20%, color-mix(in oklab,var(--accent2) 12%, transparent), transparent 60%);
+        opacity: .30; /* độ trong tổng */
+        filter: saturate(1.2);
+        animation: drinkPulse 6s ease-in-out infinite, ordersBG 18s ease-in-out infinite alternate;
+    }
+
+    /* Tắt ảnh ly khi theme sáng – chỉ giữ pattern */
+    :root[data-theme="light"] .orders-card::after {
+        background: radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 14%, transparent), transparent 60%), radial-gradient(800px 400px at 110% 20%, color-mix(in oklab,var(--accent2) 12%, transparent), transparent 60%);
+        opacity: .25; /* chỉ pattern */
+    }
+
+    /* Razor cần @@ cho keyframes */
+    @@keyframes drinkPulse {
+        0% {
+            opacity: .18;
+            filter: blur(14px) saturate(1.1);
+            transform: scale(.98);
+        }
+
+        50% {
+            opacity: .38;
+            filter: blur(8px) saturate(1.3);
+            transform: scale(1.02);
+        }
+
+        100% {
+            opacity: .18;
+            filter: blur(14px) saturate(1.1);
+            transform: scale(.98);
+        }
+    }
+
+
 </style>
 
 <div class="orders-page">

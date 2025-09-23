@@ -387,3 +387,28 @@
     :root[data-theme="light"] .btn-close.btn-close-white {
         filter: none;
     }
+/* === WOW dark theme background === */
+:root[data-theme="dark"] .layout-rail::before {
+    content: "";
+    position: fixed; /* phủ toàn màn hình */
+    inset: 0;
+    z-index: -1; /* nằm sau toàn bộ layout */
+    background: linear-gradient(130deg, rgba(34,211,238,.08), rgba(59,130,246,.06), rgba(14,165,233,.1));
+    background-size: 400% 400%;
+    animation: bgMove 18s ease infinite;
+    pointer-events: none;
+}
+
+@keyframes bgMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
