@@ -81,15 +81,15 @@
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V22a2 2 0 1 1-4 0v-.07a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4 15.4c0-.6-.24-1.18-.66-1.6l-.06-.06A2 2 0 1 1 6.1 10.9l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 13.1 6.1l-.06.06c-.42.42-.66 1-.66 1.6 0 .6.24 1.18.66 1.6l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 19.4 15Z" />
                 </svg>
             </button>
-            <form method="post" asp-area="Identity" asp-page="/Account/Logout">
-                <button type="submit" class="rail-item" data-bs-toggle="tooltip" data-bs-title="Sign out" aria-label="Sign out">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <path d="M16 17l5-5-5-5" />
-                        <path d="M21 12H9" />
-                    </svg>
-                </button>
-            </form>
+            <a asp-controller="Accounts" asp-action="Logout"
+               class="rail-item" data-bs-toggle="tooltip" data-bs-title="Sign out" aria-label="Sign out">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <path d="M16 17l5-5-5-5" />
+                    <path d="M21 12H9" />
+                </svg>
+            </a>
+
         </div>
     </aside>
 

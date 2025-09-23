@@ -43,9 +43,11 @@ public class AccountsController : ControllerBase
     }
 
     // PATCH: api/accounts/{id}/ban
+    // Controllers/AccountsController.cs (API)
     [HttpPatch("{id:int}/ban")]
     public async Task<IActionResult> SetBan(int id, [FromBody] BanRequestDTO dto)
     {
+        Console.WriteLine($"[API] SetBan -> id={id}, isBanned={dto.IsBanned}");
         var ok = await _service.SetBanAsync(id, dto.IsBanned);
         return ok ? NoContent() : NotFound();
     }
