@@ -1,0 +1,35 @@
+﻿@model MVCApplication.DTOs.UpdateOrderDto
+
+<h2>Cập nhật Order</h2>
+
+<form asp-action="Edit" method="post">
+    <div class="mb-2">
+        <label asp-for="OrderStatus"></label>
+        <select asp-for="OrderStatus" class="form-control" asp-items="@(new SelectList(new[] { "pending", "completed", "cancelled" }))">
+            <option value="">-- Chọn trạng thái --</option>
+        </select>
+        <span asp-validation-for="OrderStatus" class="text-danger"></span>
+    </div>
+
+    <div class="mb-2">
+        <label asp-for="PaymentStatus"></label>
+        <select asp-for="PaymentStatus" class="form-control" asp-items="@(new SelectList(new[] { "paid", "unpaid" }))">
+            <option value="">-- Chọn trạng thái thanh toán --</option>
+        </select>
+        <span asp-validation-for="PaymentStatus" class="text-danger"></span>
+    </div>
+
+    <div class="mb-2">
+        <label asp-for="CancelReason"></label>
+        <textarea asp-for="CancelReason" class="form-control"></textarea>
+        <span asp-validation-for="CancelReason" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Cập nhật</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
