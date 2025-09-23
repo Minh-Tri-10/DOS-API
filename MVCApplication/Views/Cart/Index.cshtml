@@ -5,6 +5,7 @@
 <style>
     /* ===== CART PAGE – WOW UI (dark default; light via :root[data-theme="light"]) ===== */
     /* fallback biến nếu layout chưa có */
+
     :root {
         --bg: #0b1020;
         --bg-soft: #0f172a;
@@ -82,13 +83,11 @@
             opacity: .38;
             animation: cartRing 14s linear infinite;
         }
+
     @@keyframes cartRing {
-        to
-
-    {
-        transform: rotate(1turn)
-    }
-
+        to {
+            transform: rotate(1turn)
+        }
     }
 
     /* Header bar: select all + remove */
@@ -333,61 +332,111 @@
 
     /* Responsive */
     @@media (max-width: 980px) {
-        .cart-row
+        .cart-row {
+            grid-template-columns: auto 80px 1fr 120px 160px 120px
+        }
 
-    {
-        grid-template-columns: auto 80px 1fr 120px 160px 120px
+        .cart-foot {
+            grid-template-columns: 1fr
+        }
     }
 
-    .cart-foot {
-        grid-template-columns: 1fr
-    }
 
-    }
+
+
     @@media (max-width: 720px) {
-        .cart-row
+        .cart-row {
+            grid-template-columns: auto 70px 1fr;
+            grid-auto-rows: auto;
+            grid-template-areas:
+                "check img name"
+                "check img meta"
+                "check img price"
+                "check img qty"
+                "check img line";
+            row-gap: 8px;
+        }
+
+            .cart-row .cell-check {
+                grid-area: check;
+                align-self: start;
+                padding-top: 6px
+            }
+
+            .cart-row .cell-img {
+                grid-area: img
+            }
+
+            .cart-row .cell-name {
+                grid-area: name
+            }
+
+            .cart-row .cell-meta {
+                grid-area: meta
+            }
+
+            .cart-row .cell-price {
+                grid-area: price
+            }
+
+            .cart-row .cell-qty {
+                grid-area: qty
+            }
+
+            .cart-row .cell-line {
+                grid-area: line;
+                text-align: left
+            }
+
+
+    }
+    /* 1) Nội dung nổi lên trên overlays */
+    .cart-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 2) Ảnh ly nước ở giữa card + pulse nhẹ (không ảnh hưởng ring xoay trong ::before) */
+    .cart-card::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 700px; /* chỉnh kích thước tùy ý */
+        height: 700px;
+        transform: translate(-50%, -50%);
+        background: url('/media/overlays/neon-drink.png') center/contain no-repeat;
+        pointer-events: none;
+        z-index: 0; /* nằm trên nền, dưới nội dung; ngang hàng ::before */
+        opacity: .14;
+        filter: blur(14px) saturate(1.1);
+        animation: drinkPulse 5.8s ease-in-out infinite;
+    }
+
+    /* 3) Tắt ảnh khi theme sáng (giữ nguyên/vẫn xoay nếu bạn muốn ring hoạt động ở sáng thì ĐỪNG chặn ::before) */
+    :root[data-theme="light"] .cart-card::after {
+        content: none;
+    }
+
+    @@keyframes drinkPulse {
+        0%
 
     {
-        grid-template-columns: auto 70px 1fr;
-        grid-auto-rows: auto;
-        grid-template-areas:
-            "check img name"
-            "check img meta"
-            "check img price"
-            "check img qty"
-            "check img line";
-        row-gap: 8px;
+        opacity: .10;
+        filter: blur(16px) saturate(1.05);
+        transform: translate(-50%,-50%) scale(.98);
     }
 
-    .cart-row .cell-check {
-        grid-area: check;
-        align-self: start;
-        padding-top: 6px
+    50% {
+        opacity: .30;
+        filter: blur(10px) saturate(1.20);
+        transform: translate(-50%,-50%) scale(1.02);
     }
 
-    .cart-row .cell-img {
-        grid-area: img
-    }
-
-    .cart-row .cell-name {
-        grid-area: name
-    }
-
-    .cart-row .cell-meta {
-        grid-area: meta
-    }
-
-    .cart-row .cell-price {
-        grid-area: price
-    }
-
-    .cart-row .cell-qty {
-        grid-area: qty
-    }
-
-    .cart-row .cell-line {
-        grid-area: line;
-        text-align: left
+    100% {
+        opacity: .10;
+        filter: blur(16px) saturate(1.05);
+        transform: translate(-50%,-50%) scale(.98);
     }
 
     }
