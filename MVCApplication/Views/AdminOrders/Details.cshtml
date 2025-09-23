@@ -7,7 +7,10 @@
 <p><strong>Payment:</strong> @Model.PaymentStatus</p>
 <p><strong>Total:</strong> @Model.TotalAmount</p>
 <p><strong>Ngày tạo:</strong> @Model.OrderDate.ToString("dd/MM/yyyy")</p>
-
+@if (!string.IsNullOrEmpty(Model.CancelReason))
+{
+    <p><strong>Lý do hủy:</strong> @Model.CancelReason</p>
+}
 <h4>Danh sách sản phẩm</h4>
 <table class="table">
     <thead>
