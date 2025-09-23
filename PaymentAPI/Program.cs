@@ -1,4 +1,12 @@
 
+using Microsoft.EntityFrameworkCore;
+using PaymentAPI.Models;
+using PaymentAPI.Profiles;
+using PaymentAPI.Repositories;
+using PaymentAPI.Repositories.Interfaces;
+using PaymentAPI.Services;
+using PaymentAPI.Services.Interfaces;
+
 namespace PaymentAPI
 {
     public class Program
@@ -6,8 +14,13 @@ namespace PaymentAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            // Register DbContext
+            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             // Add services to the container.
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddAutoMapper(typeof(PaymentProfile));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
