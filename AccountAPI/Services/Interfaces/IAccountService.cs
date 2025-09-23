@@ -1,5 +1,4 @@
 ﻿using AccountAPI.DTOs;
-using AccountAPI.DTOs.AccountAPI.DTOs;
 
 namespace AccountAPI.Services.Interfaces
 {

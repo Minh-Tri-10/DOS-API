@@ -29,7 +29,31 @@ namespace AccountAPI.Repositories
 
         public async Task UpdateAsync(User user)
         {
-            _ctx.Users.Update(user);
+            // Lấy entry đang được track (nếu có)
+            var entry = _ctx.Entry(user);
+
+            if (entry.State == EntityState.Detached)
+            {
+                // Nếu entity chưa được track (Detached), attach rồi đánh dấu Modified
+                _ctx.Attach(user);
+                entry = _ctx.Entry(user);
+                entry.State = EntityState.Modified; // mặc định: mọi property = Modified
+            }
+            else
+            {
+                // Nếu entity đã được truy xuất bằng cùng DbContext trước đó (Tracked),
+                // EF đã tự so sánh thay đổi. Ta chỉ cần chặn các cột không cho ghi đè.
+                entry.State = EntityState.Modified; // hợp nhất hành vi, rồi loại trừ từng cột
+            }
+
+            // KHÓA những cột không bao giờ ghi đè qua UpdateAsync chung:
+            entry.Property(x => x.CreatedAt).IsModified = false;
+            entry.Property(x => x.Username).IsModified = false;
+            entry.Property(x => x.Role).IsModified = false;
+
+            // Các cột khác (FullName, Email, Phone, AvatarUrl, PasswordHash, IsBanned, UpdatedAt)
+            // vẫn để Modified theo trạng thái hiện tại
+
             await _ctx.SaveChangesAsync();
         }
 
