@@ -29,21 +29,34 @@ namespace CategoriesAPI.Services
             return _mapper.Map<CategoryDTO>(category);
         }
 
-        public async Task<CategoryDTO> AddAsync(CreateCategoryDTO dto) // Thay đổi return type thành CategoryDTO hoặc Category
+        public async Task<CategoryDTO> AddAsync(CreateCategoryDTO dto)
         {
+            if (await IsNameUniqueAsync(dto.CategoryName) == false)
+            {
+                throw new InvalidOperationException("Tên category đã tồn tại.");
+            }
             var category = _mapper.Map<Category>(dto);
             await _repository.AddAsync(category);
-            return _mapper.Map<CategoryDTO>(category); // Return DTO với Id mới
+            return _mapper.Map<CategoryDTO>(category);
         }
 
         public async Task UpdateAsync(int id, UpdateCategoryDTO dto)
         {
             var category = await _repository.GetByIdAsync(id);
-            if (category != null)
+            if (category == null) throw new KeyNotFoundException("Category không tồn tại.");
+
+            if (await IsNameUniqueAsync(dto.CategoryName, id) == false)
             {
-                _mapper.Map(dto, category); // Update fields
-                await _repository.UpdateAsync(category);
+                throw new InvalidOperationException("Tên category đã tồn tại.");
             }
+
+            _mapper.Map(dto, category);
+            await _repository.UpdateAsync(category);
+        }
+
+        public async Task<bool> IsNameUniqueAsync(string name, int? excludeId = null)
+        {
+            return !(await _repository.NameExistsAsync(name, excludeId));
         }
 
         public async Task DeleteAsync(int id)
