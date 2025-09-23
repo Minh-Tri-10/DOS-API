@@ -22,7 +22,7 @@ namespace MVCApplication
             {
                 c.BaseAddress = new Uri("https://localhost:7269/");
             });
-
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
