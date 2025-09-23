@@ -64,12 +64,18 @@ namespace CategoriesAPI.Repositories
 
         public async Task<bool> NameExistsAsync(string name, int? excludeId = null)
         {
-            var query = _context.Categories.Where(c => string.Equals(c.CategoryName, name, StringComparison.OrdinalIgnoreCase));
+            name = name.ToLower();
+
+            var query = _context.Categories
+                .Where(c => c.CategoryName.ToLower() == name);
+
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.CategoryId != excludeId.Value);
             }
+
             return await query.AnyAsync();
         }
+
     }
 }
