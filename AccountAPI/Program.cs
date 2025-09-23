@@ -24,7 +24,7 @@ namespace AccountAPI
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DrinkOrderContext>(options =>
 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();

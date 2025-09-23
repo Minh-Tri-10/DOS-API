@@ -1,0 +1,615 @@
+﻿@{
+    Layout = "_CustomerLayout";
+}
+
+<style>
+    /* ===== CART PAGE – WOW UI (dark default; light via :root[data-theme="light"]) ===== */
+    /* fallback biến nếu layout chưa có */
+    :root {
+        --bg: #0b1020;
+        --bg-soft: #0f172a;
+        --text: #e5e7eb;
+        --muted: #9aa3b2;
+        --border: rgba(255,255,255,.12);
+        --accent: #22d3ee;
+        --accent2: #3b82f6;
+        --danger: #ef4444;
+        --ok: #22c55e;
+    }
+
+        :root[data-theme="light"] {
+            --bg: #f5f7fb;
+            --bg-soft: #ffffff;
+            --text: #0f172a;
+            --muted: #5b6577;
+            --border: rgba(0,0,0,.08);
+            --accent: #0ea5e9;
+            --accent2: #3b82f6;
+            --danger: #dc2626;
+            --ok: #16a34a;
+        }
+
+    .cart-page {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+        color: var(--text);
+    }
+
+    .cart-title {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px;
+    }
+
+        .cart-title h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1
+        }
+
+        .cart-title .under {
+            flex: 1;
+            min-width: 160px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            filter: saturate(1.05) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
+        }
+
+    /* Card container */
+    .cart-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 12px 32px rgba(2,8,23,.5), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+    }
+
+        .cart-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+            filter: blur(12px) saturate(1.2);
+            opacity: .38;
+            animation: cartRing 14s linear infinite;
+        }
+    @@keyframes cartRing {
+        to
+
+    {
+        transform: rotate(1turn)
+    }
+
+    }
+
+    /* Header bar: select all + remove */
+    .cart-head {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .cart-check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    .cart-checkbox {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent2);
+        cursor: pointer
+    }
+
+    /* Grid rows */
+    .cart-list {
+        display: grid;
+    }
+
+    .cart-row {
+        display: grid;
+        grid-template-columns: auto 90px 1fr 140px 170px 120px; /* checkbox, ảnh, tên, giá, số lượng, line-total */
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px dashed var(--border);
+    }
+
+        .cart-row:hover {
+            background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 12%, transparent), transparent 50%)
+        }
+
+    /* cell types */
+    .cart-img {
+        width: 90px;
+        height: 90px;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 10px 24px rgba(0,0,0,.35);
+    }
+
+    .cart-name {
+        font-weight: 800;
+        line-height: 1.25
+    }
+
+    .cart-meta {
+        color: var(--muted);
+        font-size: 13.5px
+    }
+
+    .cart-price {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--text)
+    }
+
+    .cart-line {
+        text-align: right;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        background: linear-gradient(135deg,var(--accent),var(--accent2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    /* Quantity control */
+    .cart-qty {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 6px;
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 7%, transparent), transparent);
+    }
+
+        .cart-qty input {
+            width: 44px;
+            text-align: center;
+            background: transparent;
+            border: 0;
+            outline: 0;
+            color: var(--text);
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cart-qty .cart-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            transition: transform .12s ease, background .2s ease, filter .2s ease;
+        }
+
+            .cart-qty .cart-btn:hover {
+                transform: translateY(-1px);
+                background: rgba(255,255,255,.06)
+            }
+
+    /* Footer: note + summary + checkout */
+    .cart-foot {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 16px;
+        padding: 16px;
+        align-items: start;
+        border-top: 1px solid var(--border);
+    }
+
+    .cart-note {
+        display: grid;
+        gap: 8px;
+    }
+
+        .cart-note textarea {
+            min-height: 110px;
+            resize: vertical;
+            border-radius: 14px;
+            padding: 12px;
+            background: linear-gradient(180deg, color-mix(in oklab,#fff 7%, transparent), transparent);
+            border: 1px solid var(--border);
+            color: var(--text);
+            outline: none;
+        }
+
+    .cart-summary {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 7%, transparent), transparent);
+        display: grid;
+        gap: 10px;
+    }
+
+    .cart-summary-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+    }
+
+        .cart-summary-row .val {
+            font-weight: 800;
+            color: var(--text);
+            font-variant-numeric: tabular-nums
+        }
+
+    .cart-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 6px;
+        border-top: 1px dashed var(--border);
+    }
+
+        .cart-total .val {
+            font-weight: 900;
+            font-size: 20px;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg,var(--accent),var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+    /* Buttons */
+    .cart-btn {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-weight: 800;
+        font-size: 13.5px;
+        transition: transform .12s ease, filter .2s ease, opacity .2s ease;
+    }
+
+    .cart-btn-primary {
+        color: #0b1220;
+        background: linear-gradient(135deg,var(--accent),var(--accent2));
+        box-shadow: 0 8px 18px color-mix(in oklab,#000 30%, transparent);
+    }
+
+        .cart-btn-primary:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05)
+        }
+
+    .cart-btn-ghost {
+        color: var(--text);
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 7%, transparent), transparent);
+    }
+
+        .cart-btn-ghost:hover {
+            transform: translateY(-1px)
+        }
+
+    .cart-btn:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+        transform: none;
+        filter: none
+    }
+
+    /* Light tweaks */
+    :root[data-theme="light"] .cart-card {
+        background: #fff;
+        box-shadow: 0 12px 28px rgba(2,8,23,.12)
+    }
+
+    :root[data-theme="light"] .cart-qty .cart-btn:hover {
+        background: rgba(0,0,0,.06)
+    }
+
+    :root[data-theme="light"] .cart-row:hover {
+        background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 16%, transparent), transparent 55%)
+    }
+
+    /* Responsive */
+    @@media (max-width: 980px) {
+        .cart-row
+
+    {
+        grid-template-columns: auto 80px 1fr 120px 160px 120px
+    }
+
+    .cart-foot {
+        grid-template-columns: 1fr
+    }
+
+    }
+    @@media (max-width: 720px) {
+        .cart-row
+
+    {
+        grid-template-columns: auto 70px 1fr;
+        grid-auto-rows: auto;
+        grid-template-areas:
+            "check img name"
+            "check img meta"
+            "check img price"
+            "check img qty"
+            "check img line";
+        row-gap: 8px;
+    }
+
+    .cart-row .cell-check {
+        grid-area: check;
+        align-self: start;
+        padding-top: 6px
+    }
+
+    .cart-row .cell-img {
+        grid-area: img
+    }
+
+    .cart-row .cell-name {
+        grid-area: name
+    }
+
+    .cart-row .cell-meta {
+        grid-area: meta
+    }
+
+    .cart-row .cell-price {
+        grid-area: price
+    }
+
+    .cart-row .cell-qty {
+        grid-area: qty
+    }
+
+    .cart-row .cell-line {
+        grid-area: line;
+        text-align: left
+    }
+
+    }
+</style>
+
+<div class="cart-page">
+    <div class="cart-title">
+        <h2>Giỏ hàng</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="cart-card" id="cartCard">
+        <!-- head -->
+        <div class="cart-head">
+            <label class="cart-check">
+                <input type="checkbox" class="cart-checkbox" id="checkAll">
+                <span>Chọn tất cả</span>
+            </label>
+            <button type="button" class="cart-btn cart-btn-ghost" id="removeSelected">Xóa các mục đã chọn</button>
+        </div>
+
+        <!-- list -->
+        <div class="cart-list" id="cartList">
+            <!-- item -->
+            <div class="cart-row" data-id="1" data-price="35000">
+                <div class="cell-check"><input type="checkbox" class="cart-checkbox cart-item-check"></div>
+                <img class="cart-img cell-img" src="https://source.unsplash.com/300x300/?americano,coffee" alt="Americano">
+                <div class="cell-name">
+                    <div class="cart-name">Americano</div>
+                    <div class="cart-meta">Coffee • 12oz</div>
+                </div>
+                <div class="cell-price"><span class="cart-price">35.000₫</span></div>
+                <div class="cell-qty">
+                    <div class="cart-qty" data-id="1">
+                        <button class="cart-btn cart-btn-ghost cart-dec" aria-label="Giảm">–</button>
+                        <input type="text" class="cart-qty-input" value="1" inputmode="numeric" pattern="[0-9]*">
+                        <button class="cart-btn cart-btn-ghost cart-inc" aria-label="Tăng">+</button>
+                    </div>
+                </div>
+                <div class="cell-line"><span class="cart-line" data-id="1">35.000₫</span></div>
+            </div>
+
+            <div class="cart-row" data-id="2" data-price="42000">
+                <div class="cell-check"><input type="checkbox" class="cart-checkbox cart-item-check"></div>
+                <img class="cart-img cell-img" src="https://source.unsplash.com/300x300/?latte,coffee" alt="Latte">
+                <div class="cell-name">
+                    <div class="cart-name">Latte</div>
+                    <div class="cart-meta">Coffee • 12oz</div>
+                </div>
+                <div class="cell-price"><span class="cart-price">42.000₫</span></div>
+                <div class="cell-qty">
+                    <div class="cart-qty" data-id="2">
+                        <button class="cart-btn cart-btn-ghost cart-dec" aria-label="Giảm">–</button>
+                        <input type="text" class="cart-qty-input" value="2" inputmode="numeric" pattern="[0-9]*">
+                        <button class="cart-btn cart-btn-ghost cart-inc" aria-label="Tăng">+</button>
+                    </div>
+                </div>
+                <div class="cell-line"><span class="cart-line" data-id="2">84.000₫</span></div>
+            </div>
+
+            <div class="cart-row" data-id="3" data-price="39000">
+                <div class="cell-check"><input type="checkbox" class="cart-checkbox cart-item-check"></div>
+                <img class="cart-img cell-img" src="https://source.unsplash.com/300x300/?milk-tea,bubble-tea" alt="Classic Milk Tea">
+                <div class="cell-name">
+                    <div class="cart-name">Classic Milk Tea</div>
+                    <div class="cart-meta">Milk Tea • Lớn</div>
+                </div>
+                <div class="cell-price"><span class="cart-price">39.000₫</span></div>
+                <div class="cell-qty">
+                    <div class="cart-qty" data-id="3">
+                        <button class="cart-btn cart-btn-ghost cart-dec" aria-label="Giảm">–</button>
+                        <input type="text" class="cart-qty-input" value="1" inputmode="numeric" pattern="[0-9]*">
+                        <button class="cart-btn cart-btn-ghost cart-inc" aria-label="Tăng">+</button>
+                    </div>
+                </div>
+                <div class="cell-line"><span class="cart-line" data-id="3">39.000₫</span></div>
+            </div>
+        </div>
+
+        <!-- footer -->
+        <div class="cart-foot">
+            <div class="cart-note">
+                <label for="note">Ghi chú cho đơn hàng</label>
+                <textarea id="note" placeholder="Ví dụ: Ít đá, thêm ngọt… (frontend)"></textarea>
+            </div>
+
+            <div class="cart-summary">
+                <div class="cart-summary-row"><span>Số mục đã chọn</span><span class="val" id="sumCount">0</span></div>
+                <div class="cart-summary-row"><span>Tạm tính</span><span class="val" id="sumSubtotal">0₫</span></div>
+                <div class="cart-summary-row"><span>Phí giao (giả lập)</span><span class="val" id="sumShip">0₫</span></div>
+                <div class="cart-total"><span>Tổng thanh toán</span><span class="val" id="sumTotal">0₫</span></div>
+                <button type="button" class="cart-btn cart-btn-primary" id="checkoutBtn" disabled>Thanh toán</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+          const list   = document.getElementById('cartList');
+          const checkAll = document.getElementById('checkAll');
+          const removeSelectedBtn = document.getElementById('removeSelected');
+
+          const elCount = document.getElementById('sumCount');
+          const elSubtotal = document.getElementById('sumSubtotal');
+          const elShip = document.getElementById('sumShip');
+          const elTotal = document.getElementById('sumTotal');
+          const checkoutBtn = document.getElementById('checkoutBtn');
+
+          const SHIP_FEE = 0; // giả lập
+
+          const fmtVND = n => n.toLocaleString('vi-VN') + '₫';
+
+          function getRowData(row){
+            const id = row.dataset.id;
+            const price = parseInt(row.dataset.price, 10) || 0;
+            const qtyInput = row.querySelector('.cart-qty-input');
+            let qty = parseInt(qtyInput.value, 10);
+            if (!Number.isFinite(qty) || qty < 1) qty = 1;
+            return { id, price, qty, row, qtyInput };
+          }
+
+          function updateLine(row){
+            const { id, price, qty, qtyInput } = getRowData(row);
+            qtyInput.value = qty;
+            const line = row.querySelector(`.cart-line[data-id="${id}"]`);
+            if (line) line.textContent = fmtVND(price * qty);
+          }
+
+          function recalc(){
+            const rows = [...list.querySelectorAll('.cart-row')];
+            let count = 0, subtotal = 0;
+
+            for (const row of rows){
+              const cb = row.querySelector('.cart-item-check');
+              const { price, qty } = getRowData(row);
+              if (cb && cb.checked){
+                count += 1;
+                subtotal += price * qty;
+              }
+            }
+            elCount.textContent = count;
+            elSubtotal.textContent = fmtVND(subtotal);
+            elShip.textContent = fmtVND(count > 0 ? SHIP_FEE : 0);
+            elTotal.textContent = fmtVND(subtotal + (count > 0 ? SHIP_FEE : 0));
+            checkoutBtn.disabled = count === 0;
+            syncCheckAll();
+          }
+
+          function syncCheckAll(){
+            const items = list.querySelectorAll('.cart-item-check');
+            const checked = list.querySelectorAll('.cart-item-check:checked');
+            checkAll.checked = items.length > 0 && items.length === checked.length;
+            checkAll.indeterminate = checked.length > 0 && checked.length < items.length;
+          }
+
+          // Events: quantity +/- , input sanitize
+          list.addEventListener('click', (e) => {
+            const dec = e.target.closest('.cart-dec');
+            const inc = e.target.closest('.cart-inc');
+            if (!dec && !inc) return;
+
+            const qtyWrap = e.target.closest('.cart-qty');
+            if (!qtyWrap) return;
+            const row = qtyWrap.closest('.cart-row');
+            const input = qtyWrap.querySelector('.cart-qty-input');
+            let val = parseInt(input.value, 10) || 1;
+
+            if (dec) val = Math.max(1, val - 1);
+            if (inc) val = Math.max(1, val + 1);
+            input.value = val;
+
+            updateLine(row);
+            recalc();
+          });
+
+          list.addEventListener('input', (e) => {
+            const input = e.target.closest('.cart-qty-input');
+            if (!input) return;
+            input.value = input.value.replace(/[^\d]/g, '').slice(0, 3) || '1';
+            const row = input.closest('.cart-row');
+            updateLine(row);
+            recalc();
+          });
+
+          // Checkbox per item
+          list.addEventListener('change', (e) => {
+            if (!e.target.classList.contains('cart-item-check')) return;
+            recalc();
+          });
+
+          // Select all
+          checkAll.addEventListener('change', () => {
+            const cbs = list.querySelectorAll('.cart-item-check');
+            cbs.forEach(cb => cb.checked = checkAll.checked);
+            recalc();
+          });
+
+          // Remove selected (frontend)
+          removeSelectedBtn.addEventListener('click', () => {
+            const selected = list.querySelectorAll('.cart-item-check:checked');
+            selected.forEach(cb => cb.closest('.cart-row')?.remove());
+            recalc();
+          });
+
+          // Init lines + calc
+          list.querySelectorAll('.cart-row').forEach(updateLine);
+          recalc();
+
+          // Checkout demo (frontend)
+          checkoutBtn.addEventListener('click', () => {
+            const count = parseInt(elCount.textContent, 10) || 0;
+            if (count === 0) return;
+            checkoutBtn.textContent = 'Đang xử lý…';
+            checkoutBtn.disabled = true;
+            setTimeout(() => {
+              checkoutBtn.textContent = 'Thanh toán';
+              checkoutBtn.disabled = false;
+              alert('(Frontend) Đặt hàng thành công!');
+            }, 800);
+          });
+        })();
+    </script>
+}

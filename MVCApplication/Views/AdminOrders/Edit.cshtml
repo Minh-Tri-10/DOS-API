@@ -1,35 +1,399 @@
 ﻿@model MVCApplication.DTOs.UpdateOrderDto
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    Layout = "_Layout.Admin";
+}
+<style>
+    /* ===== Order Update (ou-) – dark default; light via :root[data-theme="light"] ===== */
+    :root {
+        --bg: #0b1020;
+        --bg-soft: #0f172a;
+        --text: #e7ebf0;
+        --text-strong: #ffffff;
+        --muted: #9aa3b2;
+        --border: rgba(255,255,255,.14);
+        --accent: #22d3ee;
+        --accent2: #3b82f6;
+        --ok: #22c55e;
+        --warn: #f59e0b;
+        --bad: #ef4444;
+    }
 
-<h2>Cập nhật Order</h2>
+        :root[data-theme="light"] {
+            --bg: #f6f8fc;
+            --bg-soft: #ffffff;
+            --text: #0f172a;
+            --text-strong: #0b1220;
+            --muted: #475569;
+            --border: rgba(15,23,42,.12);
+            --accent: #0ea5e9;
+            --accent2: #2563eb;
+            --ok: #16a34a;
+            --warn: #d97706;
+            --bad: #dc2626;
+        }
 
-<form asp-action="Edit" method="post">
-    <div class="mb-2">
-        <label asp-for="OrderStatus"></label>
-        <select asp-for="OrderStatus" class="form-control" asp-items="@(new SelectList(new[] { "pending", "completed", "cancelled" }))">
-            <option value="">-- Chọn trạng thái --</option>
-        </select>
-        <span asp-validation-for="OrderStatus" class="text-danger"></span>
+    .ou-page {
+        max-width: 880px;
+        margin: 26px auto;
+        padding: 0 16px;
+        color: var(--text);
+    }
+
+    .ou-head {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 16px;
+    }
+
+        .ou-head h2 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 26px;
+            letter-spacing: .2px;
+        }
+
+        .ou-head .under {
+            flex: 1;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 48%, transparent);
+        }
+
+    /* Card với viền phát sáng + nền chuyển động */
+    .ou-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: color-mix(in oklab,var(--bg-soft) 96%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 16px 36px rgba(2,8,23,.55), 0 1px 0 color-mix(in oklab,#fff 6%,transparent) inset;
+    }
+
+        .ou-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 0deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+            filter: blur(14px) saturate(1.25);
+            opacity: .5;
+            animation: ouGlow 14s linear infinite;
+        }
+
+        .ou-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: -2;
+            background: radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 18%, transparent), transparent 60%), radial-gradient(900px 450px at 110% 20%, color-mix(in oklab,var(--accent2) 16%, transparent), transparent 60%), linear-gradient(135deg, color-mix(in oklab,var(--accent) 8%, transparent), color-mix(in oklab,var(--accent2) 8%, transparent));
+            background-size: 300% 300%;
+            animation: ouBG 18s ease-in-out infinite alternate;
+            opacity: .35;
+            filter: saturate(1.2);
+        }
+    @@keyframes ouGlow {
+        to
+
+    {
+        transform: rotate(1turn)
+    }
+
+    }
+    @@keyframes ouBG {
+        0%
+
+    {
+        background-position: 0% 50%
+    }
+
+    50% {
+        background-position: 100% 50%
+    }
+
+    100% {
+        background-position: 0% 50%
+    }
+
+    }
+
+    .ou-body {
+        padding: 18px;
+        display: grid;
+        gap: 16px;
+    }
+
+    .ou-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    @@media (max-width:720px) {
+        .ou-grid
+
+    {
+        grid-template-columns: 1fr
+    }
+
+    }
+
+    .ou-field {
+        display: grid;
+        gap: 8px;
+    }
+
+    .ou-label {
+        font-size: 12.5px;
+        color: var(--muted);
+        letter-spacing: .25px;
+    }
+
+    /* Inputs (không dùng .form-control để tránh xung đột) */
+    .ou-input, .ou-select, .ou-textarea {
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 15px;
+        color: var(--text);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+        border: 1px solid var(--border);
+        outline: none;
+        transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .ou-select {
+        appearance: none;
+        background-image: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%239aa3b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 12px center, 0 0;
+        padding-right: 38px;
+    }
+
+    .ou-textarea {
+        min-height: 120px;
+        resize: vertical
+    }
+
+        .ou-input:focus, .ou-select:focus, .ou-textarea:focus {
+            border-color: color-mix(in oklab, var(--accent) 60%, var(--border) 40%);
+            box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 25%, transparent);
+        }
+
+        /* Validation (khớp unobtrusive) */
+        .input-validation-error, .validaton-summary-errors,
+        .ou-input.input-validation-error, .ou-select.input-validation-error, .ou-textarea.input-validation-error {
+            border-color: color-mix(in oklab,var(--bad) 55%, var(--border) 45%) !important;
+            box-shadow: 0 0 0 4px color-mix(in oklab, var(--bad) 25%, transparent);
+        }
+
+    .ou-error, .text-danger {
+        color: #fecaca;
+        font-weight: 700
+    }
+
+    :root[data-theme="light"] .ou-error, :root[data-theme="light"] .text-danger {
+        color: #b91c1c
+    }
+
+    /* Pills preview */
+    .ou-pill {
+        display: inline-grid;
+        place-items: center;
+        min-width: 128px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 900;
+        letter-spacing: .25px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+        color: var(--text-strong);
+    }
+
+        .ou-pill.ok {
+            background: #16a34a22;
+            border-color: rgba(22,163,74,.35);
+            color: #e7ffef;
+            text-shadow: 0 1px 0 rgba(0,0,0,.35)
+        }
+
+        .ou-pill.warn {
+            background: #f59e0b22;
+            border-color: rgba(245,158,11,.35);
+            color: #fff7e6;
+            text-shadow: 0 1px 0 rgba(0,0,0,.35)
+        }
+
+        .ou-pill.bad {
+            background: #ef444422;
+            border-color: rgba(239,68,68,.35);
+            color: #ffe8e8;
+            text-shadow: 0 1px 0 rgba(0,0,0,.35)
+        }
+
+    :root[data-theme="light"] .ou-pill.ok {
+        background: #bbf7d0;
+        color: #064e3b;
+        text-shadow: none
+    }
+
+    :root[data-theme="light"] .ou-pill.warn {
+        background: #fde68a;
+        color: #7c2d12;
+        text-shadow: none
+    }
+
+    :root[data-theme="light"] .ou-pill.bad {
+        background: #fecaca;
+        color: #7f1d1d;
+        text-shadow: none
+    }
+
+    /* Actions */
+    .ou-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 0 18px 18px;
+    }
+
+    .ou-btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 800;
+        color: var(--text);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+        cursor: pointer;
+        transition: transform .12s ease, filter .2s ease;
+        text-decoration: none;
+    }
+
+        .ou-btn:hover {
+            transform: translateY(-1px)
+        }
+
+        .ou-btn.primary {
+            color: #0b1220;
+            border-color: transparent;
+            background: linear-gradient(135deg,var(--accent),var(--accent2));
+            box-shadow: 0 8px 18px color-mix(in oklab,#000 30%, transparent);
+        }
+
+    /* Light tweaks */
+    :root[data-theme="light"] .ou-card {
+        background: #fff;
+        box-shadow: 0 16px 32px rgba(2,8,23,.10)
+    }
+</style>
+
+<div class="ou-page">
+    <div class="ou-head">
+        <h2>Cập nhật Order</h2>
+        <div class="under"></div>
     </div>
 
-    <div class="mb-2">
-        <label asp-for="PaymentStatus"></label>
-        <select asp-for="PaymentStatus" class="form-control" asp-items="@(new SelectList(new[] { "paid", "unpaid" }))">
-            <option value="">-- Chọn trạng thái thanh toán --</option>
-        </select>
-        <span asp-validation-for="PaymentStatus" class="text-danger"></span>
-    </div>
+    <div class="ou-card">
+        <form asp-action="Edit" method="post" class="ou-body" id="ouForm">
+            <div class="ou-grid">
+                <!-- Order Status -->
+                <div class="ou-field">
+                    <label asp-for="OrderStatus" class="ou-label">Trạng thái đơn hàng</label>
+                    <select asp-for="OrderStatus" class="ou-select"
+                            asp-items="@(new SelectList(new[] { "pending", "completed", "cancelled" }, Model?.OrderStatus))">
+                        <option value="">-- Chọn trạng thái --</option>
+                    </select>
+                    <span asp-validation-for="OrderStatus" class="ou-error"></span>
+                </div>
 
-    <div class="mb-2">
-        <label asp-for="CancelReason"></label>
-        <textarea asp-for="CancelReason" class="form-control"></textarea>
-        <span asp-validation-for="CancelReason" class="text-danger"></span>
-    </div>
+                <!-- Payment Status -->
+                <div class="ou-field">
+                    <label asp-for="PaymentStatus" class="ou-label">Trạng thái thanh toán</label>
+                    <select asp-for="PaymentStatus" class="ou-select"
+                            asp-items="@(new SelectList(new[] { "paid", "unpaid", "refunded" }, Model?.PaymentStatus))">
+                        <option value="">-- Chọn trạng thái thanh toán --</option>
+                    </select>
+                    <span asp-validation-for="PaymentStatus" class="ou-error"></span>
+                </div>
+            </div>
 
-    <button type="submit" class="btn btn-success">Cập nhật</button>
-</form>
+            <!-- Pills preview -->
+            <div class="ou-grid" style="align-items:end">
+                <div class="ou-field">
+                    <div class="ou-label">Preview trạng thái</div>
+                    <div id="statusPreview" class="ou-pill">—</div>
+                </div>
+                <div class="ou-field">
+                    <div class="ou-label">Preview thanh toán</div>
+                    <div id="paymentPreview" class="ou-pill">—</div>
+                </div>
+            </div>
+
+            <!-- Cancel reason (ẩn/hiện theo trạng thái) -->
+            <div class="ou-field" id="cancelField">
+                <label asp-for="CancelReason" class="ou-label">Lý do hủy (nếu có)</label>
+                <textarea asp-for="CancelReason" class="ou-textarea" placeholder="Nhập lý do hủy..."></textarea>
+                <span asp-validation-for="CancelReason" class="ou-error"></span>
+            </div>
+
+            <div class="ou-actions">
+                <a asp-action="Index" class="ou-btn">← Quay lại</a>
+                <button type="submit" class="ou-btn primary">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        // Frontend: pill preview + show/hide cancel reason
+        (function(){
+          const selStatus = document.getElementById('OrderStatus');
+          const selPayment = document.getElementById('PaymentStatus');
+          const prevStatus = document.getElementById('statusPreview');
+          const prevPayment = document.getElementById('paymentPreview');
+          const cancelField = document.getElementById('cancelField');
+
+          function pillClass(v, type){
+            const t = (v||'').toLowerCase();
+            if(type==='status'){
+              if(t.includes('completed')) return 'ou-pill ok';
+              if(t.includes('pending') || t.includes('processing')) return 'ou-pill warn';
+              if(t.includes('cancel')) return 'ou-pill bad';
+            }else{
+              if(t.includes('paid')) return 'ou-pill ok';
+              if(t.includes('refunded') || t.includes('partial')) return 'ou-pill warn';
+              if(t.includes('unpaid') || t.includes('fail')) return 'ou-pill bad';
+            }
+            return 'ou-pill';
+          }
+
+          function render(){
+            const s = selStatus.value;
+            const p = selPayment.value;
+            prevStatus.className = pillClass(s,'status');
+            prevStatus.textContent = s ? s : '—';
+            prevPayment.className = pillClass(p,'payment');
+            prevPayment.textContent = p ? p : '—';
+
+            const isCancel = (s||'').toLowerCase().includes('cancel');
+            cancelField.style.display = isCancel ? '' : 'none';
+          }
+
+          if(selStatus && selPayment){
+            render();
+            selStatus.addEventListener('change', render);
+            selPayment.addEventListener('change', render);
+          }
+        })();
+    </script>
 }
