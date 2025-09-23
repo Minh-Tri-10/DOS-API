@@ -12,11 +12,10 @@ namespace CategoriesAPI.Controllers
     public class ManageCategoryController : ControllerBase
     {
         private readonly ICategoryService _service;
-        private readonly IMapper _mapper;
-        public ManageCategoryController(ICategoryService service, IMapper mapper)
+
+        public ManageCategoryController(ICategoryService service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         [HttpGet]
