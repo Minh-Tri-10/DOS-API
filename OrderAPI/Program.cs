@@ -1,4 +1,10 @@
 
+using Microsoft.EntityFrameworkCore;
+using OrderAPI.Repositories;
+using OrderAPI.Repositories.Interfaces;
+using OrderAPI.Services;
+using OrderAPI.Services.Interfaces;
+using OrderAPI.Models;
 namespace OrderAPI
 {
     public class Program
@@ -13,7 +19,14 @@ namespace OrderAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddAutoMapper(typeof(Program));
 
+            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+
+
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
