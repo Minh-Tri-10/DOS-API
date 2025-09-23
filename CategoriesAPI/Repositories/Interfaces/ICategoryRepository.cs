@@ -10,5 +10,6 @@ namespace CategoriesAPI.Repositories.Interfaces
         Task UpdateAsync(Category category);
         Task DeleteAsync(int id);
         Task<bool> HasProductsAsync(int categoryId); // Kiểm tra mối quan hệ với Product
+        Task<bool> NameExistsAsync(string name, int? excludeId = null);  // Mới
     }
 }
