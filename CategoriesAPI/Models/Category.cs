@@ -15,5 +15,5 @@ public partial class Category
 
     public DateTime? UpdatedAt { get; set; }
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    
 }

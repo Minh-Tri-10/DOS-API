@@ -1,5 +1,6 @@
 ﻿using CategoriesAPI.Models;
 using CategoriesAPI.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -16,12 +17,12 @@ namespace CategoriesAPI.Repositories
 
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
-            return await _context.Categories.Include(c => c.Products).ToListAsync();
+            return await _context.Categories.ToListAsync();
         }
 
         public async Task<Category?> GetByIdAsync(int id)
         {
-            return await _context.Categories.Include(c => c.Products).FirstOrDefaultAsync(c => c.CategoryId == id);
+            return await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
         }
 
         public async Task AddAsync(Category category)
@@ -48,19 +49,31 @@ namespace CategoriesAPI.Repositories
             var category = await _context.Categories.FindAsync(id);
             if (category != null)
             {
-                if (await HasProductsAsync(id))
-                {
-                    throw new InvalidOperationException("Không thể xóa category có product liên kết.");
-                }
                 _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Nếu lỗi do ràng buộc FK
+                    if (ex.InnerException is SqlException sqlEx && sqlEx.Number == 547)
+                    {
+                        throw new InvalidOperationException("Không thể xóa category vì có dữ liệu khác đang tham chiếu.", ex);
+                    }
+
+                    // Nếu lỗi khác thì ném tiếp
+                    throw;
+                }
             }
         }
 
-        public async Task<bool> HasProductsAsync(int categoryId)
-        {
-            return await _context.Products.AnyAsync(p => p.CategoryId == categoryId);
-        }
+
+        //public async Task<bool> HasProductsAsync(int categoryId)
+        //{
+        //    return await _context.Products.AnyAsync(p => p.CategoryId == categoryId);
+        //}
 
         public async Task<bool> NameExistsAsync(string name, int? excludeId = null)
         {

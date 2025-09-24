@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CategoriesAPI.Models;
+namespace ProductAPI.Models;
 
 public partial class Product
 {
@@ -22,7 +22,5 @@ public partial class Product
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
-    
-    public virtual Category? Category { get; set; }
-    
+
 }
