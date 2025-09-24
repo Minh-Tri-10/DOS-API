@@ -9,5 +9,7 @@
         public string? Phone { get; set; }      // ➕ Thêm dòng này
         public string Role { get; set; } = null!;
         public bool IsBanned { get; set; }
+
+        public string? AvatarUrl { get; set; }
     }
 }

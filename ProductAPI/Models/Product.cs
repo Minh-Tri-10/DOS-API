@@ -23,4 +23,5 @@ public partial class Product
 
     public DateTime? UpdatedAt { get; set; }
 
+
 }

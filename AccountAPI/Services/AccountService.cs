@@ -74,10 +74,10 @@ namespace AccountAPI.Services
             var u = await _repo.GetByIdAsync(userId);
             if (u == null) return null;
 
-            _mapper.Map(dto, u);                  // đã cấu hình chỉ map field != null
+            _mapper.Map(dto, u);
             u.UpdatedAt = DateTime.UtcNow;
 
-            await _repo.UpdateAsync(u);
+            await _repo.UpdateProfileAsync(u);  // <- chuyên biệt
             return _mapper.Map<UserDTO>(u);
         }
 
