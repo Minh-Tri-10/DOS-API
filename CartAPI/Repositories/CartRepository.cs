@@ -17,7 +17,7 @@ namespace CartAPI.Repositories
         public async Task<Cart?> GetCartByUserIdAsync(int userId)
         {
             return await _context.Carts
-                //.Include(c => c.CartItem
+                .Include(c => c.CartItems)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 

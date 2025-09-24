@@ -1,73 +1,59 @@
-﻿using System.Net.Http;
-using System.Net.Http.Json;
+﻿using MVCApplication.DTOs;
 using MVCApplication.Models;
 using MVCApplication.Services.Interfaces;
-
 namespace MVCApplication.Services
 {
     public class CartService : ICartService
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _cartApi;
+        private readonly HttpClient _productApi;
 
-        public CartService(HttpClient httpClient)
+        public CartService(IHttpClientFactory factory)
         {
-            _httpClient = httpClient;
+            _cartApi = factory.CreateClient("CartAPI");
+            _productApi = factory.CreateClient("ProductAPI");
         }
 
-        public async Task<IEnumerable<Cart>> GetCartsAsync()
+        public async Task<CartViewModel?> GetCartWithProductsAsync(int userId)
         {
-            return await _httpClient.GetFromJsonAsync<IEnumerable<Cart>>("api/Cart");
-        }
+            // Gọi CartAPI
+            var cart = await _cartApi.GetFromJsonAsync<CartDTO>($"api/Cart/user/{userId}");
+            if (cart == null) return null;
 
-        public async Task<Cart> GetCartByIdAsync(int id)
-        {
-            return await _httpClient.GetFromJsonAsync<Cart>($"api/Cart/{id}");
-        }
+            var vm = new CartViewModel
+            {
+                CartId = cart.CartId,
+                UserId = cart.UserId
+            };
 
-        public async Task<Cart> CreateCartAsync(Cart cart)
-        {
-            var response = await _httpClient.PostAsJsonAsync("api/Cart", cart);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Cart>();
-        }
+            // Bổ sung thông tin sản phẩm
+            foreach (var item in cart.CartItems)
+            {
+                var product = await _productApi.GetFromJsonAsync<ProductDTO>($"api/Product/{item.ProductId}");
 
-        public async Task<Cart> UpdateCartAsync(int id, Cart cart)
-        {
-            var response = await _httpClient.PutAsJsonAsync($"api/Cart/{id}", cart);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Cart>();
-        }
+                vm.CartItems.Add(new CartItemViewModel
+                {
+                    CartItemId = item.CartItemId,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    ProductName = product?.ProductName ?? "N/A",
+                    ImageUrl = product?.ImageUrl ?? "",
+                    Price = product?.Price ?? 0
+                });
+            }
 
-        public async Task<bool> DeleteCartAsync(int id)
-        {
-            var response = await _httpClient.DeleteAsync($"api/Cart/{id}");
-            return response.IsSuccessStatusCode;
-        }
-
-        // =====================
-        // Các API mở rộng
-        // =====================
-
-        public async Task<Cart> GetCartByUserIdAsync(int userId)
-        {
-            return await _httpClient.GetFromJsonAsync<Cart>($"api/Cart/user/{userId}");
+            return vm;
         }
 
         public async Task<bool> AddToCartAsync(int userId, int productId, int quantity)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Cart/add", new { userId, productId, quantity });
+            var response = await _cartApi.PostAsJsonAsync("api/Cart/add", new { userId, productId, quantity });
             return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> RemoveFromCartAsync(int cartItemId)
         {
-            var response = await _httpClient.DeleteAsync($"api/Cart/remove/{cartItemId}");
-            return response.IsSuccessStatusCode;
-        }
-
-        public async Task<bool> ClearCartAsync(int userId)
-        {
-            var response = await _httpClient.DeleteAsync($"api/Cart/clear/{userId}");
+            var response = await _cartApi.DeleteAsync($"api/Cart/remove/{cartItemId}");
             return response.IsSuccessStatusCode;
         }
     }

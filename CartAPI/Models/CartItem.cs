@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+
 namespace CartAPI.Models;
 
 public partial class CartItem
@@ -16,6 +17,6 @@ public partial class CartItem
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
-
     public virtual Cart Cart { get; set; } = null!;
+   
 }

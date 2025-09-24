@@ -34,7 +34,8 @@ public class AccountsController : ControllerBase
 
     [HttpGet]
     public async Task<IEnumerable<UserDTO>> GetAll() => await _service.GetAllAsync();
-    [HttpPut("{id:int}")]
+
+    [HttpPut("{id:int}/profile")]
     public async Task<ActionResult<UserDTO>> UpdateProfile(int id, [FromBody] UpdateProfileDTO dto)
     {
         var result = await _service.UpdateProfileAsync(id, dto);

@@ -56,6 +56,20 @@ namespace AccountAPI.Repositories
 
             await _ctx.SaveChangesAsync();
         }
+        public async Task UpdateProfileAsync(User user)
+        {
+            var entry = _ctx.Entry(user);
+            if (entry.State == EntityState.Detached)
+                _ctx.Attach(user);
+
+            entry.Property(x => x.FullName).IsModified = true;
+            entry.Property(x => x.Email).IsModified = true;
+            entry.Property(x => x.Phone).IsModified = true;
+            entry.Property(x => x.AvatarUrl).IsModified = true;
+            entry.Property(x => x.UpdatedAt).IsModified = true;
+
+            await _ctx.SaveChangesAsync();
+        }
 
         public Task SaveChangesAsync() => _ctx.SaveChangesAsync();
     }
