@@ -20,7 +20,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateProductDTO dto)
+    public async Task<IActionResult> Create([FromForm] CreateProductDTO dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var created = await _service.CreateAsync(dto);
@@ -28,7 +28,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO dto)
+    public async Task<IActionResult> Update(int id, [FromForm] UpdateProductDTO dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         await _service.UpdateAsync(id, dto);

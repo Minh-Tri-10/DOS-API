@@ -40,17 +40,24 @@ namespace MVCApplication.Services
             return null;
         }
 
-        public async Task<ProductDTO> CreateAsync(CreateProductDTO dto)
+        public async Task<ProductDTO> CreateAsync(CreateProductDTO dto, IFormFile? imageFile)
         {
-            var json = JsonSerializer.Serialize(dto);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync("api/Product", content);
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StringContent(dto.ProductName ?? ""), "ProductName");
+            formData.Add(new StringContent(dto.Description ?? ""), "Description");
+            formData.Add(new StringContent(dto.Price.ToString()), "Price");
+            formData.Add(new StringContent(dto.Stock?.ToString() ?? ""), "Stock");
+            formData.Add(new StringContent(dto.CategoryId?.ToString() ?? ""), "CategoryId");
+            if (imageFile != null)
+            {
+                var stream = imageFile.OpenReadStream();
+                formData.Add(new StreamContent(stream), "ImageFile", imageFile.FileName);
+            }
+            var response = await _httpClient.PostAsync("api/Product", formData);
             response.EnsureSuccessStatusCode();
-
             var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<ProductDTO>(responseJson, _jsonOptions)
-                   ?? throw new Exception("Failed to create product.");
+            Console.WriteLine($"Response content: {responseJson}"); // Log để kiểm tra
+            return JsonSerializer.Deserialize<ProductDTO>(responseJson, _jsonOptions) ?? throw new Exception("Failed to create product.");
         }
 
         public async Task UpdateAsync(int id, UpdateProductDTO dto)

@@ -24,12 +24,13 @@ namespace CategoriesAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             // Repositories và Services
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
-
+            builder.Configuration.AddUserSecrets<Program>();
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(CategoryProfile)); // MappingProfile như trước
             // Đăng ký AutoMapper
