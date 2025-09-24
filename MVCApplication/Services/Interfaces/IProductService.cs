@@ -6,7 +6,7 @@ namespace MVCApplication.Services.Interfaces
     {
         Task<IEnumerable<ProductDTO>> GetAllAsync();
         Task<ProductDTO?> GetByIdAsync(int id);
-        Task<ProductDTO> CreateAsync(CreateProductDTO dto);
+        Task<ProductDTO> CreateAsync(CreateProductDTO dto, IFormFile? imageFile);
         Task UpdateAsync(int id, UpdateProductDTO dto);
         Task DeleteAsync(int id);
     }

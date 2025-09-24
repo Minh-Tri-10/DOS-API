@@ -9,14 +9,16 @@ using MVCApplication.Services.Interfaces;
         {
             private readonly IProductService _productService;
             private readonly ICategoryService _categoryService;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-            public AdminProductController(IProductService productService, ICategoryService categoryService)
-            {
-                _productService = productService;
-                _categoryService = categoryService;
-            }
+        public AdminProductController(IProductService productService, ICategoryService categoryService, IHttpClientFactory httpClientFactory)
+        {
+            _productService = productService;
+            _categoryService = categoryService;
+            _httpClientFactory = httpClientFactory;
+        }
 
-            public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index()
             {
                 var products = await _productService.GetAllAsync();
                 var categories = await _categoryService.GetAllAsync();
@@ -46,31 +48,54 @@ using MVCApplication.Services.Interfaces;
                 return View();
             }
 
-            // POST: Product/Create
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public async Task<IActionResult> Create(CreateProductDTO dto)
+        // POST: Product/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateProductDTO dto, IFormFile? imageFile)
+        {
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
+                try
                 {
-                    try
+                    var client = _httpClientFactory.CreateClient();
+                    var formData = new MultipartFormDataContent();
+                    formData.Add(new StringContent(dto.ProductName), "ProductName");
+                    formData.Add(new StringContent(dto.Description ?? ""), "Description");
+                    formData.Add(new StringContent(dto.Price.ToString()), "Price");
+                    formData.Add(new StringContent(dto.Stock?.ToString() ?? ""), "Stock");
+                    formData.Add(new StringContent(dto.CategoryId?.ToString() ?? ""), "CategoryId");
+                    if (imageFile != null)
                     {
-                        await _productService.CreateAsync(dto);
-                        TempData["Success"] = "Sản phẩm được tạo thành công.";
-                        return RedirectToAction(nameof(Index));
+                        var memoryStream = new MemoryStream();
+                        await imageFile.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0; // Reset vị trí đọc
+                        formData.Add(new StreamContent(memoryStream), "ImageFile", imageFile.FileName);
                     }
-                    catch
-                    {
-                        ModelState.AddModelError("", "Không thể tạo sản phẩm.");
-                    }
+                    Console.WriteLine($"ImageFile từ form: {(imageFile != null ? "Có file, tên: " + imageFile.FileName : "Null")}");
+                    var response = await client.PostAsync("https://localhost:7021/api/Product", formData);
+                    response.EnsureSuccessStatusCode();
+                    var createdProduct = await _productService.CreateAsync(dto, imageFile);
+                    TempData["Success"] = "Sản phẩm được tạo thành công.";
+                    return RedirectToAction(nameof(Index));
                 }
-                var categories = await _categoryService.GetAllAsync();
-                ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", dto.CategoryId);
-                return View(dto);
+                catch (HttpRequestException ex)
+                {
+                    ModelState.AddModelError("", "Không thể kết nối đến CategoryAPI: " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Không thể tạo sản phẩm: " + ex.Message);
+                }
             }
 
-            // GET: Product/Edit/5
-            public async Task<IActionResult> Edit(int id)
+            var categories = await _categoryService.GetAllAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", dto.CategoryId);
+            return View(dto);
+        }
+
+
+        // GET: Product/Edit/5
+        public async Task<IActionResult> Edit(int id)
             {
                 var product = await _productService.GetByIdAsync(id);
                 if (product == null)
@@ -96,35 +121,54 @@ using MVCApplication.Services.Interfaces;
             }
 
 
-            // POST: Product/Edit/5
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public async Task<IActionResult> Edit(int id, UpdateProductDTO dto)
+        // POST: Product/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, UpdateProductDTO dto, IFormFile? imageFile)
+        {
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
+                try
                 {
-                    try
+                    var client = _httpClientFactory.CreateClient();
+                    var formData = new MultipartFormDataContent();
+                    formData.Add(new StringContent(dto.ProductName), "ProductName");
+                    formData.Add(new StringContent(dto.Description ?? ""), "Description");
+                    formData.Add(new StringContent(dto.Price.ToString()), "Price");
+                    formData.Add(new StringContent(dto.Stock?.ToString() ?? ""), "Stock");
+                    formData.Add(new StringContent(dto.CategoryId?.ToString() ?? ""), "CategoryId");
+                    formData.Add(new StringContent(dto.ImageUrl ?? ""), "ImageUrl");
+                    if (imageFile != null)
                     {
-                        await _productService.UpdateAsync(id, dto);
-                        TempData["Success"] = "Sản phẩm được cập nhật thành công.";
-                        return RedirectToAction(nameof(Index));
+                        var memoryStream = new MemoryStream();
+                        await imageFile.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0; // Reset vị trí đọc
+                        formData.Add(new StreamContent(memoryStream), "ImageFile", imageFile.FileName);
                     }
-                    catch
-                    {
-                        ModelState.AddModelError("", "Không thể cập nhật sản phẩm.");
-                    }
+
+                    var response = await client.PutAsync($"https://localhost:7021/api/Product/{id}", formData);
+                    response.EnsureSuccessStatusCode();
+                    TempData["Success"] = "Sản phẩm được cập nhật thành công.";
+                    return RedirectToAction(nameof(Index));
                 }
-
-                var categories = await _categoryService.GetAllAsync();
-                ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", dto.CategoryId);
-
-                ViewData["ProductId"] = id;
-                return View(dto);
+                catch (HttpRequestException ex)
+                {
+                    ModelState.AddModelError("", "Không thể kết nối đến CategoryAPI: " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Không thể cập nhật sản phẩm: " + ex.Message);
+                }
             }
 
+            var categories = await _categoryService.GetAllAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", dto.CategoryId);
+            ViewData["ProductId"] = id;
+            return View(dto);
+        }
 
-            // GET: Product/Delete/5
-            public async Task<IActionResult> Delete(int id)
+        // GET: Product/Delete/5
+        public async Task<IActionResult> Delete(int id)
             {
                 var product = await _productService.GetByIdAsync(id);
                 if (product == null)

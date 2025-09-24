@@ -472,7 +472,8 @@
 
         <div class="detail-item">
             <label>@Html.DisplayNameFor(model => model.ImageUrl):</label>
-            <span>@Html.DisplayFor(model => model.ImageUrl)</span>
+            <img src="@Model.ImageUrl" alt="Ảnh sản phẩm" style="max-width:200px;" />
+
         </div>
         <div class="actions" style="margin-top: 24px; justify-content: flex-start;">
             <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn-ban btn-sm">Sửa</a>

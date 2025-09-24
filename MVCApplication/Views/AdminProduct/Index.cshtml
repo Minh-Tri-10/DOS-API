@@ -165,11 +165,11 @@
         }
 
         .user-table th:nth-child(3), .user-table td:nth-child(3) {
-            width: 250px
+            width: 120px
         }
 
         .user-table th:nth-child(4), .user-table td:nth-child(4) {
-            width: 100px
+            width: 250px
         }
 
         .user-table th:nth-child(5), .user-table td:nth-child(5) {
@@ -177,10 +177,14 @@
         }
 
         .user-table th:nth-child(6), .user-table td:nth-child(6) {
-            width: 150px
+            width: 100px
         }
 
         .user-table th:nth-child(7), .user-table td:nth-child(7) {
+            width: 150px
+        }
+
+        .user-table th:nth-child(8), .user-table td:nth-child(8) {
             width: 180px
         }
 
@@ -389,6 +393,7 @@
                         <tr>
                             <th class="cell-id">ID</th>
                             <th>Tên Sản phẩm</th>
+                            <th>Ảnh</th>
                             <th>Mô tả</th>
                             <th>Giá</th>
                             <th>Tồn kho</th>
@@ -402,6 +407,16 @@
                             <tr>
                                 <td class="cell-id">@item.ProductId</td>
                                 <td class="cell-username">@item.ProductName</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.ProductName" style="max-width: 100px; height: auto;" />
+                                    }
+                                    else
+                                    {
+                                        <span>Không có ảnh</span>
+                                    }
+                                </td>
                                 <td class="cell-email">@item.Description</td>
                                 <td>@item.Price.ToString("C")</td>
                                 <td>@item.Stock</td>
