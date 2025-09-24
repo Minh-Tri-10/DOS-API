@@ -1,4 +1,5 @@
-﻿@{
+﻿@using System.Linq
+@{
     Layout = "_CustomerLayout";
 }
 
@@ -460,74 +461,67 @@
 
         <!-- list -->
         <div class="cart-list" id="cartList">
-            <!-- item -->
-            <div class="cart-row" data-id="1" data-price="35000">
-                <div class="cell-check"><input type="checkbox" class="cart-checkbox cart-item-check"></div>
-                <img class="cart-img cell-img" src="https://source.unsplash.com/300x300/?americano,coffee" alt="Americano">
-                <div class="cell-name">
-                    <div class="cart-name">Americano</div>
-                    <div class="cart-meta">Coffee • 12oz</div>
-                </div>
-                <div class="cell-price"><span class="cart-price">35.000₫</span></div>
-                <div class="cell-qty">
-                    <div class="cart-qty" data-id="1">
-                        <button class="cart-btn cart-btn-ghost cart-dec" aria-label="Giảm">–</button>
-                        <input type="text" class="cart-qty-input" value="1" inputmode="numeric" pattern="[0-9]*">
-                        <button class="cart-btn cart-btn-ghost cart-inc" aria-label="Tăng">+</button>
+            @if (Model != null && Model.CartItems.Any())
+            {
+                foreach (var item in Model.CartItems)
+                {
+                    <div class="cart-row" data-id="@item.CartItemId" data-price="@item.Product.Price">
+                        <div class="cell-check">
+                            <input type="checkbox" class="cart-checkbox cart-item-check">
+                        </div>
+                        <img class="cart-img cell-img" src="@item.Product.ImageUrl" alt="@item.Product.ProductName">
+                        <div class="cell-name">
+                            <div class="cart-name">@item.Product.ProductName</div>
+                            <div class="cart-meta">@item.Product.Description</div>
+                        </div>
+                        <div class="cell-price">
+                            <span class="cart-price">@item.Product.Price.ToString("N0") ₫</span>
+                        </div>
+                        <div class="cell-qty">
+                            <div class="cart-qty" data-id="@item.CartItemId">
+                                <button class="cart-btn cart-btn-ghost cart-dec">–</button>
+                                <input type="text" class="cart-qty-input" value="@item.Quantity" />
+                                <button class="cart-btn cart-btn-ghost cart-inc">+</button>
+                            </div>
+                        </div>
+                        <div class="cell-line">
+                            <span class="cart-line" data-id="@item.CartItemId">
+                                @((item.Product.Price * item.Quantity).ToString("N0")) ₫
+                            </span>
+                        </div>
                     </div>
-                </div>
-                <div class="cell-line"><span class="cart-line" data-id="1">35.000₫</span></div>
-            </div>
-
-            <div class="cart-row" data-id="2" data-price="42000">
-                <div class="cell-check"><input type="checkbox" class="cart-checkbox cart-item-check"></div>
-                <img class="cart-img cell-img" src="https://source.unsplash.com/300x300/?latte,coffee" alt="Latte">
-                <div class="cell-name">
-                    <div class="cart-name">Latte</div>
-                    <div class="cart-meta">Coffee • 12oz</div>
-                </div>
-                <div class="cell-price"><span class="cart-price">42.000₫</span></div>
-                <div class="cell-qty">
-                    <div class="cart-qty" data-id="2">
-                        <button class="cart-btn cart-btn-ghost cart-dec" aria-label="Giảm">–</button>
-                        <input type="text" class="cart-qty-input" value="2" inputmode="numeric" pattern="[0-9]*">
-                        <button class="cart-btn cart-btn-ghost cart-inc" aria-label="Tăng">+</button>
-                    </div>
-                </div>
-                <div class="cell-line"><span class="cart-line" data-id="2">84.000₫</span></div>
-            </div>
-
-            <div class="cart-row" data-id="3" data-price="39000">
-                <div class="cell-check"><input type="checkbox" class="cart-checkbox cart-item-check"></div>
-                <img class="cart-img cell-img" src="https://source.unsplash.com/300x300/?milk-tea,bubble-tea" alt="Classic Milk Tea">
-                <div class="cell-name">
-                    <div class="cart-name">Classic Milk Tea</div>
-                    <div class="cart-meta">Milk Tea • Lớn</div>
-                </div>
-                <div class="cell-price"><span class="cart-price">39.000₫</span></div>
-                <div class="cell-qty">
-                    <div class="cart-qty" data-id="3">
-                        <button class="cart-btn cart-btn-ghost cart-dec" aria-label="Giảm">–</button>
-                        <input type="text" class="cart-qty-input" value="1" inputmode="numeric" pattern="[0-9]*">
-                        <button class="cart-btn cart-btn-ghost cart-inc" aria-label="Tăng">+</button>
-                    </div>
-                </div>
-                <div class="cell-line"><span class="cart-line" data-id="3">39.000₫</span></div>
-            </div>
+                }
+            }
+            else
+            {
+                <p>Giỏ hàng của bạn đang trống.</p>
+            }
         </div>
 
         <!-- footer -->
         <div class="cart-foot">
             <div class="cart-note">
                 <label for="note">Ghi chú cho đơn hàng</label>
-                <textarea id="note" placeholder="Ví dụ: Ít đá, thêm ngọt… (frontend)"></textarea>
+                <textarea id="note" placeholder="Ví dụ: Ít đá, thêm ngọt…"></textarea>
             </div>
 
             <div class="cart-summary">
-                <div class="cart-summary-row"><span>Số mục đã chọn</span><span class="val" id="sumCount">0</span></div>
-                <div class="cart-summary-row"><span>Tạm tính</span><span class="val" id="sumSubtotal">0₫</span></div>
-                <div class="cart-summary-row"><span>Phí giao (giả lập)</span><span class="val" id="sumShip">0₫</span></div>
-                <div class="cart-total"><span>Tổng thanh toán</span><span class="val" id="sumTotal">0₫</span></div>
+                <div class="cart-summary-row">
+                    <span>Số mục đã chọn</span>
+                    <span class="val" id="sumCount">0</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>Tạm tính</span>
+                    <span class="val" id="sumSubtotal">0₫</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>Phí giao (giả lập)</span>
+                    <span class="val" id="sumShip">0₫</span>
+                </div>
+                <div class="cart-total">
+                    <span>Tổng thanh toán</span>
+                    <span class="val" id="sumTotal">0₫</span>
+                </div>
                 <button type="button" class="cart-btn cart-btn-primary" id="checkoutBtn" disabled>Thanh toán</button>
             </div>
         </div>
@@ -548,7 +542,6 @@
           const checkoutBtn = document.getElementById('checkoutBtn');
 
           const SHIP_FEE = 0; // giả lập
-
           const fmtVND = n => n.toLocaleString('vi-VN') + '₫';
 
           function getRowData(row){
@@ -594,7 +587,6 @@
             checkAll.indeterminate = checked.length > 0 && checked.length < items.length;
           }
 
-          // Events: quantity +/- , input sanitize
           list.addEventListener('click', (e) => {
             const dec = e.target.closest('.cart-dec');
             const inc = e.target.closest('.cart-inc');
@@ -623,31 +615,26 @@
             recalc();
           });
 
-          // Checkbox per item
           list.addEventListener('change', (e) => {
             if (!e.target.classList.contains('cart-item-check')) return;
             recalc();
           });
 
-          // Select all
           checkAll.addEventListener('change', () => {
             const cbs = list.querySelectorAll('.cart-item-check');
             cbs.forEach(cb => cb.checked = checkAll.checked);
             recalc();
           });
 
-          // Remove selected (frontend)
           removeSelectedBtn.addEventListener('click', () => {
             const selected = list.querySelectorAll('.cart-item-check:checked');
             selected.forEach(cb => cb.closest('.cart-row')?.remove());
             recalc();
           });
 
-          // Init lines + calc
           list.querySelectorAll('.cart-row').forEach(updateLine);
           recalc();
 
-          // Checkout demo (frontend)
           checkoutBtn.addEventListener('click', () => {
             const count = parseInt(elCount.textContent, 10) || 0;
             if (count === 0) return;

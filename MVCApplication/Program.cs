@@ -23,6 +23,12 @@ namespace MVCApplication
                 c.BaseAddress = new Uri("https://localhost:7269/");
             });
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddHttpClient<IAccountService, AccountService>();
+            builder.Services.AddHttpClient<ICartService, CartService>(c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7143/"); // ĐÚNG URL AccountAPI của bạn
+            });
+
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
