@@ -56,5 +56,12 @@ namespace MVCApplication.Services
             var response = await _cartApi.DeleteAsync($"api/Cart/remove/{cartItemId}");
             return response.IsSuccessStatusCode;
         }
+        public async Task<bool> UpdateQuantityAsync(int cartItemId, int quantity)
+        {
+            // Gọi sang CartAPI đúng port 7143
+            var res = await _cartApi.PutAsync($"api/Cart/update/{cartItemId}?quantity={quantity}", null);
+            return res.IsSuccessStatusCode;
+        }
+
     }
 }

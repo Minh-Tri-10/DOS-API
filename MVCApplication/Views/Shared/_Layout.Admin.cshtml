@@ -140,7 +140,11 @@
                     <img src="@avatarUrl" class="avatar-lg mb-3" alt="Avatar" />
                     <div class="fw-bold">@userName</div>
                     <div class="text-muted small mb-3">@userEmail</div>
-                    <a class="btn btn-outline-light-soft w-100" asp-area="" asp-page="/Account/Profile">View Profile</a>
+                    <a class="btn btn-outline-light-soft w-100"
+                       asp-controller="AdminAccounts"
+                       asp-action="Profile">
+                        View Profile
+                    </a>
                 </div>
             </div>
         </div>

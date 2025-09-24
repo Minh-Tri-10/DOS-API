@@ -547,6 +547,28 @@
           const SHIP_FEE = 0; // giả lập
           const fmtVND = n => n.toLocaleString('vi-VN') + '₫';
 
+          // ---------------- API CALLS ----------------
+          async function updateQuantity(cartItemId, newQty) {
+            try {
+              const res = await fetch(`/api/cart/update/${cartItemId}?quantity=${newQty}`, { method: 'PUT' });
+              if (!res.ok) throw new Error();
+            } catch {
+              alert("❌ Không cập nhật được số lượng!");
+            }
+          }
+
+          async function removeItem(cartItemId) {
+            try {
+              const res = await fetch(`/api/cart/remove/${cartItemId}`, { method: 'DELETE' });
+              if (!res.ok) throw new Error();
+              return true;
+            } catch {
+              alert("❌ Không xóa được sản phẩm!");
+              return false;
+            }
+          }
+
+          // ---------------- CART LOGIC ----------------
           function getRowData(row){
             const id = row.dataset.id;
             const price = parseInt(row.dataset.price, 10) || 0;
@@ -590,6 +612,7 @@
             checkAll.indeterminate = checked.length > 0 && checked.length < items.length;
           }
 
+          // ---------------- EVENTS ----------------
           list.addEventListener('click', (e) => {
             const dec = e.target.closest('.cart-dec');
             const inc = e.target.closest('.cart-inc');
@@ -599,14 +622,16 @@
             if (!qtyWrap) return;
             const row = qtyWrap.closest('.cart-row');
             const input = qtyWrap.querySelector('.cart-qty-input');
-            let val = parseInt(input.value, 10) || 1;
+            const { id } = getRowData(row);
 
+            let val = parseInt(input.value, 10) || 1;
             if (dec) val = Math.max(1, val - 1);
             if (inc) val = Math.max(1, val + 1);
-            input.value = val;
 
+            input.value = val;
             updateLine(row);
             recalc();
+            updateQuantity(id, val); // 🔹 gọi API update
           });
 
           list.addEventListener('input', (e) => {
@@ -614,8 +639,10 @@
             if (!input) return;
             input.value = input.value.replace(/[^\d]/g, '').slice(0, 3) || '1';
             const row = input.closest('.cart-row');
+            const { id, qty } = getRowData(row);
             updateLine(row);
             recalc();
+            updateQuantity(id, qty); // 🔹 gọi API update
           });
 
           list.addEventListener('change', (e) => {
@@ -629,9 +656,14 @@
             recalc();
           });
 
-          removeSelectedBtn.addEventListener('click', () => {
+          removeSelectedBtn.addEventListener('click', async () => {
             const selected = list.querySelectorAll('.cart-item-check:checked');
-            selected.forEach(cb => cb.closest('.cart-row')?.remove());
+            for (const cb of selected) {
+              const row = cb.closest('.cart-row');
+              const id = row.dataset.id;
+              const ok = await removeItem(id); // 🔹 gọi API delete
+              if (ok) row.remove();
+            }
             recalc();
           });
 
@@ -652,4 +684,6 @@
         })();
     </script>
 }
+
+
 
