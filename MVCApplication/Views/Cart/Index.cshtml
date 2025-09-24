@@ -443,6 +443,8 @@
     }
 </style>
 
+@model MVCApplication.Models.CartViewModel
+
 <div class="cart-page">
     <div class="cart-title">
         <h2>Giỏ hàng</h2>
@@ -465,17 +467,17 @@
             {
                 foreach (var item in Model.CartItems)
                 {
-                    <div class="cart-row" data-id="@item.CartItemId" data-price="@item.Product.Price">
+                    <div class="cart-row" data-id="@item.CartItemId" data-price="@item.Price">
                         <div class="cell-check">
                             <input type="checkbox" class="cart-checkbox cart-item-check">
                         </div>
-                        <img class="cart-img cell-img" src="@item.Product.ImageUrl" alt="@item.Product.ProductName">
+                        <img class="cart-img cell-img" src="@item.ImageUrl" alt="@item.ProductName">
                         <div class="cell-name">
-                            <div class="cart-name">@item.Product.ProductName</div>
-                            <div class="cart-meta">@item.Product.Description</div>
+                            <div class="cart-name">@item.ProductName</div>
+                            <div class="cart-meta">Số lượng hiện có: @item.Quantity</div>
                         </div>
                         <div class="cell-price">
-                            <span class="cart-price">@item.Product.Price.ToString("N0") ₫</span>
+                            <span class="cart-price">@item.Price.ToString("N0") ₫</span>
                         </div>
                         <div class="cell-qty">
                             <div class="cart-qty" data-id="@item.CartItemId">
@@ -486,7 +488,7 @@
                         </div>
                         <div class="cell-line">
                             <span class="cart-line" data-id="@item.CartItemId">
-                                @((item.Product.Price * item.Quantity).ToString("N0")) ₫
+                                @((item.Price * item.Quantity).ToString("N0")) ₫
                             </span>
                         </div>
                     </div>
@@ -497,6 +499,7 @@
                 <p>Giỏ hàng của bạn đang trống.</p>
             }
         </div>
+
 
         <!-- footer -->
         <div class="cart-foot">
@@ -649,3 +652,4 @@
         })();
     </script>
 }
+

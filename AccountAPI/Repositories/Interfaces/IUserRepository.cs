@@ -11,5 +11,6 @@ namespace AccountAPI.Repositories.Interfaces
         Task AddAsync(User user);
         Task UpdateAsync(User user); // NEW
         Task SaveChangesAsync();     // optional helper
+        Task UpdateProfileAsync(User user);
     }
 }

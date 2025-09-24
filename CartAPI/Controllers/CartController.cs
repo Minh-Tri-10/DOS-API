@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using CartAPI.DTOs;
 using CartAPI.Models;
 using CartAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CartAPI.Controllers
 {
@@ -9,21 +11,24 @@ namespace CartAPI.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
+        private readonly IMapper _mapper;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartService cartService, IMapper mapper)
         {
             _cartService = cartService;
+            _mapper = mapper;
         }
 
         // GET: api/Cart/user/1
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<Cart>> GetCartByUserId(int userId)
+        public async Task<ActionResult<CartDTO>> GetCartByUserId(int userId)
         {
             var cart = await _cartService.GetUserCartAsync(userId);
             if (cart == null)
                 return NotFound(new { Message = "Cart not found for user." });
 
-            return Ok(cart);
+            var dto = _mapper.Map<CartDTO>(cart);
+            return Ok(dto);
         }
 
         // POST: api/Cart/add

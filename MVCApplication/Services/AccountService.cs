@@ -45,6 +45,13 @@
             var res = await _http.PostAsJsonAsync("api/accounts/reset-password", new { Token = token, NewPassword = newPassword });
             return res.IsSuccessStatusCode; // 204 NoContent => true
         }
+        public async Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto)
+        {
+            var res = await _http.PutAsJsonAsync($"api/accounts/{id}/profile", dto);
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<UserViewModel>();
+        }
+
     }
 
 }
