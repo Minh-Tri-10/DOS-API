@@ -1,0 +1,88 @@
+﻿@model MVCApplication.DTOs.CreateProductDTO
+@{
+    ViewData["Title"] = "Tạo Sản phẩm";
+    Layout = "_Layout.Admin";
+}
+<style>
+    .form-card {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            font-weight: 700;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+            background: color-mix(in oklab, var(--bg-soft) 80%, transparent);
+            color: var(--text);
+        }
+
+            .form-group select:focus, .form-group input:focus, .form-group textarea:focus {
+                outline: none;
+                border-color: var(--accent);
+                box-shadow: 0 0 8px color-mix(in oklab, var(--accent) 30%, transparent);
+            }
+</style>
+<div class="page-block">
+    <div class="page-heading">
+        <h2>Tạo Sản phẩm Mới</h2>
+        <div class="under"></div>
+    </div>
+    <div class="card-surface form-card">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="ProductName">Tên Sản phẩm</label>
+                <input asp-for="ProductName" class="form-control" />
+                <span asp-validation-for="ProductName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description">Mô tả</label>
+                <textarea asp-for="Description" class="form-control"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price">Giá</label>
+                <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Stock">Tồn kho</label>
+                <input asp-for="Stock" class="form-control" type="number" />
+                <span asp-validation-for="Stock" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageUrl">URL Hình ảnh</label>
+                <input asp-for="ImageUrl" class="form-control" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CategoryId">Danh mục</label>
+                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories">
+                    <option value="">Chọn danh mục</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn-ban unban">Tạo</button>
+                <a asp-action="Index" class="btn-ban btn-sm">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

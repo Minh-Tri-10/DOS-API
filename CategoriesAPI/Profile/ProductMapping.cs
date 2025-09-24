@@ -8,8 +8,11 @@ namespace ProductAPI.Mapping
     {
         public ProductProfile()
         {
-            // Map từ Model sang DTO
-            CreateMap<Product, ProductDTO>();
+
+            // Map Product -> ProductDTO
+            CreateMap<Product, ProductDTO>()
+                .ForMember(dest => dest.CategoryName,
+                           opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : string.Empty));
 
             // Map từ DTO sang Model
             CreateMap<CreateProductDTO, Product>();

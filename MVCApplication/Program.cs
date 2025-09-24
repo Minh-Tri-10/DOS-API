@@ -12,6 +12,11 @@ namespace MVCApplication
             builder.Services.AddControllersWithViews();
             builder.Services.AddSession();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddControllersWithViews()
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
             // ĐĂNG KÝ IAccountService + HttpClient (trỏ tới AccountAPI)
             builder.Services.AddHttpClient<IAccountService, AccountService>(c =>
@@ -23,6 +28,7 @@ namespace MVCApplication
                 c.BaseAddress = new Uri("https://localhost:7269/");
             });
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
             //builder.Services.AddHttpClient<IAccountService, AccountService>();
             builder.Services.AddHttpClient("CartAPI", c =>
             {

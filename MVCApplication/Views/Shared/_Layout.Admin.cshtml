@@ -17,7 +17,7 @@
     // Flags active cho 5 mục
     bool isOrders = Is("Orders", "Index");
     bool isCategories = Is("AdminCategory", "Index");
-    bool isProducts = Is("Products", "Index");
+    bool isProducts = Is("AdminProduct", "Index");
     bool isAccounts = Is("AdminAccounts", "Index");
     bool isRevenue = Is("Revenue", "Index");
 }
@@ -67,7 +67,7 @@
 
             <!-- Quản lí sản phẩm -->
             <a class="rail-item @(isProducts ? "active" : "")"
-               asp-controller="Products" asp-action="Index"
+               asp-controller="AdminProduct" asp-action="Index"
                data-bs-toggle="tooltip" data-bs-title="Quản lí sản phẩm" aria-label="Quản lí sản phẩm">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />

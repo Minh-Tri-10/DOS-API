@@ -8,9 +8,21 @@ public class ProductRepository : IProductRepository
     private readonly DrinkOrderDbContext _context;
     public ProductRepository(DrinkOrderDbContext context) => _context = context;
 
-    public async Task<IEnumerable<Product>> GetAllAsync() => await _context.Products.ToListAsync();
+    // Lấy tất cả, Include Category
+    public async Task<IEnumerable<Product>> GetAllAsync()
+    {
+        return await _context.Products
+            .Include(p => p.Category) // load thêm Category
+            .ToListAsync();
+    }
 
-    public async Task<Product?> GetByIdAsync(int id) => await _context.Products.FindAsync(id);
+    // Lấy theo Id, Include Category
+    public async Task<Product?> GetByIdAsync(int id)
+    {
+        return await _context.Products
+            .Include(p => p.Category) // load thêm Category
+            .FirstOrDefaultAsync(p => p.ProductId == id);
+    }
 
     public async Task AddAsync(Product product)
     {
