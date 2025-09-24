@@ -57,9 +57,8 @@
             </a>
 
             <!-- Nếu là đường dẫn là http(s):.../Cart thì active icon Cart -->
-            <a class="rail-item @(currentPage.Equals("/Cart", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
-               asp-area=""
-               asp-page="/Cart/Index"
+            <a class="rail-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Cart" ? "active" : "")"
+               asp-controller="Cart" asp-action="Index"
                data-bs-toggle="tooltip"
                data-bs-title="Cart"
                aria-label="Cart">
@@ -111,7 +110,10 @@
                         </div>
                     </div>
                     <div class="d-grid">
-                        <a class="btn btn-outline-light-soft" asp-area="" asp-page="/Account/Profile">View Profile</a>
+                        <a class="btn btn-outline-light-soft"
+                           asp-controller="Accounts" asp-action="Profile">
+                            View Profile
+                        </a>
                     </div>
                 </div>
             </div>
