@@ -1,7 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using CategoriesAPI.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using ProductAPI.Models;
-using ProductAPI.Repositories.Interfaces;
+using CategoriesAPI.Models;
 namespace ProductAPI.Repositories;
 public class ProductRepository : IProductRepository
 {

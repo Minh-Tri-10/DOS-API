@@ -6,6 +6,9 @@ using CategoriesAPI.Repositories.Interfaces;
 using CategoriesAPI.Services;
 using CategoriesAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ProductAPI.Mapping;
+using ProductAPI.Repositories;
+using ProductAPI.Services;
 
 namespace CategoriesAPI
 {
@@ -29,6 +32,12 @@ namespace CategoriesAPI
 
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(CategoryProfile)); // MappingProfile như trước
+            // Đăng ký AutoMapper
+            builder.Services.AddAutoMapper(typeof(ProductProfile));
+
+            // Đăng ký DI cho Repository và Service
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IProductService, ProductService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

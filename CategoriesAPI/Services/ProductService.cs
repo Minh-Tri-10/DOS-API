@@ -1,8 +1,8 @@
 ﻿using AutoMapper; // Install AutoMapper.Extensions.Microsoft.DependencyInjection
-using ProductAPI.DTOs;
-using ProductAPI.Models;
-using ProductAPI.Repositories.Interfaces;
-using ProductAPI.Services.Interfaces;
+using CategoriesAPI.Services.Interfaces;
+using CategoriesAPI.DTOs;
+using CategoriesAPI.Models;
+using CategoriesAPI.Repositories.Interfaces;
 namespace ProductAPI.Services;
 public class ProductService : IProductService
 {
