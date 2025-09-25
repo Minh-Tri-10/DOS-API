@@ -11,6 +11,7 @@ namespace OrderAPI.Services
     public sealed class StatsService : IStatsService
     {
         private readonly IStatsRepository _repo;
+
         public StatsService(IStatsRepository repo) => _repo = repo;
 
         public Task<SummaryDto> GetSummaryAsync(DateTime start, DateTime end)

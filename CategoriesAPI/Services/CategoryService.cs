@@ -28,6 +28,11 @@ namespace CategoriesAPI.Services
             var category = await _repository.GetByIdAsync(id);
             return _mapper.Map<CategoryDTO>(category);
         }
+        public async Task<IEnumerable<CategoryDTO>> GetByIdsAsync(IEnumerable<int> ids)
+        {
+            var categories = await _repository.GetByIdsAsync(ids);
+            return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
+        }
 
         public async Task<CategoryDTO> AddAsync(CreateCategoryDTO dto)
         {

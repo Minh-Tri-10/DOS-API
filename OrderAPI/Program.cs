@@ -23,7 +23,21 @@ namespace OrderAPI
 
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+            // Product microservice (nếu có)
+            builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7021/");
+            });
+            builder.Services.AddHttpClient<IProductClient, ProductClient>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7021/");
+            });
+
+            builder.Services.AddHttpClient<IUserClient, UserClient>(c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7005/");
+            });
             builder.Services.AddAutoMapper(typeof(OrderAPI.Profiles.OrderProfile).Assembly);
             builder.Services.AddScoped<IStatsService, StatsService>();
             builder.Services.AddScoped<IStatsRepository, StatsRepository>();

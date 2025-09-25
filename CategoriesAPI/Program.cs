@@ -26,7 +26,7 @@ namespace CategoriesAPI
             builder.Services.AddSwaggerGen();
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
             // Repositories và Services
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
