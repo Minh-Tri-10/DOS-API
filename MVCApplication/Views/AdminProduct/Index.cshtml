@@ -418,7 +418,7 @@
                                     }
                                 </td>
                                 <td class="cell-email">@item.Description</td>
-                                <td>@item.Price.ToString("C")</td>
+                                <td>@item.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</td>
                                 <td>@item.Stock</td>
                                 <td>@(ViewBag.Categories.ContainsKey(item.CategoryId) ? ViewBag.Categories[item.CategoryId] : "Không xác định")</td>
                                 <td>
