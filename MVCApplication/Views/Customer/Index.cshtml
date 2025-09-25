@@ -1,4 +1,5 @@
-﻿@*
+﻿@using System.Globalization
+@*
   Drinks Menu – Frontend only (no server logic)
 *@
 @{
@@ -287,7 +288,6 @@
         <h2>Menu đồ uống</h2>
         <div class="under"></div>
     </div>
-
     <!-- Controls -->
     <div class="drink-controls">
         <div class="drink-search">
@@ -307,147 +307,43 @@
             <button type="button" class="drink-chip" data-filter="juice">Juice</button>
         </div>
     </div>
-
-    <!-- Grid items – ảnh mạng (Unsplash Source) -->
+    <!-- Grid items – Dữ liệu động từ model -->
     <div class="drink-grid" id="drinkGrid">
-        <!-- Coffee -->
-        <div class="drink-card" data-cat="coffee" data-name="americano">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?americano,coffee" alt="Americano">
-            <div class="drink-info">
-                <div class="drink-title"><span>Americano</span><span class="drink-price">35.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Coffee</span><button class="drink-btn" type="button">Chọn</button></div>
+        @foreach (var item in Model)
+        {
+            <div class="drink-card" data-cat="@(item.CategoryName?.ToLower() ?? "")" data-name="@(item.ProductName.ToLower())">
+                <img class="drink-cover" src="@item.ImageUrl" alt="@item.ProductName">
+                <div class="drink-info">
+                    <div class="drink-title"><span>@item.ProductName</span><span class="drink-price">@item.Price.ToString("C", new CultureInfo("vi-VN"))</span></div>
+                    <div class="drink-meta"><span class="drink-tag">@(item.CategoryName ?? "Không xác định")</span><button class="drink-btn" type="button">Chọn</button></div>
+                </div>
             </div>
-        </div>
-        <div class="drink-card" data-cat="coffee" data-name="latte">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?latte,coffee" alt="Latte">
-            <div class="drink-info">
-                <div class="drink-title"><span>Latte</span><span class="drink-price">42.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Coffee</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-        <div class="drink-card" data-cat="coffee" data-name="cappuccino">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?cappuccino" alt="Cappuccino">
-            <div class="drink-info">
-                <div class="drink-title"><span>Cappuccino</span><span class="drink-price">45.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Coffee</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-        <div class="drink-card" data-cat="coffee" data-name="espresso">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?espresso" alt="Espresso">
-            <div class="drink-info">
-                <div class="drink-title"><span>Espresso</span><span class="drink-price">30.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Coffee</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-
-        <!-- Tea -->
-        <div class="drink-card" data-cat="tea" data-name="earl grey tea">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?earl-grey,tea" alt="Earl Grey Tea">
-            <div class="drink-info">
-                <div class="drink-title"><span>Earl Grey Tea</span><span class="drink-price">32.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Tea</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-        <div class="drink-card" data-cat="tea" data-name="jasmine tea">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?jasmine,tea" alt="Jasmine Tea">
-            <div class="drink-info">
-                <div class="drink-title"><span>Jasmine Tea</span><span class="drink-price">30.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Tea</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-
-        <!-- Milk Tea -->
-        <div class="drink-card" data-cat="milktea" data-name="classic milk tea">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?milk-tea,bubble-tea" alt="Classic Milk Tea">
-            <div class="drink-info">
-                <div class="drink-title"><span>Classic Milk Tea</span><span class="drink-price">39.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Milk Tea</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-        <div class="drink-card" data-cat="milktea" data-name="matcha milk tea">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?matcha,latte" alt="Matcha Milk Tea">
-            <div class="drink-info">
-                <div class="drink-title"><span>Matcha Milk Tea</span><span class="drink-price">45.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Milk Tea</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-
-        <!-- Smoothie -->
-        <div class="drink-card" data-cat="smoothie" data-name="mango smoothie">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?mango,smoothie" alt="Mango Smoothie">
-            <div class="drink-info">
-                <div class="drink-title"><span>Mango Smoothie</span><span class="drink-price">49.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Smoothie</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-        <div class="drink-card" data-cat="smoothie" data-name="strawberry smoothie">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?strawberry,smoothie" alt="Strawberry Smoothie">
-            <div class="drink-info">
-                <div class="drink-title"><span>Strawberry Smoothie</span><span class="drink-price">49.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Smoothie</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-
-        <!-- Soda -->
-        <div class="drink-card" data-cat="soda" data-name="lemon soda">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?lemon,soda" alt="Lemon Soda">
-            <div class="drink-info">
-                <div class="drink-title"><span>Lemon Soda</span><span class="drink-price">29.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Soda</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-        <div class="drink-card" data-cat="soda" data-name="blue ocean soda">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?blue,drink" alt="Blue Ocean Soda">
-            <div class="drink-info">
-                <div class="drink-title"><span>Blue Ocean Soda</span><span class="drink-price">32.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Soda</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-
-        <!-- Juice -->
-        <div class="drink-card" data-cat="juice" data-name="orange juice">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?orange,juice" alt="Orange Juice">
-            <div class="drink-info">
-                <div class="drink-title"><span>Orange Juice</span><span class="drink-price">35.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Juice</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
-        <div class="drink-card" data-cat="juice" data-name="apple juice">
-            <img class="drink-cover" src="https://source.unsplash.com/600x600/?apple,juice" alt="Apple Juice">
-            <div class="drink-info">
-                <div class="drink-title"><span>Apple Juice</span><span class="drink-price">35.000₫</span></div>
-                <div class="drink-meta"><span class="drink-tag">Juice</span><button class="drink-btn" type="button">Chọn</button></div>
-            </div>
-        </div>
+        }
     </div>
 </div>
 
 @section Scripts {
     <script>
         (() => {
-          const chips  = document.getElementById('drinkChips');
-          const grid   = document.getElementById('drinkGrid');
+          const chips = document.getElementById('drinkChips');
+          const grid = document.getElementById('drinkGrid');
           const search = document.getElementById('drinkSearch');
-
           function applyFilter(){
             const active = chips.querySelector('.drink-chip.active');
             const cat = active ? active.dataset.filter : 'all';
             const q = (search.value || '').trim().toLowerCase();
-
             for (const card of grid.children){
               const matchCat = (cat === 'all') || card.dataset.cat === cat;
               const matchText = card.dataset.name.toLowerCase().includes(q);
               card.style.display = (matchCat && matchText) ? '' : 'none';
             }
           }
-
           chips.addEventListener('click', (e) => {
             const btn = e.target.closest('.drink-chip'); if(!btn) return;
             chips.querySelectorAll('.drink-chip').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
             applyFilter();
           });
-
           search.addEventListener('input', applyFilter);
         })();
     </script>
