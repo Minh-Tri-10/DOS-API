@@ -522,10 +522,10 @@
                     <span class="val" id="sumShip">0₫</span>
                 </div>
                 <div class="cart-total">
-                    <span>Tổng thanh toán</span>
+                    <span>Tổng tiền </span>
                     <span class="val" id="sumTotal">0₫</span>
                 </div>
-                <button type="button" class="cart-btn cart-btn-primary" id="checkoutBtn" disabled>Thanh toán</button>
+                <button type="button" class="cart-btn cart-btn-primary" id="checkoutBtn" disabled>Đặt hàng </button>
             </div>
         </div>
     </div>
@@ -665,25 +665,50 @@
               if (ok) row.remove();
             }
             recalc();
+
+            // 🔹 cập nhật lại badge ngay sau khi xóa
+            if (window.updateCartBadge) {
+              window.updateCartBadge();
+            }
           });
 
           list.querySelectorAll('.cart-row').forEach(updateLine);
           recalc();
 
-          checkoutBtn.addEventListener('click', () => {
-            const count = parseInt(elCount.textContent, 10) || 0;
-            if (count === 0) return;
-            checkoutBtn.textContent = 'Đang xử lý…';
+          checkoutBtn.addEventListener('click', async () => {
+            // gom các cart-item được tick
+            const selected = [...list.querySelectorAll('.cart-item-check:checked')];
+            if (selected.length === 0) return;
+
+            const cartItemIds = selected.map(cb => cb.closest('.cart-row').dataset.id);
+            const note = document.getElementById('note').value || "";
+
+            checkoutBtn.textContent = 'Đang tạo đơn…';
             checkoutBtn.disabled = true;
-            setTimeout(() => {
-              checkoutBtn.textContent = 'Thanh toán';
+
+            try {
+              const res = await fetch('/Orders/CreateFromCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cartItemIds, note })
+              });
+
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok || !data.orderId) throw new Error(data.message || 'Lỗi tạo đơn');
+
+              // điều hướng tới trang chi tiết đơn
+              window.location.href = `/Orders/Detail/${data.orderId}`;
+            } catch (e) {
+              alert('❌ ' + (e.message || 'Không tạo được đơn hàng'));
+              checkoutBtn.textContent = 'Đặt hàng';
               checkoutBtn.disabled = false;
-              alert('(Frontend) Đặt hàng thành công!');
-            }, 800);
+            }
           });
+
         })();
     </script>
 }
+
 
 
 

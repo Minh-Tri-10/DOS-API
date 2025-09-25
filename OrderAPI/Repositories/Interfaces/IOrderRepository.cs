@@ -11,7 +11,7 @@ namespace OrderAPI.Repositories.Interfaces
         Task UpdateAsync(Order order);
         Task DeleteOrderAsync(int orderId);
         Task<List<Order>> GetOrdersByUserIdAsync(int userId);
-        Task<User> GetUserByIdAsync(int userId);
+        //Task<User> GetUserByIdAsync(int userId);
         Task MarkOrderAsPaidAsync(int orderId);
     }
 }

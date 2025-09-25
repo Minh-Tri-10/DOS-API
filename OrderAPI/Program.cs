@@ -1,4 +1,4 @@
-
+﻿
 using Microsoft.EntityFrameworkCore;
 using OrderAPI.Repositories;
 using OrderAPI.Repositories.Interfaces;
@@ -22,10 +22,12 @@ namespace OrderAPI
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
             builder.Services.AddAutoMapper(typeof(OrderAPI.Profiles.OrderProfile).Assembly);
             builder.Services.AddScoped<IStatsService, StatsService>();
             builder.Services.AddScoped<IStatsRepository, StatsRepository>();
+
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
