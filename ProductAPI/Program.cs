@@ -1,13 +1,13 @@
 ﻿
-//using CartAPI.Data;
-using CartAPI.Models;
-using CartAPI.Repositories;
-using CartAPI.Repositories.Interfaces;
-using CartAPI.Services;
-using CartAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ProductAPI.Mapping;
+using ProductAPI.Models;
+using ProductAPI.Repositories;
+using ProductAPI.Repositories.Interfaces;
+using ProductAPI.Services;
+using ProductAPI.Services.Interfaces;
 
-namespace CartAPI
+namespace ProductAPI
 {
     public class Program
     {
@@ -21,17 +21,17 @@ namespace CartAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<CartDbContext>(options =>
+            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
-            // Repositories và Services
-            builder.Services.AddScoped<ICartRepository, CartRepository>();
-            builder.Services.AddScoped<ICartService, CartService>();
 
-            //// AutoMapper
-            builder.Services.AddAutoMapper(typeof(MappingProfile)); // MappingProfile như trước
-    
+            // Đăng ký AutoMapper
+            builder.Services.AddAutoMapper(typeof(ProductProfile));
+
+            // Đăng ký DI cho Repository và Service
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+
             var app = builder.Build();
-
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
