@@ -37,7 +37,7 @@ namespace MVCApplication
 
             builder.Services.AddHttpClient("ProductAPI", c =>
             {
-                c.BaseAddress = new Uri("https://localhost:7014/");
+                c.BaseAddress = new Uri("https://localhost:7021/");
             });
 
             // Đăng ký ICartService dùng factory

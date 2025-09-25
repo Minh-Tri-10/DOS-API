@@ -1,6 +1,6 @@
-﻿using AutoMapper;
+﻿// Controllers/CartController.cs
+using AutoMapper;
 using CartAPI.DTOs;
-using CartAPI.Models;
 using CartAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,85 +10,58 @@ namespace CartAPI.Controllers
     [ApiController]
     public class CartController : ControllerBase
     {
-        private readonly ICartService _cartService;
+        private readonly ICartService _service;
         private readonly IMapper _mapper;
 
-        public CartController(ICartService cartService, IMapper mapper)
+        public CartController(ICartService service, IMapper mapper)
         {
-            _cartService = cartService;
+            _service = service;
             _mapper = mapper;
         }
 
-        // GET: api/Cart/user/1
+        // GET: api/Cart/user/4
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<CartDTO>> GetCartByUserId(int userId)
         {
-            var cart = await _cartService.GetUserCartAsync(userId);
-            if (cart == null)
-                return NotFound(new { Message = "Cart not found for user." });
-
-            var dto = _mapper.Map<CartDTO>(cart);
-            return Ok(dto);
+            var cart = await _service.GetOrCreateUserCartAsync(userId);
+            return Ok(_mapper.Map<CartDTO>(cart));
         }
 
         // POST: api/Cart/add
+        // Body: { "userId": 4, "productId": 1, "quantity": 1 }
         [HttpPost("add")]
-        public async Task<IActionResult> AddToCart(int cartId, int productId, int quantity)
+        public async Task<IActionResult> AddToCart([FromBody] AddCartItemDTO dto)
         {
-            try
-            {
-                await _cartService.AddItemToCartAsync(cartId, productId, quantity);
-                return Ok(new { Message = "Product added successfully!" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = $"Failed to add product: {ex.Message}" });
-            }
+            if (dto == null) return BadRequest(new { message = "Body is required" });
+
+            var cart = await _service.GetOrCreateUserCartAsync(dto.UserId);
+            await _service.AddItemToCartAsync(cart.CartId, dto.ProductId, dto.Quantity);
+
+            return Ok(new { message = "Đã thêm/cộng dồn sản phẩm vào giỏ!" });
         }
 
-        // PUT: api/Cart/update/5
+        // PUT: api/Cart/update/21?quantity=3
         [HttpPut("update/{cartItemId}")]
-        public async Task<IActionResult> UpdateItemQuantity(int cartItemId, int quantity)
+        public async Task<IActionResult> UpdateItemQuantity(int cartItemId, [FromQuery] int quantity)
         {
-            try
-            {
-                await _cartService.UpdateItemQuantityAsync(cartItemId, quantity);
-                return Ok(new { Message = "Cart item updated successfully!" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = $"Failed to update cart item: {ex.Message}" });
-            }
+            await _service.UpdateItemQuantityAsync(cartItemId, quantity);
+            return Ok(new { message = "Cập nhật số lượng thành công!" });
         }
 
-        // DELETE: api/Cart/remove/5
+        // DELETE: api/Cart/remove/21
         [HttpDelete("remove/{cartItemId}")]
         public async Task<IActionResult> RemoveFromCart(int cartItemId)
         {
-            try
-            {
-                await _cartService.RemoveItemFromCartAsync(cartItemId);
-                return Ok(new { Message = "Cart item removed successfully!" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = $"Failed to remove cart item: {ex.Message}" });
-            }
+            await _service.RemoveItemFromCartAsync(cartItemId);
+            return Ok(new { message = "Đã xoá sản phẩm khỏi giỏ!" });
         }
 
-        // DELETE: api/Cart/delete/1
+        // DELETE: api/Cart/delete/3
         [HttpDelete("delete/{cartId}")]
         public async Task<IActionResult> DeleteCart(int cartId)
         {
-            try
-            {
-                await _cartService.DeleteCartAsync(cartId);
-                return Ok(new { Message = "Cart deleted successfully!" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = $"Failed to delete cart: {ex.Message}" });
-            }
+            await _service.DeleteCartAsync(cartId);
+            return Ok(new { message = "Đã xoá giỏ hàng!" });
         }
     }
 }
