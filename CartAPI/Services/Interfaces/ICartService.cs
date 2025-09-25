@@ -11,5 +11,7 @@ namespace CartAPI.Services.Interfaces
         Task UpdateItemQuantityAsync(int cartItemId, int quantity);
         Task RemoveItemFromCartAsync(int cartItemId);
         Task DeleteCartAsync(int cartId);
+
+        Task<Cart> GetOrCreateUserCartAsync(int userId);
     }
 }
