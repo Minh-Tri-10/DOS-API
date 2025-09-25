@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MVCApplication.DTOs;                // <-- dùng DTO ở thư mục DTOs
+using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
 
 namespace MVCApplication.Controllers
 {
-    // Nhóm các API Ajax của giỏ hàng cho gọn
     [Route("api/cart")]
     public class CartController : Controller
     {
@@ -14,7 +13,7 @@ namespace MVCApplication.Controllers
         private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
 
         // Trang giỏ hàng (MVC view)
-        [HttpGet("/Cart")] // hoặc [Route("/Cart")]
+        [HttpGet("/Cart")]
         public async Task<IActionResult> Index()
         {
             if (CurrentUserId == null) return RedirectToAction("Login", "Accounts");
@@ -24,7 +23,6 @@ namespace MVCApplication.Controllers
 
         // ---------- AJAX APIs ----------
 
-        // POST api/cart/add
         [HttpPost("add")]
         public async Task<IActionResult> ApiAdd([FromBody] AddCartItemDTO body)
         {
@@ -42,7 +40,6 @@ namespace MVCApplication.Controllers
                 : StatusCode(500, new { message = "Không thể thêm sản phẩm" });
         }
 
-        // PUT api/cart/update/{cartItemId}?quantity=3
         [HttpPut("update/{cartItemId}")]
         public async Task<IActionResult> ApiUpdateQty(int cartItemId, int quantity)
         {
@@ -54,7 +51,6 @@ namespace MVCApplication.Controllers
                       : StatusCode(500, new { message = "Lỗi cập nhật" });
         }
 
-        // DELETE api/cart/remove/{cartItemId}
         [HttpDelete("remove/{cartItemId}")]
         public async Task<IActionResult> ApiRemove(int cartItemId)
         {
@@ -65,12 +61,23 @@ namespace MVCApplication.Controllers
                       : StatusCode(500, new { message = "Không thể xóa" });
         }
 
-        // GET api/cart/user/{userId}  (endpoint debug/preview)
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> ApiGetCartByUser(int userId)
         {
             var cart = await _cartService.GetCartWithProductsAsync(userId);
             return cart == null ? NotFound() : Ok(cart);
+        }
+
+        // 🔹 NEW: GET api/cart/count  -> trả về số mặt hàng trong giỏ của user hiện tại
+        [HttpGet("count")]
+        public async Task<IActionResult> ApiCount()
+        {
+            if (CurrentUserId == null) return Ok(new { count = 0 });
+
+            var cart = await _cartService.GetCartWithProductsAsync(CurrentUserId.Value);
+            int count = cart?.CartItems?.Count ?? 0;
+
+            return Ok(new { count });
         }
     }
 }

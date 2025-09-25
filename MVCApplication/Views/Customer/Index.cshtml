@@ -328,8 +328,6 @@
           const chips  = document.getElementById('drinkChips');
           const grid   = document.getElementById('drinkGrid');
           const search = document.getElementById('drinkSearch');
-
-          // Lấy user id từ session (render phía server)
           const CURRENT_USER_ID = @(Context.Session.GetInt32("UserId") ?? 0);
 
           function applyFilter() {
@@ -359,15 +357,12 @@
             if (!btn) return;
 
             if (!CURRENT_USER_ID) {
-              // Chưa đăng nhập → về trang Login
               window.location.href = '/Accounts/Login';
               return;
             }
 
             const card = btn.closest('.drink-card');
-            const productId = card?.querySelector('.drink-btn')?.dataset.id || btn.dataset.id;
-            const pid = parseInt(productId, 10);
-
+            const pid = parseInt(btn.dataset.id, 10);
             if (!pid) { alert('❌ Không xác định được sản phẩm'); return; }
 
             try {
@@ -377,12 +372,12 @@
                 body: JSON.stringify({ userId: CURRENT_USER_ID, productId: pid, quantity: 1 })
               });
 
-              // 401 từ middleware trong MVC khi chưa login
               if (res.status === 401) { window.location.href = '/Accounts/Login'; return; }
 
               const data = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
               if (res.ok) {
                 alert('✅ ' + (data.message || 'Đã thêm/cộng dồn sản phẩm vào giỏ!'));
+                if (window.updateCartBadge) window.updateCartBadge(); // 🔹 cập nhật badge ngay
               } else {
                 alert('❌ ' + (data.message || 'Không thể thêm sản phẩm'));
               }
@@ -392,8 +387,8 @@
             }
           });
 
-          // Khởi tạo filter mặc định
           applyFilter();
         })();
     </script>
 }
+
