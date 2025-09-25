@@ -73,8 +73,7 @@ using MVCApplication.Services.Interfaces;
                     }
                     Console.WriteLine($"ImageFile từ form: {(imageFile != null ? "Có file, tên: " + imageFile.FileName : "Null")}");
                     var response = await client.PostAsync("https://localhost:7021/api/Product", formData);
-                    response.EnsureSuccessStatusCode();
-                    var createdProduct = await _productService.CreateAsync(dto, imageFile);
+                    response.EnsureSuccessStatusCode();               
                     TempData["Success"] = "Sản phẩm được tạo thành công.";
                     return RedirectToAction(nameof(Index));
                 }
