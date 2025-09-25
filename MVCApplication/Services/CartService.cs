@@ -1,6 +1,8 @@
 ﻿using MVCApplication.DTOs;
 using MVCApplication.Models;
 using MVCApplication.Services.Interfaces;
+using System.Net.Http.Json;
+
 namespace MVCApplication.Services
 {
     public class CartService : ICartService
@@ -11,24 +13,19 @@ namespace MVCApplication.Services
         public CartService(IHttpClientFactory factory)
         {
             _cartApi = factory.CreateClient("CartAPI");
-            _productApi = factory.CreateClient("ProductAPI");
+            _productApi = factory.CreateClient("ProductAPI"); // base 7021
         }
 
         public async Task<CartViewModel?> GetCartWithProductsAsync(int userId)
         {
-            // Gọi CartAPI
             var cart = await _cartApi.GetFromJsonAsync<CartDTO>($"api/Cart/user/{userId}");
             if (cart == null) return null;
 
-            var vm = new CartViewModel
-            {
-                CartId = cart.CartId,
-                UserId = cart.UserId
-            };
+            var vm = new CartViewModel { CartId = cart.CartId, UserId = cart.UserId };
 
-            // Bổ sung thông tin sản phẩm
             foreach (var item in cart.CartItems)
             {
+                // Product controller nằm ở CategoriesAPI: /api/Product/{id}
                 var product = await _productApi.GetFromJsonAsync<ProductDTO>($"api/Product/{item.ProductId}");
 
                 vm.CartItems.Add(new CartItemViewModel
@@ -41,27 +38,26 @@ namespace MVCApplication.Services
                     Price = product?.Price ?? 0
                 });
             }
-
             return vm;
         }
 
         public async Task<bool> AddToCartAsync(int userId, int productId, int quantity)
         {
-            var response = await _cartApi.PostAsJsonAsync("api/Cart/add", new { userId, productId, quantity });
-            return response.IsSuccessStatusCode;
+            // CartAPI.Add nhận JSON body: { userId, productId, quantity }
+            var res = await _cartApi.PostAsJsonAsync("api/Cart/add", new { userId, productId, quantity });
+            return res.IsSuccessStatusCode;
         }
 
-        public async Task<bool> RemoveFromCartAsync(int cartItemId)
-        {
-            var response = await _cartApi.DeleteAsync($"api/Cart/remove/{cartItemId}");
-            return response.IsSuccessStatusCode;
-        }
         public async Task<bool> UpdateQuantityAsync(int cartItemId, int quantity)
         {
-            // Gọi sang CartAPI đúng port 7143
             var res = await _cartApi.PutAsync($"api/Cart/update/{cartItemId}?quantity={quantity}", null);
             return res.IsSuccessStatusCode;
         }
 
+        public async Task<bool> RemoveFromCartAsync(int cartItemId)
+        {
+            var res = await _cartApi.DeleteAsync($"api/Cart/remove/{cartItemId}");
+            return res.IsSuccessStatusCode;
+        }
     }
 }
