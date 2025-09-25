@@ -13,6 +13,7 @@
                         <th>ID</th>
                         <th>Username</th>
                         <th>Email</th>
+                        <th>Phone</th>     <!-- ✅ Thêm cột Phone -->
                         <th>Role</th>
                         <th>Trạng thái</th>
                         <th>Action</th>
@@ -25,6 +26,7 @@
                             <td class="cell-id">#@u.UserId</td>
                             <td class="cell-username">@u.Username</td>
                             <td class="cell-email">@u.Email</td>
+                            <td class="cell-phone">@u.Phone</td>   <!-- ✅ Hiển thị Phone -->
                             <td><span class="pill role">@u.Role</span></td>
                             <td>
                                 @if (u.IsBanned)
@@ -80,6 +82,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     /* ===== WOW PACK v2 – Users page (dark/light theo biến layout) ===== */
@@ -149,15 +152,81 @@
     }
 
     /* ---------- nền pattern siêu nhẹ bên trong bảng ---------- */
+    /* --- REPLACE block ::after hiện tại bằng block này --- */
     .card-surface::after {
         content: "";
         position: absolute;
         inset: 0;
         pointer-events: none;
         z-index: 0;
-        background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%);
-        opacity: .35;
+        /* LAYER ORDER: lớp đầu tiên vẽ TRÊN cùng => để ly nước ở đầu tiên */
+        background: url('/media/overlays/neon-drink.png') center 38% / 560px no-repeat, /* LY NƯỚC */
+        radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), /* pattern 1 */
+        radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%); /* pattern 2 */
+        /* Hiệu ứng chung: ly “rõ dần – mờ dần” + pattern trôi nhẹ */
+        filter: saturate(1.15); /* rực hơn chút */
+        opacity: .35; /* tổng opacity cho toàn lớp */
+        animation: drinkPulse 5.8s ease-in-out infinite, /* nhịp thở cho ly */
+        pageGlow 20s linear infinite; /* trôi rất nhẹ cho pattern */
     }
+
+    /* Nếu muốn ly đậm/nhạt ở theme sáng: có thể giảm ảnh ở light (tùy chọn) */
+    :root[data-theme="light"] .card-surface::after {
+        opacity: .25; /* dịu hơn ở light (tuỳ bạn) */
+    }
+
+
+    /* Đảm bảo content nổi trên overlay */
+    .card-surface > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* --- KEYFRAMES (Razor dùng @@keyframes) --- */
+    @@keyframes drinkPulse {
+        0% {
+            filter: saturate(1.05) blur(12px);
+            opacity: .22;
+            transform: none;
+        }
+
+        25% {
+            filter: saturate(1.15) blur(10px);
+            opacity: .30;
+        }
+
+        50% {
+            filter: saturate(1.25) blur(8px);
+            opacity: .42;
+            transform: scale(1.01);
+        }
+        /* rõ nhất */
+        75% {
+            filter: saturate(1.15) blur(10px);
+            opacity: .30;
+        }
+
+        100% {
+            filter: saturate(1.05) blur(12px);
+            opacity: .22;
+            transform: none;
+        }
+    }
+
+    @@keyframes pageGlow {
+        0% {
+            transform: translateZ(0) scale(1);
+        }
+
+        50% {
+            transform: translateZ(0) scale(1.02);
+        }
+
+        100% {
+            transform: translateZ(0) scale(1);
+        }
+    }
+
 
     /* ---------- wrap bảng + scrollbar đẹp ---------- */
     .table-wrap {
@@ -246,26 +315,39 @@
 
         /* ---------- layout cột sang chuẩn dashboard ---------- */
         .user-table th:nth-child(1), .user-table td:nth-child(1) {
-            width: 110px
+            width: 70px; /* ID nhỏ lại */
+            text-align: center;
         }
-        /* ID */
+
         .user-table th:nth-child(2), .user-table td:nth-child(2) {
-            width: 230px
+            width: 160px; /* Username */
         }
-        /* Username */
+
         .user-table th:nth-child(3), .user-table td:nth-child(3) {
-            width: auto
+            width: 230px; /* Email */
+            word-break: break-word;
         }
-        /* Email */
+
         .user-table th:nth-child(4), .user-table td:nth-child(4) {
-            width: 170px;
-            text-align: center
+            width: 160px; /* Phone */
+            text-align: center;
         }
-        /* Role */
+
         .user-table th:nth-child(5), .user-table td:nth-child(5) {
-            width: 170px;
-            text-align: center
+            width: 140px; /* Role */
+            text-align: center;
         }
+
+        .user-table th:nth-child(6), .user-table td:nth-child(6) {
+            width: 140px; /* Status */
+            text-align: center;
+        }
+
+        .user-table th:nth-child(7), .user-table td:nth-child(7) {
+            width: 100px; /* Action */
+            text-align: center;
+        }
+
     /* Status */
 
     /* ---------- ID/Email/Username style ---------- */

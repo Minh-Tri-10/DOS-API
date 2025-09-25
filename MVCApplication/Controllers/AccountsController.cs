@@ -68,13 +68,120 @@ namespace MVCApplication.Controllers
             var user = await _service.GetByIdAsync(userId.Value);
             if (user == null) return RedirectToAction("Login");
 
-            return View(user);
+            // Map UserViewModel -> UpdateProfileViewModel
+            var vm = new UpdateProfileViewModel
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Role = user.Role,
+                IsBanned = user.IsBanned,
+                FullName = user.FullName,
+                Email = user.Email,
+                Phone = user.Phone,
+                AvatarUrl = user.AvatarUrl
+            };
+
+            return View(vm); // Trả về đúng model UpdateProfileViewModel
         }
+
 
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.Error = "Vui lòng nhập email.";
+                return View();
+            }
+
+            // Luôn trả message chung để tránh lộ email tồn tại
+            await _service.ForgotPasswordAsync(email);
+            ViewBag.Message = "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.";
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                ViewBag.Error = "Token không hợp lệ.";
+                return View();
+            }
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                ViewBag.Error = "Mật khẩu tối thiểu 6 ký tự.";
+                ViewBag.Token = token;
+                return View();
+            }
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Xác nhận mật khẩu không khớp.";
+                ViewBag.Token = token;
+                return View();
+            }
+
+            var ok = await _service.ResetPasswordAsync(token, newPassword);
+            if (!ok)
+            {
+                ViewBag.Error = "Token không hợp lệ hoặc đã hết hạn.";
+                ViewBag.Token = token;
+                return View();
+            }
+
+            TempData["Message"] = "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+            return RedirectToAction("Login");
+        }
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var ok = await _service.UpdateProfileAsync(userId.Value, dto);
+            if (ok==null)
+            {
+                ViewBag.Error = "Cập nhật thất bại.";
+                return View("Profile", dto);
+            }
+
+            // Sau khi update thành công, load lại user mới
+            var updated = await _service.GetByIdAsync(userId.Value);
+
+            // Map sang UpdateProfileViewModel để hiển thị
+            var vm = new UpdateProfileViewModel
+            {
+                UserId = updated!.UserId,
+                Username = updated.Username,
+                Role = updated.Role,
+                IsBanned = updated.IsBanned,
+                FullName = updated.FullName,
+                Email = updated.Email,
+                Phone = updated.Phone,
+                AvatarUrl = updated.AvatarUrl
+            };
+            return View("Profile", vm);
+        }
+
     }
 }

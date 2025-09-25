@@ -1,7 +1,7 @@
 ﻿@{
     Layout = "_CustomerLayout";
 }
-@model MVCApplication.Models.UserViewModel
+@model MVCApplication.Models.UpdateProfileViewModel
 
 <style>
     /* ===== Profile WOW Card (dark default, light via :root[data-theme="light"]) ===== */
@@ -312,7 +312,7 @@
 
     <div class="profile-card" id="profileCard" data-editing="false">
         <div class="profile-head">
-            <img class="avatar" src="https://i.pravatar.cc/180?img=47" alt="Avatar" />
+            <img class="avatar" src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "https://i.pravatar.cc/180?img=47" : Model.AvatarUrl)" alt="Avatar" />
             <div class="head-meta">
                 <div class="name">@Model.FullName</div>
                 <div class="sub">@Model.Email • <span>@Model.Role</span></div>
@@ -323,56 +323,58 @@
             </div>
         </div>
 
-        <div class="profile-body">
-            <div class="field">
-                <label class="label">Tên đăng nhập</label>
-                <input class="input" type="text" value="@Model.Username" disabled>
+        <!-- Form update -->
+        <form asp-action="UpdateProfile" method="post" id="profileForm">
+            <div class="profile-body">
+                <div class="field">
+                    <label class="label">Tên đăng nhập</label>
+                    <input class="input" type="text" value="@Model.Username" disabled>
+                </div>
+                <div class="field">
+                    <label class="label">Họ tên</label>
+                    <input class="input" id="inpFullName" name="FullName" type="text" value="@Model.FullName" disabled>
+                </div>
+                <div class="field">
+                    <label class="label">Email</label>
+                    <input class="input" id="inpEmail" name="Email" type="email" value="@Model.Email" disabled>
+                </div>
+                <div class="field">
+                    <label class="label">Số điện thoại</label>
+                    <input class="input" id="inpPhone" name="Phone" type="tel" value="@Model.Phone" disabled>
+                </div>
+                <div class="field">
+                    <label class="label">Role</label>
+                    <input class="input" type="text" value="@Model.Role" disabled>
+                </div>
+                <div class="field">
+                    <label class="label">Trạng thái</label>
+                    @if (Model.IsBanned)
+                    {
+                        <span class="status-pill banned">Bị khóa</span>
+                    }
+                    else
+                    {
+                        <span class="status-pill active">Hoạt động</span>
+                    }
+                </div>
+                <input type="hidden" name="AvatarUrl" value="@Model.AvatarUrl" />
             </div>
-            <div class="field">
-                <label class="label">Họ tên</label>
-                <input class="input" id="inpFullName" type="text" value="@Model.FullName" disabled>
-            </div>
-            <div class="field">
-                <label class="label">Email</label>
-                <input class="input" id="inpEmail" type="email" value="@Model.Email" disabled>
-            </div>
-            <div class="field">
-                <label class="label">Số điện thoại</label>
-                <input class="input" id="inpPhone" type="tel" value="@Model.Phone" disabled>
-            </div>
-            <div class="field">
-                <label class="label">Role</label>
-                <input class="input" type="text" value="@Model.Role" disabled>
-            </div>
-            <div class="field">
-                <label class="label">Trạng thái</label>
-                @if (Model.IsBanned)
-                {
-                    <span class="status-pill banned">Bị khóa</span>
-                }
-                else
-                {
-                    <span class="status-pill active">Hoạt động</span>
-                }
-            </div>
-        </div>
 
-        <div class="profile-footer">
-            <button type="button" class="btn-ghost hidden" id="btnCancel">Cancel</button>
-            <button type="button" class="btn-primary hidden" id="btnSave">Save Changes</button>
-        </div>
+            <div class="profile-footer">
+                <button type="button" class="btn-ghost hidden" id="btnCancel">Cancel</button>
+                <button type="submit" class="btn-primary hidden" id="btnSave" disabled>Save Changes</button>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // Frontend-only: toggle edit state & giả lập save
         (function(){
           const card = document.getElementById('profileCard');
           const btnEdit = document.getElementById('btnEdit');
           const btnSave = document.getElementById('btnSave');
           const btnCancel = document.getElementById('btnCancel');
-          const inputs = card.querySelectorAll('.input');
           const editable = ['inpFullName','inpEmail','inpPhone'].map(id=>document.getElementById(id));
 
           function setEditing(on){
@@ -381,31 +383,23 @@
             btnSave.classList.toggle('hidden', !on);
             btnCancel.classList.toggle('hidden', !on);
             btnEdit.textContent = on ? 'Editing…' : 'Edit';
+            if (on) btnSave.disabled = true;
           }
 
           btnEdit.addEventListener('click', ()=> setEditing(true));
           btnCancel.addEventListener('click', ()=>{
-            // khôi phục giá trị ban đầu (frontend)
+            // khôi phục giá trị ban đầu
             editable.forEach(i => i.value = i.defaultValue);
             setEditing(false);
           });
 
-          // Bật nút Save khi có thay đổi
+          // bật nút Save khi có thay đổi
           editable.forEach(i=>{
             i.addEventListener('input', ()=>{
               if (card.dataset.editing==='true'){
                 btnSave.disabled = false;
               }
             });
-          });
-
-          btnSave.addEventListener('click', ()=>{
-            // Frontend confirm
-            btnSave.textContent = 'Saved ✓';
-            btnSave.disabled = true;
-            // giữ lại giá trị hiện tại làm defaultValue
-            editable.forEach(i=> i.defaultValue = i.value);
-            setTimeout(()=>{ setEditing(false); btnSave.textContent='Save Changes'; }, 800);
           });
         })();
     </script>

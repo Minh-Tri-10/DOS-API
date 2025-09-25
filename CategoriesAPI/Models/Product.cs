@@ -22,7 +22,7 @@ public partial class Product
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
-    
-    public virtual Category? Category { get; set; }
-    
+
+    public virtual Category? Category { get; set; }  // Thêm dòng này để sửa lỗi
+
 }

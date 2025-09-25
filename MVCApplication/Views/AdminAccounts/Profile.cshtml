@@ -1,0 +1,398 @@
+﻿@{
+    Layout = "_Layout.Admin";   // layout admin
+}
+@model MVCApplication.Models.UpdateProfileViewModel
+<style>
+    /* ===== Profile WOW Card (dark default, light via :root[data-theme="light"]) ===== */
+    .profile-wrap {
+        max-width: 860px;
+        margin: 24px auto;
+        padding: 0 16px;
+    }
+
+    .page-title {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px;
+    }
+
+        .page-title h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1;
+        }
+
+        .page-title .under {
+            flex: 1;
+            min-width: 140px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent,#22d3ee),var(--accent2,#3b82f6));
+            filter: saturate(1.05) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab, var(--accent,#22d3ee) 45%, transparent);
+        }
+
+    /* Card glass */
+    .profile-card {
+        position: relative;
+        isolation: isolate;
+        z-index: 0;
+        background: color-mix(in oklab, var(--bg-soft,#0f172a) 92%, transparent);
+        color: var(--text,#e5e7eb);
+        border: 1px solid color-mix(in oklab, var(--border,rgba(255,255,255,.12)) 70%, transparent);
+        border-radius: 22px;
+        box-shadow: 0 16px 40px rgba(2,8,23,.55), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+        overflow: hidden;
+    }
+
+        .profile-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab, var(--accent,#22d3ee) 40%, transparent), color-mix(in oklab, var(--accent2,#3b82f6) 40%, transparent), transparent 40%);
+            filter: blur(12px) saturate(1.2);
+            opacity: .45;
+            animation: ring 14s linear infinite;
+        }
+
+    @@keyframes ring {
+        to {
+            transform: rotate(1turn)
+        }
+    }
+
+    .profile-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(1100px 560px at 10% -15%, color-mix(in oklab,var(--accent,#22d3ee) 12%, transparent), transparent 60%), radial-gradient(900px 500px at 110% 20%, color-mix(in oklab,var(--accent2,#3b82f6) 12%, transparent), transparent 60%);
+        opacity: .35;
+    }
+
+    .profile-head {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 22px;
+        align-items: center;
+        padding: 24px;
+        border-bottom: 1px solid color-mix(in oklab, var(--border,rgba(255,255,255,.12)) 70%, transparent);
+    }
+
+    .avatar {
+        width: 88px;
+        height: 88px;
+        border-radius: 18px;
+        object-fit: cover;
+        border: 1px solid rgba(255,255,255,.25);
+        box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    }
+
+    .head-meta {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .head-meta .name {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 4px
+        }
+
+        .head-meta .sub {
+            color: var(--muted,#9aa3b2);
+            font-size: 13.5px
+        }
+
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-ghost, .btn-primary, .btn-danger {
+        appearance: none;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-weight: 700;
+        font-size: 13.5px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: transform .12s ease, box-shadow .25s ease, filter .2s ease;
+    }
+
+    .btn-ghost {
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+        color: var(--text,#e5e7eb);
+        border: 1px solid color-mix(in oklab, var(--border,rgba(255,255,255,.12)) 70%, transparent);
+    }
+
+        .btn-ghost:hover {
+            transform: translateY(-1px)
+        }
+
+    .btn-primary {
+        color: #0b1220;
+        background: linear-gradient(135deg, var(--accent,#22d3ee), var(--accent2,#3b82f6));
+        box-shadow: 0 8px 20px color-mix(in oklab,#000 30%, transparent);
+    }
+
+        .btn-primary:hover {
+            filter: brightness(1.05);
+            transform: translateY(-1px)
+        }
+
+    .btn-danger {
+        color: #fee2e2;
+        background: linear-gradient(135deg,#ef4444,#dc2626);
+        border-color: rgba(239,68,68,.35);
+        text-shadow: 0 1px 0 rgba(0,0,0,.35);
+        box-shadow: 0 8px 20px color-mix(in oklab,#ef4444 25%, transparent);
+    }
+
+        .btn-danger:hover {
+            filter: brightness(1.04);
+            transform: translateY(-1px)
+        }
+
+    .profile-body {
+        position: relative;
+        z-index: 1;
+        padding: 24px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 18px;
+    }
+
+    .field {
+        display: grid;
+        gap: 8px;
+    }
+
+    .label {
+        font-size: 12.5px;
+        color: var(--muted,#9aa3b2);
+        letter-spacing: .25px;
+    }
+
+    /* Soft input (glass) */
+    .input {
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 15px;
+        color: var(--text,#e5e7eb);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 7%, transparent), transparent);
+        border: 1px solid color-mix(in oklab, var(--border,rgba(255,255,255,.12)) 70%, transparent);
+        outline: none;
+        transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+        .input::placeholder {
+            color: color-mix(in oklab, var(--muted,#9aa3b2) 80%, transparent)
+        }
+
+        .input:focus {
+            border-color: color-mix(in oklab, var(--accent,#22d3ee) 60%, var(--border,rgba(255,255,255,.12)) 40%);
+            box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent,#22d3ee) 25%, transparent);
+        }
+
+        .input[disabled] {
+            opacity: .7;
+            cursor: not-allowed;
+            filter: saturate(.9);
+        }
+
+    /* Status pill */
+    .status-pill {
+        display: inline-grid;
+        place-items: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13.5px;
+        white-space: nowrap;
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+        border: 1px solid color-mix(in oklab, var(--border,rgba(255,255,255,.12)) 70%, transparent);
+    }
+
+        .status-pill.active {
+            color: #dcfce7;
+            background: linear-gradient(180deg, rgba(34,197,94,.25), rgba(34,197,94,.12));
+            border-color: rgba(34,197,94,.35)
+        }
+
+        .status-pill.banned {
+            color: #fee2e2;
+            background: linear-gradient(180deg, rgba(239,68,68,.25), rgba(239,68,68,.12));
+            border-color: rgba(239,68,68,.35)
+        }
+
+    /* Footer buttons */
+    .profile-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 16px 24px 24px;
+        border-top: 1px solid color-mix(in oklab, var(--border,rgba(255,255,255,.12)) 70%, transparent);
+    }
+
+    /* Editing state: bật/tắt disabled + nhấn nhá khung */
+    .profile-card[data-editing="true"] .input[disabled] {
+        opacity: 1
+    }
+
+    .profile-card[data-editing="true"] {
+        box-shadow: 0 18px 44px rgba(2,8,23,.6), 0 0 0 2px color-mix(in oklab,var(--accent,#22d3ee) 35%, transparent) inset
+    }
+
+    .hidden {
+        display: none !important
+    }
+
+    /* Light theme */
+    :root[data-theme="light"] .profile-card {
+        background: #fff;
+        box-shadow: 0 16px 36px rgba(2,8,23,.12);
+    }
+
+    :root[data-theme="light"] .btn-ghost {
+        color: #0f172a
+    }
+
+    :root[data-theme="light"] .status-pill.active {
+        color: #065f46;
+        background: linear-gradient(180deg,#bbf7d0,#eafff1)
+    }
+
+    :root[data-theme="light"] .status-pill.banned {
+        color: #7f1d1d;
+        background: linear-gradient(180deg,#fecaca,#fff1f1)
+    }
+
+    :root[data-theme="light"] .input {
+        color: #0f172a;
+        background: linear-gradient(180deg,#fff,#f7f8fb)
+    }
+
+    :root[data-theme="light"] .page-title .under {
+        box-shadow: 0 0 18px color-mix(in oklab, var(--accent,#0ea5e9) 40%, transparent)
+    }
+
+    /* Responsive */
+    @@media (max-width:768px) {
+        .profile-body {
+            grid-template-columns: 1fr
+        }
+
+        .profile-head {
+            flex-direction: column;
+            align-items: flex-start
+        }
+    }
+</style>
+<div class="profile-wrap">
+    <div class="page-title">
+        <h2>Thông tin tài khoản (Admin)</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="profile-card" id="profileCard" data-editing="false">
+        <div class="profile-head">
+            <img class="avatar"
+                 src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "https://i.pravatar.cc/180?img=47" : Model.AvatarUrl)"
+                 alt="Avatar" />
+            <div class="head-meta">
+                <div class="name">@Model.FullName</div>
+                <div class="sub">@Model.Email • <span>@Model.Role</span></div>
+            </div>
+            <div class="profile-actions">
+                <a asp-controller="Accounts" asp-action="Logout" class="btn-ghost">Đăng xuất</a>
+                <button type="button" class="btn-primary" id="btnEdit">Edit</button>
+            </div>
+        </div>
+
+        <!-- Form update -->
+        <form asp-action="UpdateProfile" method="post" id="profileForm">
+            <div class="profile-body">
+                <div class="field">
+                    <label class="label">Tên đăng nhập</label>
+                    <input class="input" type="text" value="@Model.Username" disabled />
+                </div>
+                <div class="field">
+                    <label class="label">Họ tên</label>
+                    <input class="input" id="inpFullName" name="FullName" type="text" value="@Model.FullName" disabled />
+                </div>
+                <div class="field">
+                    <label class="label">Email</label>
+                    <input class="input" id="inpEmail" name="Email" type="email" value="@Model.Email" disabled />
+                </div>
+                <div class="field">
+                    <label class="label">Số điện thoại</label>
+                    <input class="input" id="inpPhone" name="Phone" type="tel" value="@Model.Phone" disabled />
+                </div>
+                <div class="field">
+                    <label class="label">Role</label>
+                    <input class="input" type="text" value="@Model.Role" disabled />
+                </div>
+                <div class="field">
+                    <label class="label">Trạng thái</label>
+                    @if (Model.IsBanned)
+                    {
+                        <span class="status-pill banned">Bị khóa</span>
+                    }
+                    else
+                    {
+                        <span class="status-pill active">Hoạt động</span>
+                    }
+                </div>
+                <input type="hidden" name="AvatarUrl" value="@Model.AvatarUrl" />
+            </div>
+
+            <div class="profile-footer">
+                <button type="button" class="btn-ghost hidden" id="btnCancel">Cancel</button>
+                <button type="submit" class="btn-primary hidden" id="btnSave" disabled>Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const card = document.getElementById('profileCard');
+            const btnEdit = document.getElementById('btnEdit');
+            const btnSave = document.getElementById('btnSave');
+            const btnCancel = document.getElementById('btnCancel');
+            const editable = ['inpFullName','inpEmail','inpPhone'].map(id => document.getElementById(id));
+
+            function setEditing(on){
+                card.dataset.editing = on ? 'true' : 'false';
+                editable.forEach(i => i.disabled = !on);
+                btnSave.classList.toggle('hidden', !on);
+                btnCancel.classList.toggle('hidden', !on);
+                btnEdit.textContent = on ? 'Editing…' : 'Edit';
+                if (on) btnSave.disabled = true;
+            }
+
+            btnEdit.addEventListener('click', ()=> setEditing(true));
+            btnCancel.addEventListener('click', ()=>{
+                editable.forEach(i => i.value = i.defaultValue); // restore value ban đầu
+                setEditing(false);
+            });
+            editable.forEach(i=>{
+                i.addEventListener('input', ()=>{
+                    if (card.dataset.editing==='true'){
+                        btnSave.disabled = false;
+                    }
+                });
+            });
+        })();
+    </script>
+}

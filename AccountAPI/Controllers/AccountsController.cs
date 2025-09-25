@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AccountAPI.DTOs;
 using AccountAPI.Services.Interfaces;
-using AccountAPI.DTOs.AccountAPI.DTOs;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -35,7 +34,8 @@ public class AccountsController : ControllerBase
 
     [HttpGet]
     public async Task<IEnumerable<UserDTO>> GetAll() => await _service.GetAllAsync();
-    [HttpPut("{id:int}")]
+
+    [HttpPut("{id:int}/profile")]
     public async Task<ActionResult<UserDTO>> UpdateProfile(int id, [FromBody] UpdateProfileDTO dto)
     {
         var result = await _service.UpdateProfileAsync(id, dto);
@@ -65,9 +65,11 @@ public class AccountsController : ControllerBase
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
     {
         var token = await _service.ForgotPasswordAsync(dto);
-        // Để test nhanh: trả token (prod thì gửi email)
-        return Ok(new { message = "If the email exists, a reset token was created.", token });
+        // DEV: trả về token để copy test Reset
+        return Ok(new { token }); // <--- Dev mode
+                                  // Prod thì đổi lại: return NoContent();
     }
+
 
     // POST: api/accounts/reset-password
     [HttpPost("reset-password")]
