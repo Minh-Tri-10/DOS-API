@@ -22,7 +22,7 @@ namespace OrderAPI
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
             builder.Services.AddHttpClient<IUserClient, UserClient>(c =>
             {
                 c.BaseAddress = new Uri("https://localhost:7005/"); // ĐÚNG URL AccountAPI của bạn
