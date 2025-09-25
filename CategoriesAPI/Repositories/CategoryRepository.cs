@@ -24,6 +24,12 @@ namespace CategoriesAPI.Repositories
         {
             return await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
         }
+        public async Task<IEnumerable<Category>> GetByIdsAsync(IEnumerable<int> ids)
+        {
+            return await _context.Categories
+                                 .Where(c => ids.Contains(c.CategoryId))
+                                 .ToListAsync();
+        }
 
         public async Task AddAsync(Category category)
         {

@@ -1,14 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OrderAPI.DTOs;
 using OrderAPI.Models;
-using OrderAPI.Repositories.Interfaces;        // nếu cần entity
+using OrderAPI.Repositories.Interfaces;
+using OrderAPI.Services.Interfaces;        // nếu cần entity
 namespace OrderAPI.Repositories;
 
 public sealed class StatsRepository : IStatsRepository
 {
     private readonly DrinkOrderDbContext _db;
-    public StatsRepository(DrinkOrderDbContext db) => _db = db;
+    private readonly IProductClient _productClient;
+    private readonly ICategoryClient _categoryClient;
 
+    public StatsRepository(DrinkOrderDbContext db, IProductClient productClient, ICategoryClient categoryClient)
+    {
+        _db = db;
+        _productClient = productClient;
+        _categoryClient = categoryClient;
+    }
     // --- Helpers ---
     private static DateTime NormalizeStart(DateTime start) => DateTime.SpecifyKind(start, DateTimeKind.Utc);
     private static DateTime NormalizeEnd(DateTime end)
@@ -46,57 +54,135 @@ public sealed class StatsRepository : IStatsRepository
         };
     }
 
-    public async Task<List<RevenueByCategoryDto>> GetRevenueByCategoryAsync(DateTime start, DateTime end)
-    {
-        start = NormalizeStart(start);
-        end = NormalizeEnd(end);
+    //public async Task<List<RevenueByCategoryDto>> GetRevenueByCategoryAsync(DateTime start, DateTime end)
+    //{
+    //    start = NormalizeStart(start);
+    //    end = NormalizeEnd(end);
 
-        // Dùng navigation, tránh Join + AsQueryable().Sum gây không dịch được
-        var rows = await _db.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.PaymentStatus == "paid"
-                      && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
-            .GroupBy(oi => new
-            {
-                oi.Product.CategoryId,
-                CategoryName = oi.Product.Category.CategoryName
-            })
-            .Select(g => new RevenueByCategoryDto
-            {
-                CategoryId = g.Key.CategoryId ?? 0,
-                CategoryName = g.Key.CategoryName ?? "Unknown",
-                Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
-            })
-            .OrderByDescending(x => x.Revenue)
-            .ToListAsync();
+    //    // Dùng navigation, tránh Join + AsQueryable().Sum gây không dịch được
+    //    var rows = await _db.OrderItems
+    //        .AsNoTracking()
+    //        .Where(oi => oi.Order.PaymentStatus == "paid"
+    //                  && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
+    //        .GroupBy(oi => new
+    //        {
+    //            oi.Product.CategoryId,
+    //            CategoryName = oi.Product.Category.CategoryName
+    //        })
+    //        .Select(g => new RevenueByCategoryDto
+    //        {
+    //            CategoryId = g.Key.CategoryId ?? 0,
+    //            CategoryName = g.Key.CategoryName ?? "Unknown",
+    //            Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+    //        })
+    //        .OrderByDescending(x => x.Revenue)
+    //        .ToListAsync();
 
-        return rows;
-    }
+    //    return rows;
+    //}
 
+    //public async Task<List<RevenueByProductDto>> GetRevenueByProductAsync(DateTime start, DateTime end, int top)
+    //{
+    //    start = NormalizeStart(start);
+    //    end = NormalizeEnd(end);
+
+    //    var rows = await _db.OrderItems
+    //        .AsNoTracking()
+    //        .Where(oi => oi.Order.PaymentStatus == "paid"
+    //                  && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
+    //        .GroupBy(oi => new
+    //        {
+    //            oi.ProductId,
+    //            ProductName = oi.Product.ProductName
+    //        })
+    //        .Select(g => new RevenueByProductDto
+    //        {
+    //            ProductId = g.Key.ProductId,
+    //            ProductName = g.Key.ProductName ?? "Unknown",
+    //            Quantity = g.Sum(x => x.Quantity),
+    //            Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+    //        })
+    //        .OrderByDescending(x => x.Revenue)
+    //        .Take(top)
+    //        .ToListAsync();
+
+    //    return rows;
+    //}
     public async Task<List<RevenueByProductDto>> GetRevenueByProductAsync(DateTime start, DateTime end, int top)
     {
         start = NormalizeStart(start);
         end = NormalizeEnd(end);
 
-        var rows = await _db.OrderItems
-            .AsNoTracking()
+        var items = await _db.OrderItems
             .Where(oi => oi.Order.PaymentStatus == "paid"
                       && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
-            .GroupBy(oi => new
+            .ToListAsync();
+
+        var productIds = items.Select(x => x.ProductId).Distinct();
+        var productTasks = productIds.Select(id => _productClient.GetProductByIdAsync(id));
+        var products = await Task.WhenAll(productTasks);
+
+        var productDict = products.Where(p => p != null)
+                                  .ToDictionary(p => p!.ProductId, p => p);
+
+        var rows = items
+            .GroupBy(oi => oi.ProductId)
+            .Select(g =>
             {
-                oi.ProductId,
-                ProductName = oi.Product.ProductName
-            })
-            .Select(g => new RevenueByProductDto
-            {
-                ProductId = g.Key.ProductId,
-                ProductName = g.Key.ProductName ?? "Unknown",
-                Quantity = g.Sum(x => x.Quantity),
-                Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+                var product = productDict.ContainsKey(g.Key) ? productDict[g.Key] : null;
+                return new RevenueByProductDto
+                {
+                    ProductId = g.Key,
+                    ProductName = product?.ProductName ?? "Unknown",
+                    Quantity = g.Sum(x => x.Quantity),
+                    Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+                };
             })
             .OrderByDescending(x => x.Revenue)
             .Take(top)
+            .ToList();
+
+        return rows;
+    }
+
+    public async Task<List<RevenueByCategoryDto>> GetRevenueByCategoryAsync(DateTime start, DateTime end)
+    {
+        start = NormalizeStart(start);
+        end = NormalizeEnd(end);
+
+        var items = await _db.OrderItems
+            .Where(oi => oi.Order.PaymentStatus == "paid"
+                      && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
             .ToListAsync();
+
+        var productIds = items.Select(x => x.ProductId).Distinct();
+        var productTasks = productIds.Select(id => _productClient.GetProductByIdAsync(id));
+        var products = await Task.WhenAll(productTasks);
+
+        var categoryIds = products.Where(p => p != null).Select(p => p!.CategoryId).Distinct();
+        var categories = await _categoryClient.GetCategoriesByIdsAsync(categoryIds);
+
+        var productDict = products.Where(p => p != null).ToDictionary(p => p!.ProductId, p => p!);
+        var categoryDict = categories.ToDictionary(c => c.CategoryId, c => c);
+
+        var rows = items
+            .GroupBy(oi =>
+            {
+                var product = productDict.ContainsKey(oi.ProductId) ? productDict[oi.ProductId] : null;
+                return product?.CategoryId ?? 0;
+            })
+            .Select(g =>
+            {
+                var category = categoryDict.ContainsKey(g.Key) ? categoryDict[g.Key] : null;
+                return new RevenueByCategoryDto
+                {
+                    CategoryId = g.Key,
+                    CategoryName = category?.CategoryName ?? "Unknown",
+                    Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+                };
+            })
+            .OrderByDescending(x => x.Revenue)
+            .ToList();
 
         return rows;
     }
