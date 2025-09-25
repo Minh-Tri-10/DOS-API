@@ -71,5 +71,19 @@ namespace CartAPI.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<Cart> CreateCartForUserAsync(int userId)
+        {
+            var cart = new Cart
+            {
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow,
+                CartItems = new List<CartItem>()
+            };
+
+            _context.Carts.Add(cart);
+            await _context.SaveChangesAsync();
+            return cart;
+        }
+
     }
 }

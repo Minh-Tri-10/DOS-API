@@ -1,6 +1,7 @@
 ﻿using CartAPI.Models;
 using CartAPI.Repositories.Interfaces;
 using CartAPI.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CartAPI.Services
 {
@@ -72,5 +73,13 @@ namespace CartAPI.Services
         {
             await _cartRepository.DeleteCartAsync(cartId);
         }
+        public async Task<Cart> GetOrCreateUserCartAsync(int userId)
+        {
+            var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+            if (cart != null) return cart;
+
+            return await _cartRepository.CreateCartForUserAsync(userId);
+        }
+
     }
 }

@@ -23,9 +23,8 @@ namespace CartAPI.Controllers
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<CartDTO>> GetCartByUserId(int userId)
         {
-            var cart = await _cartService.GetUserCartAsync(userId);
-            if (cart == null)
-                return NotFound(new { Message = "Cart not found for user." });
+            // 👉 dùng GetOrCreateUserCartAsync thay vì GetUserCartAsync
+            var cart = await _cartService.GetOrCreateUserCartAsync(userId);
 
             var dto = _mapper.Map<CartDTO>(cart);
             return Ok(dto);

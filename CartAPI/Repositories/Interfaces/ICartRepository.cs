@@ -13,5 +13,7 @@ namespace CartAPI.Repositories.Interfaces
         Task AddCartItemAsync(CartItem cartItem);
         Task UpdateCartItemAsync(CartItem cartItem);
         Task RemoveCartItemAsync(int cartItemId);
+
+        Task<Cart> CreateCartForUserAsync(int userId);
     }
 }
