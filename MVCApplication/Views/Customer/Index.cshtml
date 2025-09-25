@@ -315,7 +315,7 @@
                 <img class="drink-cover" src="@item.ImageUrl" alt="@item.ProductName">
                 <div class="drink-info">
                     <div class="drink-title"><span>@item.ProductName</span><span class="drink-price">@item.Price.ToString("C", new CultureInfo("vi-VN"))</span></div>
-                    <div class="drink-meta"><span class="drink-tag">@(item.CategoryName ?? "Không xác định")</span><button class="drink-btn" type="button">Chọn</button></div>
+                    <div class="drink-meta"><span class="drink-tag">@(item.CategoryName ?? "Không xác định")</span><button class="drink-btn" type="button" data-id="@item.ProductId">Chọn</button></div>
                 </div>
             </div>
         }
@@ -325,26 +325,75 @@
 @section Scripts {
     <script>
         (() => {
-          const chips = document.getElementById('drinkChips');
-          const grid = document.getElementById('drinkGrid');
+          const chips  = document.getElementById('drinkChips');
+          const grid   = document.getElementById('drinkGrid');
           const search = document.getElementById('drinkSearch');
-          function applyFilter(){
+
+          // Lấy user id từ session (render phía server)
+          const CURRENT_USER_ID = @(Context.Session.GetInt32("UserId") ?? 0);
+
+          function applyFilter() {
             const active = chips.querySelector('.drink-chip.active');
             const cat = active ? active.dataset.filter : 'all';
             const q = (search.value || '').trim().toLowerCase();
-            for (const card of grid.children){
-              const matchCat = (cat === 'all') || card.dataset.cat === cat;
+
+            for (const card of grid.children) {
+              const matchCat  = (cat === 'all') || card.dataset.cat === cat;
               const matchText = card.dataset.name.toLowerCase().includes(q);
               card.style.display = (matchCat && matchText) ? '' : 'none';
             }
           }
+
           chips.addEventListener('click', (e) => {
-            const btn = e.target.closest('.drink-chip'); if(!btn) return;
+            const btn = e.target.closest('.drink-chip'); if (!btn) return;
             chips.querySelectorAll('.drink-chip').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
             applyFilter();
           });
+
           search.addEventListener('input', applyFilter);
+
+          // --- Thêm vào giỏ ---
+          grid.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.drink-btn');
+            if (!btn) return;
+
+            if (!CURRENT_USER_ID) {
+              // Chưa đăng nhập → về trang Login
+              window.location.href = '/Accounts/Login';
+              return;
+            }
+
+            const card = btn.closest('.drink-card');
+            const productId = card?.querySelector('.drink-btn')?.dataset.id || btn.dataset.id;
+            const pid = parseInt(productId, 10);
+
+            if (!pid) { alert('❌ Không xác định được sản phẩm'); return; }
+
+            try {
+              const res = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: CURRENT_USER_ID, productId: pid, quantity: 1 })
+              });
+
+              // 401 từ middleware trong MVC khi chưa login
+              if (res.status === 401) { window.location.href = '/Accounts/Login'; return; }
+
+              const data = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
+              if (res.ok) {
+                alert('✅ ' + (data.message || 'Đã thêm/cộng dồn sản phẩm vào giỏ!'));
+              } else {
+                alert('❌ ' + (data.message || 'Không thể thêm sản phẩm'));
+              }
+            } catch (err) {
+              console.error(err);
+              alert('⚠️ Không thể kết nối server!');
+            }
+          });
+
+          // Khởi tạo filter mặc định
+          applyFilter();
         })();
     </script>
 }

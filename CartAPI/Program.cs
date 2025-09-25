@@ -29,7 +29,7 @@ namespace CartAPI
 
             //// AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile)); // MappingProfile như trước
-
+    
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

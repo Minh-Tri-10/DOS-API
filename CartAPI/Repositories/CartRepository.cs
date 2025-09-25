@@ -1,5 +1,5 @@
-﻿using CartAPI.Models;
-//using CartAPI.Data;
+﻿
+using CartAPI.Models;
 using CartAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,25 +8,21 @@ namespace CartAPI.Repositories
     public class CartRepository : ICartRepository
     {
         private readonly CartDbContext _context;
+        public CartRepository(CartDbContext context) => _context = context;
 
-        public CartRepository(CartDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<Cart?> GetCartByUserIdAsync(int userId)
-        {
-            return await _context.Carts
-                .Include(c => c.CartItems)
+        public Task<Cart?> GetCartByUserIdAsync(int userId) =>
+            _context.Carts.Include(c => c.CartItems)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
-        }
 
-        public async Task<Cart?> GetCartByIdAsync(int cartId)
-        {
-            return await _context.Carts
-                .Include(c => c.CartItems)
+        public Task<Cart?> GetCartByIdAsync(int cartId) =>
+            _context.Carts.Include(c => c.CartItems)
                 .FirstOrDefaultAsync(c => c.CartId == cartId);
-        }
+
+        public Task<CartItem?> GetCartItemByIdAsync(int cartItemId) =>
+            _context.CartItems.FirstOrDefaultAsync(i => i.CartItemId == cartItemId);
+
+        public Task<CartItem?> GetCartItemAsync(int cartId, int productId) =>
+            _context.CartItems.FirstOrDefaultAsync(i => i.CartId == cartId && i.ProductId == productId);
 
         public async Task AddCartAsync(Cart cart)
         {
@@ -71,6 +67,7 @@ namespace CartAPI.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
         public async Task<Cart> CreateCartForUserAsync(int userId)
         {
             var cart = new Cart
@@ -79,11 +76,9 @@ namespace CartAPI.Repositories
                 CreatedAt = DateTime.UtcNow,
                 CartItems = new List<CartItem>()
             };
-
             _context.Carts.Add(cart);
             await _context.SaveChangesAsync();
             return cart;
         }
-
     }
 }
