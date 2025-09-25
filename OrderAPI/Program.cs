@@ -1,4 +1,4 @@
-
+﻿
 using Microsoft.EntityFrameworkCore;
 using OrderAPI.Repositories;
 using OrderAPI.Repositories.Interfaces;
@@ -22,9 +22,12 @@ namespace OrderAPI
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
-
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+            builder.Services.AddHttpClient<IUserClient, UserClient>(c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7005/"); // ĐÚNG URL AccountAPI của bạn
+            });
+          
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             var app = builder.Build();
