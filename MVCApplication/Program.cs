@@ -33,6 +33,10 @@ namespace MVCApplication
             {
                 c.BaseAddress = new Uri("https://localhost:7014/");
             });
+            builder.Services.AddHttpClient<IPaymentService, PaymentService>("PaymentAPI", c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7011/");
+            });
 
             // Đăng ký ICartService dùng factory
             builder.Services.AddScoped<ICartService, CartService>();

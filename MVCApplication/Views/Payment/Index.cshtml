@@ -1,0 +1,41 @@
+﻿@model IEnumerable<MVCApplication.DTOs.PaymentResponseDTO>
+
+<h2>Payments</h2>
+<p>
+    <a asp-action="Create">Create New Payment</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>PaymentID</th>
+            <th>OrderID</th>
+            <th>PaidAmount</th>
+            <th>PaymentMethod</th>
+            <th>PaymentDate</th>
+            <th>PaymentStatus</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.PaymentID</td>
+                <td>@item.OrderID</td>
+                <td>@item.PaidAmount</td>
+                <td>@item.PaymentMethod</td>
+                <td>@item.PaymentDate</td>
+                <td>@item.PaymentStatus</td>
+                <td>
+                    <a asp-action="Detail" asp-route-id="@item.PaymentID" class="btn btn-info btn-sm">Detail</a>
+                    <a asp-action="Edit" asp-route-id="@item.PaymentID" class="btn btn-warning btn-sm">Edit</a>
+
+                    <form asp-action="Delete" asp-route-id="@item.PaymentID" method="post" style="display:inline"
+                          onsubmit="return confirm('Are you sure you want to delete this payment?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
