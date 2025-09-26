@@ -1,0 +1,50 @@
+﻿@model MVCApplication.DTOs.CreateOrderDto
+
+<h2>Đặt hàng</h2>
+
+<form id="createOrderForm" asp-action="Create" method="post">
+    <table id="orderItems" border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- JS sẽ fill vào đây -->
+        </tbody>
+    </table>
+
+    <div style="margin-top: 16px;">
+        <button type="submit">Đặt hàng</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const items = JSON.parse(sessionStorage.getItem('checkoutItems') || '[]');
+            const tbody = document.querySelector('#orderItems tbody');
+
+            items.forEach((item, i) => {
+                const total = item.Quantity * item.UnitPrice;
+
+                // Thêm hàng hiển thị
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.ProductName}
+                        <input type="hidden" name="Items[${i}].ProductId" value="${item.ProductId}" />
+                        <input type="hidden" name="Items[${i}].Quantity" value="${item.Quantity}" />
+                        <input type="hidden" name="Items[${i}].UnitPrice" value="${item.UnitPrice}" />
+                    </td>
+                    <td>${item.Quantity}</td>
+                    <td>${item.UnitPrice.toLocaleString('vi-VN')}₫</td>
+                    <td>${total.toLocaleString('vi-VN')}₫</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    </script>
+}

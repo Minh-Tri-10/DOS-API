@@ -1,0 +1,41 @@
+﻿@model MVCApplication.DTOs.OrderDto
+
+<h2>Chi tiết đơn hàng #@Model.OrderId</h2>
+
+<p><strong>Ngày tạo:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+<p><strong>Trạng thái:</strong> @Model.OrderStatus</p>
+<p><strong>Thanh toán:</strong> @Model.PaymentStatus</p>
+
+<table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%; margin-top: 16px;">
+    <thead>
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.Quantity</td>
+                <td>@item.UnitPrice.ToString("N0")₫</td>
+                <td>@(item.Quantity * item.UnitPrice)₫</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" style="text-align:right;"><strong>Tổng tiền:</strong></td>
+            <td>
+                @Model.Items.Sum(i => i.Quantity * i.UnitPrice).ToString("N0")₫
+            </td>
+        </tr>
+    </tfoot>
+</table>
+
+<div style="margin-top: 16px;">
+    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách đơn hàng</a>
+</div>

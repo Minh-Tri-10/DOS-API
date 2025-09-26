@@ -21,6 +21,7 @@ namespace MVCApplication.Services
         {
             var res = await _http.PostAsJsonAsync("api/order", dto);
             if (!res.IsSuccessStatusCode) return null;
+            if (res.Content.Headers.ContentLength == 0) return null; // kiểm tra rỗng
 
             // đọc Location header trả về CreatedAtAction
             var createdOrder = await res.Content.ReadFromJsonAsync<OrderDto>();
@@ -32,5 +33,20 @@ namespace MVCApplication.Services
             var res = await _http.PutAsJsonAsync($"api/order/{id}", dto);
             return res.IsSuccessStatusCode;
         }
+        public async Task<List<OrderDto>?> GetOrdersByUserIdAsync(int userId)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"api/Order/user/{userId}");
+                response.EnsureSuccessStatusCode(); // Kiểm tra mã trạng thái HTTP
+                return await response.Content.ReadFromJsonAsync<List<OrderDto>>();
+            }
+            catch (HttpRequestException ex)
+            {
+                // Xử lý lỗi kết nối hoặc lỗi HTTP khác
+                throw new ApplicationException("Có lỗi xảy ra khi gọi API.", ex);
+            }
+        }
+
     }
 }
