@@ -467,7 +467,7 @@
             {
                 foreach (var item in Model.CartItems)
                 {
-                    <div class="cart-row" data-id="@item.CartItemId" data-price="@item.Price">
+                    <div class="cart-row" data-id="@item.CartItemId" data-price="@item.Price" data-product-id="@item.ProductId">
                         <div class="cell-check">
                             <input type="checkbox" class="cart-checkbox cart-item-check">
                         </div>
@@ -675,35 +675,28 @@
           list.querySelectorAll('.cart-row').forEach(updateLine);
           recalc();
 
-          checkoutBtn.addEventListener('click', async () => {
-            // gom các cart-item được tick
-            const selected = [...list.querySelectorAll('.cart-item-check:checked')];
-            if (selected.length === 0) return;
+        // 🔹 Checkout
+           checkoutBtn.addEventListener('click', () => {
+               const selectedItems = [...list.querySelectorAll('.cart-item-check:checked')].map(cb => {
+                   const row = cb.closest('.cart-row');
+                   return {
+                       ProductId: parseInt(row.dataset.productId, 10),
+                       ProductName: row.querySelector('.cart-name')?.textContent.trim() || '',
+                       Quantity: parseInt(row.querySelector('.cart-qty-input').value, 10),
+                       UnitPrice: parseInt(row.dataset.price, 10)
+                   };
+               });
 
-            const cartItemIds = selected.map(cb => cb.closest('.cart-row').dataset.id);
-            const note = document.getElementById('note').value || "";
+               if (selectedItems.length === 0) return;
 
-            checkoutBtn.textContent = 'Đang tạo đơn…';
-            checkoutBtn.disabled = true;
+               // Lưu vào sessionStorage
+               sessionStorage.setItem('checkoutItems', JSON.stringify(selectedItems));
 
-            try {
-              const res = await fetch('/Orders/CreateFromCart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cartItemIds, note })
-              });
+               // Chuyển sang trang Create Order
+               window.location.href = '/Orders/Create';
+           });
 
-              const data = await res.json().catch(() => ({}));
-              if (!res.ok || !data.orderId) throw new Error(data.message || 'Lỗi tạo đơn');
 
-              // điều hướng tới trang chi tiết đơn
-              window.location.href = `/Orders/Detail/${data.orderId}`;
-            } catch (e) {
-              alert('❌ ' + (e.message || 'Không tạo được đơn hàng'));
-              checkoutBtn.textContent = 'Đặt hàng';
-              checkoutBtn.disabled = false;
-            }
-          });
 
         })();
     </script>

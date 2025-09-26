@@ -1,0 +1,59 @@
+﻿@model IEnumerable<MVCApplication.DTOs.OrderDto>
+
+@{
+    ViewData["Title"] = "Danh sách đơn hàng";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Người đặt</th>
+            <th>Trạng thái</th>
+            <th>Thanh toán</th>
+            <th>Tổng tiền</th>
+            <th>Ngày đặt</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.OrderId</td>
+                <td>@order.FullName</td>
+                <td>@order.OrderStatus</td>
+                <td>@order.PaymentStatus</td>
+                <td>@order.TotalAmount.ToString("C")</td>
+                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <a class="btn btn-sm btn-primary" href="@Url.Action("Details", "Orders", new { id = order.OrderId })">Xem</a>
+                    <a class="btn btn-sm btn-warning" href="@Url.Action("Edit", "Orders", new { id = order.OrderId })">Hủy đơn</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        <!-- Nút Trang trước -->
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage - 1 })" tabindex="-1">Trước</a>
+        </li>
+
+        <!-- Hiển thị số trang -->
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { pageNumber = i })">@i</a>
+            </li>
+        }
+
+        <!-- Nút Trang kế -->
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage + 1 })">Kế tiếp</a>
+        </li>
+    </ul>
+</nav>

@@ -34,7 +34,9 @@ namespace OrderAPI.Controllers
         public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
         {
             var orderId = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = orderId }, null);
+            var order = await _service.GetByIdAsync(orderId);
+
+            return CreatedAtAction(nameof(Get), new { id = orderId }, order);
         }
 
         [HttpPut("{id}")]
