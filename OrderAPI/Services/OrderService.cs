@@ -11,12 +11,16 @@ namespace OrderAPI.Services
         private readonly IOrderRepository _repo;
         private readonly IMapper _mapper;
         private readonly IUserClient _userClient;
-
-        public OrderService(IOrderRepository repo, IMapper mapper, IUserClient userClient)
+        private readonly IProductClient _productClient;
+        private readonly ICategoryClient _categoryClient;
+        public OrderService(IOrderRepository repo, IMapper mapper, IUserClient userClient, IProductClient productClient
+            , ICategoryClient categoryClient)
         {
             _repo = repo;
             _mapper = mapper;
             _userClient = userClient;
+            _productClient = productClient;
+            _categoryClient = categoryClient;
         }
 
         //public async Task<IEnumerable<OrderDto>> GetAllAsync()
@@ -38,6 +42,21 @@ namespace OrderAPI.Services
             foreach (var dto in orderDtos)
             {
                 dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
+
+                // Gọi sang ProductService và CategoryService để enrich dữ liệu
+                foreach (var item in dto.Items)
+                {
+                    var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        item.ProductName = product.ProductName;
+                        if (product.CategoryId > 0)
+                        {
+                            var category = await _categoryClient.GetCategoryByIdAsync(product.CategoryId);
+                            item.CategoryName = category?.CategoryName;
+                        }
+                    }
+                }
             }
 
             return orderDtos;
@@ -47,9 +66,26 @@ namespace OrderAPI.Services
         {
             var order = await _repo.GetOrderDetailsByIdAsync(id);
             var dto = _mapper.Map<OrderDto>(order);
+
             dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
+
+            foreach (var item in dto.Items)
+            {
+                var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    item.ProductName = product.ProductName;
+                    if (product.CategoryId > 0)
+                    {
+                        var category = await _categoryClient.GetCategoryByIdAsync(product.CategoryId);
+                        item.CategoryName = category?.CategoryName;
+                    }
+                }
+            }
+
             return dto;
         }
+
 
         public async Task<int> CreateAsync(CreateOrderDto dto)
         {
