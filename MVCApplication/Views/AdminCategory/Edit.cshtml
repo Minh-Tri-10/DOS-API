@@ -465,11 +465,21 @@
         margin-top: 4px;
         display: block;
     }
+
+    .form-group select:focus,
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none !important; /* Tắt outline mặc định */
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: none !important; /* Xóa ánh sáng viền */
+        background: inherit; /* Giữ nguyên nền, không bị trắng */
+        color: inherit;
+    }
 </style>
 
 <div class="page-block">
     <div class="page-heading">
-        <h2>Edit Category</h2>
+        <h2>Chỉnh sửa danh mục sản phẩm</h2>
         <div class="under"></div>
     </div>
     <div class="card-surface">
@@ -486,8 +496,8 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="actions">
-                <input type="submit" value="Update" class="btn-ban unban" />
-                <a asp-action="Index" class="btn-ban">Back to List</a>
+                <input type="submit" value="Cập nhật" class="btn-ban unban" />
+                <a asp-action="Index" class="btn-ban">Quay lại</a>
             </div>
         </form>
     </div>

@@ -3,12 +3,10 @@
     // Lấy page hiện tại từ RouteData (Razor Pages)
     var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
     if (currentPage.EndsWith("/") && currentPage.Length > 1) currentPage = currentPage.TrimEnd('/');
-
     var isAuth = User?.Identity?.IsAuthenticated == true;
     var userName = isAuth ? User.Identity?.Name : "Guest";
     var userEmail = isAuth ? User.Claims.FirstOrDefault(c => c.Type.Contains("email"))?.Value ?? "guest@example.com" : "guest@example.com";
     var avatarUrl = "https://i.pravatar.cc/128?img=5";
-
     // 🔹 Lấy UserId từ Session (MVC)
     var sessionUserId = Context.Session.GetInt32("UserId") ?? 0;
 }
@@ -18,11 +16,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"]</title>
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
-
     <!-- 🔹 Badge styling cho icon Cart -->
     <style>
         .rail-item {
@@ -50,7 +46,6 @@
     </style>
 </head>
 <body class="layout-rail">
-
     <!-- LEFT RAIL -->
     <aside class="rail">
         <!-- Avatar -> user popup -->
@@ -58,14 +53,12 @@
             <img src="@avatarUrl" alt="Avatar" class="avatar-img" />
             <span class="status-dot"></span>
         </button>
-
         @{
             // Lấy page hiện tại để so sánh
             currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
             if (currentPage.EndsWith("/") && currentPage.Length > 1)
                 currentPage = currentPage.TrimEnd('/');
         }
-
         <!--So sánh để active icon của sidebar-->
         <nav class="rail-nav">
             <!-- Home -->
@@ -82,7 +75,6 @@
                     <rect x="14" y="14" width="7" height="7" />
                 </svg>
             </a>
-
             <!-- Cart (có badge) -->
             <a class="rail-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Cart" ? "active" : "")"
                asp-controller="Cart" asp-action="Index">
@@ -94,8 +86,18 @@
                 </svg>
                 <span id="cartBadge" class="cart-badge">0</span>
             </a>
+            <!-- Products List -->
+            <a class="rail-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active" : "")"
+               asp-controller="Customer" asp-action="Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Products"
+               aria-label="Products">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                </svg>
+            </a>
         </nav>
-
         <!-- Bottom: settings + sign out -->
         <div class="rail-bottom">
             <button class="rail-item" data-bs-toggle="modal" data-bs-target="#settingsModal" data-bs-title="Settings" aria-label="Settings">
@@ -114,12 +116,10 @@
             </a>
         </div>
     </aside>
-
     <!-- CONTENT -->
     <main class="content">
         @RenderBody()
     </main>
-
     <!-- USER MODAL -->
     <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -142,7 +142,6 @@
             </div>
         </div>
     </div>
-
     <!-- QUICK SETTINGS -->
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -175,16 +174,13 @@
             </div>
         </div>
     </div>
-
     <!-- Expose CURRENT_USER_ID cho JS -->
     <script>
         window.CURRENT_USER_ID = @sessionUserId;
     </script>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     <!-- 🔹 Script: load số món trong giỏ & hiển thị badge -->
     <script>
         async function fetchCartCount(userId) {
@@ -195,13 +191,10 @@
             return Array.isArray(cart?.cartItems) ? cart.cartItems.length : 0;
           } catch { return 0; }
         }
-
         async function updateCartBadge() {
           const badge = document.getElementById('cartBadge');
           const userId = window.CURRENT_USER_ID || 0;
-
           if (!badge || !userId) { badge.style.display = 'none'; return; }
-
           const count = await fetchCartCount(userId);
           if (count > 0) {
             badge.textContent = count > 99 ? '99+' : String(count);
@@ -210,11 +203,9 @@
             badge.style.display = 'none';
           }
         }
-
         window.updateCartBadge = updateCartBadge;
         document.addEventListener('DOMContentLoaded', updateCartBadge);
     </script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

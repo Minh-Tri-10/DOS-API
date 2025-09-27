@@ -8,7 +8,7 @@ namespace MVCApplication.Controllers
     public class CustomerController : Controller
     {
         private readonly IProductService _productService;
-
+        private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
         public CustomerController(IProductService productService)
         {
             _productService = productService;
@@ -16,6 +16,7 @@ namespace MVCApplication.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (CurrentUserId == null) return RedirectToAction("Login", "Accounts");
             var products = await _productService.GetAllAsync();
             return View(products);
         }
