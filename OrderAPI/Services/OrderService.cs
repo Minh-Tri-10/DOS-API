@@ -10,24 +10,82 @@ namespace OrderAPI.Services
     {
         private readonly IOrderRepository _repo;
         private readonly IMapper _mapper;
-
-        public OrderService(IOrderRepository repo, IMapper mapper)
+        private readonly IUserClient _userClient;
+        private readonly IProductClient _productClient;
+        private readonly ICategoryClient _categoryClient;
+        public OrderService(IOrderRepository repo, IMapper mapper, IUserClient userClient, IProductClient productClient
+            , ICategoryClient categoryClient)
         {
             _repo = repo;
             _mapper = mapper;
+            _userClient = userClient;
+            _productClient = productClient;
+            _categoryClient = categoryClient;
         }
 
+        //public async Task<IEnumerable<OrderDto>> GetAllAsync()
+        //{
+        //    var orders = await _repo.GetAllAsync();
+        //    return _mapper.Map<IEnumerable<OrderDto>>(orders);
+        //}
+
+        //public async Task<OrderDto> GetByIdAsync(int id)
+        //{
+        //    var order = await _repo.GetOrderDetailsByIdAsync(id);
+        //    return _mapper.Map<OrderDto>(order);
+        //}
         public async Task<IEnumerable<OrderDto>> GetAllAsync()
         {
             var orders = await _repo.GetAllAsync();
-            return _mapper.Map<IEnumerable<OrderDto>>(orders);
+            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(orders);
+
+            foreach (var dto in orderDtos)
+            {
+                dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
+
+                // Gọi sang ProductService và CategoryService để enrich dữ liệu
+                foreach (var item in dto.Items)
+                {
+                    var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        item.ProductName = product.ProductName;
+                        if (product.CategoryId > 0)
+                        {
+                            var category = await _categoryClient.GetCategoryByIdAsync(product.CategoryId);
+                            item.CategoryName = category?.CategoryName;
+                        }
+                    }
+                }
+            }
+
+            return orderDtos;
         }
 
         public async Task<OrderDto> GetByIdAsync(int id)
         {
             var order = await _repo.GetOrderDetailsByIdAsync(id);
-            return _mapper.Map<OrderDto>(order);
+            var dto = _mapper.Map<OrderDto>(order);
+
+            dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
+
+            foreach (var item in dto.Items)
+            {
+                var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    item.ProductName = product.ProductName;
+                    if (product.CategoryId > 0)
+                    {
+                        var category = await _categoryClient.GetCategoryByIdAsync(product.CategoryId);
+                        item.CategoryName = category?.CategoryName;
+                    }
+                }
+            }
+
+            return dto;
         }
+
 
         public async Task<int> CreateAsync(CreateOrderDto dto)
         {
@@ -50,7 +108,17 @@ namespace OrderAPI.Services
         public async Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId)
         {
             var orders = await _repo.GetOrdersByUserIdAsync(userId);
-            return _mapper.Map<List<OrderDto>>(orders);
+            var orderDtos = _mapper.Map<List<OrderDto>>(orders);
+
+            // Gọi sang UserService để lấy FullName
+            var fullName = await _userClient.GetFullNameByIdAsync(userId);
+
+            // Gán fullname cho tất cả orders của user này
+            foreach (var dto in orderDtos)
+            {
+                dto.FullName = fullName;
+            }
+            return orderDtos;
         }
 
         public async Task MarkAsPaidAsync(int orderId) =>

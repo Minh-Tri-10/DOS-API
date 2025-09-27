@@ -21,7 +21,10 @@ namespace AccountAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<DrinkOrderContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+
+
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
             // Email DI (NEW)
             builder.Services.AddSingleton(sp =>

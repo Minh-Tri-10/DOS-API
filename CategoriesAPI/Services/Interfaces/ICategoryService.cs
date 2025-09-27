@@ -11,5 +11,7 @@ namespace CategoriesAPI.Services.Interfaces
         Task UpdateAsync(int id, UpdateCategoryDTO dto);
         Task DeleteAsync(int id);
         Task<bool> IsNameUniqueAsync(string name, int? excludeId = null);  // Mới: Kiểm tra unique
+        Task<IEnumerable<CategoryDTO>> GetByIdsAsync(IEnumerable<int> ids);
+
     }
 }

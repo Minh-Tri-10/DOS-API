@@ -456,6 +456,18 @@
         margin-top: 4px;
         display: block;
     }
+
+    .form-group select:focus,
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none !important; /* Tắt outline mặc định */
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: none !important; /* Xóa ánh sáng viền */
+        background: inherit; /* Giữ nguyên nền, không bị trắng */
+        color: inherit;
+    }
+
+
 </style>
 <div class="page-block">
     <div class="page-heading">
@@ -463,7 +475,7 @@
         <div class="under"></div>
     </div>
     <div class="card-surface form-card">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <input type="hidden" asp-for="@ViewData["ProductId"]" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -493,9 +505,8 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="ImageUrl">URL Hình ảnh</label>
-                <input asp-for="ImageUrl" class="form-control" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                <label>Ảnh sản phẩm</label>
+                <input type="file" name="imageFile" class="form-control" />
             </div>
             <div class="actions">
                 <button type="submit" class="btn-ban unban">Lưu</button>

@@ -16,9 +16,9 @@ namespace OrderAPI.Repositories
         public async Task<IEnumerable<Order>> GetAllAsync()
         {
             return await _context.Orders
-                .Include(o => o.User)
+                //.Include(o => o.User)
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+                //.ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
 
@@ -27,8 +27,9 @@ namespace OrderAPI.Repositories
 
         public async Task<Order> GetOrderDetailsByIdAsync(int id) =>
             await _context.Orders
-                .Include(o => o.User)
-                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                //.Include(o => o.User)
+                .Include(o => o.OrderItems)
+            //.ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
 
         public async Task<int> CreateOrderAsync(Order order, List<OrderItem> items)
@@ -82,8 +83,8 @@ namespace OrderAPI.Repositories
                 .Include(o => o.OrderItems)
                 .ToListAsync();
 
-        public async Task<User> GetUserByIdAsync(int userId) =>
-            await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        //public async Task<User> GetUserByIdAsync(int userId) =>
+        //    await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
 
         public async Task MarkOrderAsPaidAsync(int orderId)
         {

@@ -1,12 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MVCApplication.DTOs;
+using MVCApplication.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace MVCApplication.Controllers
 {
     public class CustomerController : Controller
     {
-        public IActionResult Index()
+        private readonly IProductService _productService;
+
+        public CustomerController(IProductService productService)
         {
-            return View();
+            _productService = productService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var products = await _productService.GetAllAsync();
+            return View(products);
         }
     }
 }

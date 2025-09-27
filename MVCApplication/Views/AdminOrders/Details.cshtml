@@ -372,7 +372,7 @@
             <div class="od-grid">
                 <div class="od-field">
                     <div class="od-label">User</div>
-                    <div class="od-value">@Model.UserId</div>
+                    <div class="od-value">@Model.FullName</div>
                 </div>
                 <div class="od-field">
                     <div class="od-label">Ngày tạo</div>
@@ -416,7 +416,7 @@
                         @foreach (var item in Model.Items)
                         {
                             <tr>
-                                <td><strong>@item.ProductId</strong></td>
+                                <td><strong>@item.ProductName</strong></td>
                                 <td class="qty">@item.Quantity</td>
                                 <td class="price">@item.UnitPrice.ToString("c0", vi)</td>
                             </tr>

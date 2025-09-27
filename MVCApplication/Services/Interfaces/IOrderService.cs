@@ -8,5 +8,7 @@ namespace MVCApplication.Services.Interfaces
         Task<List<OrderDto>> GetAllAsync();
         Task<OrderDto?> GetByIdAsync(int id);
         Task<bool> UpdateAsync(int id, UpdateOrderDto dto);
+        Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId); // ⚡ sửa trả về List<OrderDto>
+
     }
 }

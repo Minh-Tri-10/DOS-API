@@ -33,6 +33,13 @@ namespace CategoriesAPI.Controllers
             return Ok(category);
         }
 
+        [HttpPost("by-ids")]
+        public async Task<IActionResult> GetByIds([FromBody] List<int> ids)
+        {
+            var categories = await _service.GetByIdsAsync(ids);
+            return Ok(categories);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateCategoryDTO dto)
         {
