@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
+using System.Security.Claims;
 
     namespace MVCApplication.Controllers
     {
@@ -18,19 +19,22 @@ using MVCApplication.Services.Interfaces;
             _httpClientFactory = httpClientFactory;
         }
 
+        // Property helper để lấy CurrentUserId từ Claims (hoặc thay bằng Session.GetInt32("UserId") nếu dùng session)
+        private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
+
         public async Task<IActionResult> Index()
-            {
-                var products = await _productService.GetAllAsync();
-                var categories = await _categoryService.GetAllAsync();
-                ViewBag.Categories = categories.ToDictionary(c => c.CategoryId, c => c.CategoryName);
-                var debug = string.Join(", ", categories.Select(c => $"{c.CategoryId}:{c.CategoryName}"));
-                Console.WriteLine(debug);
+        {
+            if (CurrentUserId == null) return RedirectToAction("Login", "Accounts");
+            var products = await _productService.GetAllAsync();
+            var categories = await _categoryService.GetAllAsync();
+            ViewBag.Categories = categories.ToDictionary(c => c.CategoryId, c => c.CategoryName);
+            var debug = string.Join(", ", categories.Select(c => $"{c.CategoryId}:{c.CategoryName}"));
+            Console.WriteLine(debug);
+            return View(products);
+        }
 
-                return View(products);
-            }
-
-            // GET: Product/Details/5
-            public async Task<IActionResult> Details(int id)
+        // GET: Product/Details/5
+        public async Task<IActionResult> Details(int id)
             {
                 var product = await _productService.GetByIdAsync(id);
                 if (product == null)

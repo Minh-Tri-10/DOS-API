@@ -108,8 +108,30 @@
         }
 
         .file-label::before {
-            content: "Chọn tệp ảnh"; /* Văn bản mặc định */
+            content: ""; /* Văn bản mặc định */
             margin-right: 8px;
+        }
+
+    select.form-control {
+        appearance: none; /* Ẩn mũi tên mặc định */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="var(--muted)"><polygon points="0,0 12,0 6,8"/></svg>'); /* Thêm mũi tên tùy chỉnh */
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+        padding-right: 30px; /* Không gian cho mũi tên */
+        cursor: pointer;
+        color: white; /* Text trắng nổi bật */
+        background: color-mix(in oklab, var(--bg-soft) 100%, transparent); /* Nền cùng background */
+    }
+
+        select.form-control option {
+            background: color-mix(in oklab, var(--bg-soft) 100%, transparent); /* Nền options cùng background */
+            color: white; /* Text options trắng nổi bật */
+        }
+
+        select.form-control:focus {
+            border-color: var(--accent); /* Đổi border khi focus, nếu muốn */
+            box-shadow: 0 0 8px color-mix(in oklab, var(--accent) 30%, transparent); /* Glow nhẹ, tùy chỉnh nếu cần */
         }
 </style>
 <div class="page-block">
@@ -142,7 +164,7 @@
             </div>
             <div class="form-group">
                 <label>Ảnh sản phẩm</label>
-                <label for="imageFile" class="file-label"></label>
+                <label for="imageFile" class="file-label">Chọn tệp ảnh</label>
                 <input type="file" name="imageFile" id="imageFile" />
             </div>
             <div class="form-group">
@@ -161,4 +183,14 @@
 </div>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('imageFile').addEventListener('change', function() {
+            const label = document.querySelector('.file-label');
+            if (this.files.length > 0) {
+                label.textContent = 'Đã chọn: ' + this.files[0].name;
+            } else {
+                label.textContent = 'Chọn tệp ảnh';
+            }
+        });
+    </script>
 }
