@@ -1,0 +1,223 @@
+﻿<style >
+/* ===== WOW PACK v2 – Payments page (dark/light theo biến layout) ===== */
+.page-block {
+    padding: 16px 0;
+}
+
+.page-heading {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin: 0 0 18px;
+}
+
+    .page-heading h2 {
+        margin: 0;
+        font-weight: 800;
+        letter-spacing: .2px;
+        line-height: 1.1;
+    }
+
+    .page-heading .under {
+        position: relative;
+        height: 6px;
+        flex: 1;
+        min-width: 120px;
+        border-radius: 999px;
+        background: linear-gradient(90deg,var(--accent),var(--accent2));
+        filter: saturate(1.1) brightness(1.05);
+        box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
+    }
+
+.card-surface {
+    position: relative;
+    isolation: isolate;
+    background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+    color: var(--text);
+    border: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+    overflow: hidden;
+}
+
+    .card-surface::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        z-index: -1;
+        background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 40%);
+        filter: blur(10px) saturate(1.2);
+        opacity: .45;
+        mask: linear-gradient(#000 0 0);
+        animation: ringFloat 12s linear infinite;
+    }
+
+@@keyframes ringFloat {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+.card-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%);
+    opacity: .35;
+}
+
+.table-wrap {
+    position: relative;
+    z-index: 1;
+    overflow: auto;
+    border-radius: 16px;
+}
+
+    .table-wrap::-webkit-scrollbar {
+        height: 10px;
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb {
+        background: color-mix(in oklab,var(--muted) 35%, transparent);
+        border-radius: 30px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+    }
+
+.user-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 860px;
+    color: var(--text);
+    table-layout: fixed;
+    backdrop-filter: saturate(1.05);
+}
+
+    .user-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 6%, transparent), transparent);
+        backdrop-filter: blur(6px);
+        text-align: left;
+        font-weight: 700;
+        letter-spacing: .2px;
+        padding: 16px 12px;
+        font-size: 13.5px;
+        color: var(--muted);
+        border-bottom: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+    }
+
+    .user-table tbody td {
+        padding: 12px 12px;
+        font-size: 15px;
+        vertical-align: middle;
+        border-bottom: 1px dashed color-mix(in oklab,var(--border) 70%, transparent);
+        background: color-mix(in oklab,transparent 100%, transparent);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Thu hẹp cột Mã thanh toán và Mã đơn hàng */
+    .user-table th:nth-child(1), .user-table td:nth-child(1),
+    .user-table th:nth-child(2), .user-table td:nth-child(2) {
+        width: 90px;
+    }
+
+    .user-table tbody tr:nth-child(even) {
+        background: linear-gradient(0deg, color-mix(in oklab,#fff 3%, transparent), transparent);
+    }
+
+    .user-table tbody tr:hover {
+        transform: translateY(-1px);
+        background: linear-gradient(0deg, color-mix(in oklab,#fff 5%, transparent), transparent), linear-gradient(90deg, color-mix(in oklab,var(--accent) 14%, transparent), transparent 40%);
+        box-shadow: 0 8px 22px color-mix(in oklab,#000 22%, transparent);
+    }
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Nút đồng đều kích thước */
+.btn-ban {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    min-width: 70px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .25s ease;
+    box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab,#000 30%, transparent);
+    text-align: center;
+}
+
+/* Màu chữ cho theme sáng */
+:root[data-theme="light"] .btn-detail {
+    color: #065f46;
+}
+
+:root[data-theme="light"] .btn-edit {
+    color: #0f172a;
+}
+
+:root[data-theme="light"] .btn-delete {
+    color: #7f1d1d;
+}
+
+.btn-detail {
+    background: linear-gradient(180deg, color-mix(in oklab,#22c55e 20%, transparent), color-mix(in oklab,#16a34a 15%, transparent));
+    border-color: rgba(34,197,94,.35);
+    color: #dcfce7;
+}
+
+.btn-edit {
+    background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 12%, transparent), color-mix(in oklab,var(--accent2) 12%, transparent));
+    color: var(--text);
+}
+
+.btn-delete {
+    background: linear-gradient(180deg, color-mix(in oklab,#ef4444 20%, transparent), color-mix(in oklab,#dc2626 15%, transparent));
+    border-color: rgba(239,68,68,.35);
+    color: #fee2e2;
+}
+
+.btn-ban:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.empty-state {
+    display: grid;
+    place-items: center;
+    padding: 64px 18px;
+    text-align: center;
+    gap: 10px;
+    color: var(--muted);
+}
+
+    .empty-state .badge {
+        display: inline-grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 18%, transparent), transparent);
+        border: 1px solid color-mix(in oklab,var(--accent) 30%, var(--border) 70%);
+        box-shadow: 0 10px 22px color-mix(in oklab,#000 26%, transparent);
+    }
+
+</style >

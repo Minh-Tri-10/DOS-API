@@ -45,6 +45,10 @@ namespace MVCApplication
             {
                 c.BaseAddress = new Uri("https://localhost:7021/"); // TODO: chỉnh cổng thật
             });
+            builder.Services.AddHttpClient<IPaymentService, PaymentService>("PaymentAPI", c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7011/");
+            });
 
             // HttpClient dùng chung để gọi OrderAPI (Stats endpoints)
             builder.Services.AddHttpClient("OrderApi", c =>
