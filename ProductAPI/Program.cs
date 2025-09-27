@@ -22,7 +22,7 @@ namespace ProductAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 
             // Đăng ký AutoMapper
             builder.Services.AddAutoMapper(typeof(ProductProfile));

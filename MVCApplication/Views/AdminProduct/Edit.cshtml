@@ -1,0 +1,509 @@
+﻿@model MVCApplication.DTOs.UpdateProductDTO
+@{
+    ViewData["Title"] = "Sửa Sản phẩm";
+    Layout = "_Layout.Admin";
+}
+<style>
+    .page-block {
+        padding: 16px 0
+    }
+
+    .page-heading {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px
+    }
+
+        .page-heading h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1
+        }
+
+        .page-heading .under {
+            position: relative;
+            height: 6px;
+            flex: 1;
+            min-width: 120px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            filter: saturate(1.1) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
+        }
+    /* ---------- card glass + viền gradient tinh tế ---------- */
+    .card-surface {
+        position: relative;
+        isolation: isolate;
+        background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+        color: var(--text);
+        border: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+        border-radius: 18px;
+        box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+        overflow: hidden;
+        padding: 24px;
+    }
+
+        .card-surface::before {
+            /* viền gradient mờ chạy nhẹ */
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 40%);
+            filter: blur(10px) saturate(1.2);
+            opacity: .45;
+            mask: linear-gradient(#000 0 0);
+            animation: ringFloat 12s linear infinite;
+        }
+
+    @@keyframes ringFloat {
+        to {
+            transform: rotate(1turn)
+        }
+    }
+    /* ---------- nền pattern siêu nhẹ bên trong bảng ---------- */
+    .card-surface::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%);
+        opacity: .35;
+    }
+    /* ---------- wrap bảng + scrollbar đẹp ---------- */
+    .table-wrap {
+        position: relative;
+        z-index: 1;
+        overflow: auto;
+        border-radius: 16px
+    }
+
+        .table-wrap::-webkit-scrollbar {
+            height: 10px
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb {
+            background: color-mix(in oklab,var(--muted) 35%, transparent);
+            border-radius: 30px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+    /* ---------- bảng glassy + hover “lifted row” ---------- */
+    .user-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 760px;
+        color: var(--text);
+        table-layout: fixed;
+        backdrop-filter: saturate(1.05);
+    }
+
+        .user-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: linear-gradient(180deg, color-mix(in oklab,#fff 6%, transparent), transparent);
+            backdrop-filter: blur(6px);
+            text-align: left;
+            font-weight: 700;
+            letter-spacing: .2px;
+            padding: 16px 18px;
+            font-size: 13.5px;
+            color: var(--muted);
+            border-bottom: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+        }
+
+            .user-table thead th:first-child {
+                border-top-left-radius: 16px
+            }
+
+            .user-table thead th:last-child {
+                border-top-right-radius: 16px
+            }
+
+        .user-table tbody td {
+            padding: 16px 18px;
+            font-size: 15px;
+            vertical-align: middle;
+            border-bottom: 1px dashed color-mix(in oklab,var(--border) 70%, transparent);
+            background: color-mix(in oklab,transparent 100%, transparent);
+        }
+        /* striping mờ và highlight trái khi hover */
+        .user-table tbody tr:nth-child(even) {
+            background: linear-gradient(0deg, color-mix(in oklab,#fff 3%, transparent), transparent);
+        }
+
+        .user-table tbody tr {
+            transition: transform .18s ease, background .25s ease, box-shadow .25s ease;
+        }
+
+            .user-table tbody tr:hover {
+                transform: translateY(-1px);
+                background: linear-gradient(0deg, color-mix(in oklab,#fff 5%, transparent), transparent), linear-gradient(90deg, color-mix(in oklab,var(--accent) 14%, transparent), transparent 40%);
+                box-shadow: 0 8px 22px color-mix(in oklab,#000 22%, transparent);
+            }
+            /* bo góc cuối bảng */
+            .user-table tbody tr:last-child td:first-child {
+                border-bottom-left-radius: 16px
+            }
+
+            .user-table tbody tr:last-child td:last-child {
+                border-bottom-right-radius: 16px
+            }
+        /* ---------- layout cột sang chuẩn dashboard ---------- */
+        .user-table th:nth-child(1), .user-table td:nth-child(1) {
+            width: 110px
+        }
+        /* ID */
+        .user-table th:nth-child(2), .user-table td:nth-child(2) {
+            width: 230px
+        }
+        /* Username */
+        .user-table th:nth-child(3), .user-table td:nth-child(3) {
+            width: auto
+        }
+        /* Description */
+        .user-table th:nth-child(4), .user-table td:nth-child(4) {
+            width: 350px;
+            text-align: center
+        }
+    /* Actions - increased width for horizontal buttons */
+    /* ---------- ID/Email/Username style ---------- */
+    .cell-id {
+        font-variant-numeric: tabular-nums;
+        color: var(--muted)
+    }
+
+    .cell-username {
+        font-weight: 700
+    }
+
+    .cell-email {
+        color: var(--muted);
+        word-break: break-all
+    }
+    /* ---------- SUPER PILL: gradient glass + glow nhẹ & width đồng bộ ---------- */
+    .pill {
+        display: inline-grid;
+        place-items: center;
+        width: 100%;
+        min-width: 150px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-size: 13.5px;
+        font-weight: 700;
+        letter-spacing: .25px;
+        position: relative;
+        isolation: isolate;
+        color: var(--text);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent), color-mix(in oklab, var(--bg-soft) 80%, transparent);
+        border: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+        box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab,#000 30%, transparent);
+        transition: box-shadow .25s ease, transform .12s ease, background .25s ease;
+        white-space: nowrap;
+    }
+
+        .pill::before {
+            /* viền ánh sáng vòng trong */
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: -1;
+            background: radial-gradient(80% 140% at 50% 0%, color-mix(in oklab,var(--accent) 30%, transparent), transparent 55%);
+            opacity: .45;
+            filter: saturate(1.2) blur(6px);
+        }
+
+        .pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 1px 0 color-mix(in oklab,#fff 8%, transparent) inset, 0 10px 26px color-mix(in oklab, var(--accent2) 26%, transparent);
+        }
+        /* role tone xanh gradient */
+        .pill.role {
+            background: linear-gradient(180deg, color-mix(in oklab,var(--accent2) 16%, transparent), color-mix(in oklab,var(--accent) 12%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+            border-color: color-mix(in oklab, var(--accent2) 40%, var(--border) 60%);
+            text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+        }
+        /* status: active / banned – màu khác nhau + dot */
+        .pill.status {
+            position: relative;
+            padding-left: 34px
+        }
+
+            .pill.status::after {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                box-shadow: 0 0 0 3px color-mix(in oklab,#000 35%, transparent) inset, 0 0 10px currentColor;
+            }
+
+            .pill.status.active {
+                background: linear-gradient(180deg, color-mix(in oklab,#22c55e 22%, transparent), color-mix(in oklab,#16a34a 12%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+                border-color: color-mix(in oklab,#22c55e 45%, var(--border) 55%);
+                text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+                color: #dcfce7;
+            }
+
+                .pill.status.active::after {
+                    background: #22c55e
+                }
+
+            .pill.status.banned {
+                background: linear-gradient(180deg, color-mix(in oklab,#ef4444 22%, transparent), color-mix(in oklab,#dc2626 12%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+                border-color: color-mix(in oklab,#ef4444 45%, var(--border) 55%);
+                text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+                color: #fee2e2;
+            }
+
+                .pill.status.banned::after {
+                    background: #ef4444
+                }
+    /* ---------- empty state (nếu model rỗng) ---------- */
+    .empty-state {
+        display: grid;
+        place-items: center;
+        padding: 64px 18px;
+        text-align: center;
+        gap: 10px;
+        color: var(--muted);
+    }
+
+        .empty-state .badge {
+            display: inline-grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 18%, transparent), transparent);
+            border: 1px solid color-mix(in oklab,var(--accent) 30%, var(--border) 70%);
+            box-shadow: 0 10px 22px color-mix(in oklab,#000 26%, transparent);
+        }
+    /* ---------- light theme tuning ---------- */
+    :root[data-theme="light"] .card-surface {
+        background: #fff;
+        box-shadow: 0 10px 28px rgba(2,8,23,.08)
+    }
+
+        :root[data-theme="light"] .card-surface::after {
+            opacity: .25
+        }
+
+    :root[data-theme="light"] .user-table thead th {
+        background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01));
+        border-bottom: 1px solid var(--border);
+    }
+
+    :root[data-theme="light"] .user-table tbody tr:nth-child(even) {
+        background: linear-gradient(0deg, rgba(0,0,0,.02), transparent)
+    }
+
+    :root[data-theme="light"] .user-table tbody tr:hover {
+        background: linear-gradient(0deg, rgba(0,0,0,.03), transparent), linear-gradient(90deg, color-mix(in oklab,var(--accent) 18%, transparent), transparent 40%);
+    }
+
+    :root[data-theme="light"] .pill {
+        color: #0f172a;
+        text-shadow: none;
+        border-color: rgba(0,0,0,.08);
+        background: linear-gradient(180deg, #fff, #f7f8fb);
+    }
+
+        :root[data-theme="light"] .pill.role {
+            background: linear-gradient(180deg, rgba(59,130,246,.18), rgba(14,165,233,.14), #fff 75%);
+            border-color: rgba(59,130,246,.35);
+        }
+
+        :root[data-theme="light"] .pill.status.active {
+            background: linear-gradient(180deg, rgba(34,197,94,.20), rgba(34,197,94,.12), #fff 75%);
+            border-color: rgba(34,197,94,.30);
+            color: #064e3b;
+        }
+
+        :root[data-theme="light"] .pill.status.banned {
+            background: linear-gradient(180deg, rgba(239,68,68,.20), rgba(239,68,68,.12), #fff 75%);
+            border-color: rgba(239,68,68,.28);
+            color: #7f1d1d;
+        }
+    /* ---------- responsive ---------- */
+    @@media (max-width: 992px) {
+        .user-table {
+            min-width: 680px
+        }
+    }
+    /* ===== ACTION BUTTON ===== */
+    .btn-ban {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 18px;
+        font-size: 13.5px;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .25s ease;
+        background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 12%, transparent), color-mix(in oklab,var(--accent2) 12%, transparent));
+        color: var(--text);
+        box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab,#000 30%, transparent);
+    }
+
+        .btn-ban:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+        /* hai trạng thái riêng */
+        .btn-ban.ban {
+            background: linear-gradient(180deg, color-mix(in oklab,#ef4444 20%, transparent), color-mix(in oklab,#dc2626 15%, transparent));
+            border-color: rgba(239,68,68,.35);
+            color: #fee2e2;
+            text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+        }
+
+            .btn-ban.ban:hover {
+                box-shadow: 0 8px 22px color-mix(in oklab,#ef4444 25%, transparent);
+            }
+
+        .btn-ban.unban {
+            background: linear-gradient(180deg, color-mix(in oklab,#22c55e 20%, transparent), color-mix(in oklab,#16a34a 15%, transparent));
+            border-color: rgba(34,197,94,.35);
+            color: #dcfce7;
+            text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+        }
+
+            .btn-ban.unban:hover {
+                box-shadow: 0 8px 22px color-mix(in oklab,#22c55e 25%, transparent);
+            }
+    /* Light theme overrides */
+    :root[data-theme="light"] .btn-ban {
+        color: #0f172a;
+        text-shadow: none;
+        border-color: rgba(0,0,0,.08);
+    }
+
+        :root[data-theme="light"] .btn-ban.ban {
+            background: linear-gradient(180deg,#fee2e2,#fecaca);
+            color: #7f1d1d;
+        }
+
+        :root[data-theme="light"] .btn-ban.unban {
+            background: linear-gradient(180deg,#bbf7d0,#86efac);
+            color: #064e3b;
+        }
+    /* New styles for horizontal buttons */
+    .actions {
+        display: flex;
+        justify-content: flex-start;
+        gap: 12px;
+        align-items: center;
+        margin-top: 24px;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    /* Styles for form to match the theme */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .control-label {
+        display: block;
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-bottom: 6px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 15px;
+        background: color-mix(in oklab, var(--bg-soft) 80%, transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        border-radius: 8px;
+        color: var(--text);
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset;
+        transition: border-color .25s ease, box-shadow .25s ease;
+    }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 20%, transparent);
+        }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .text-danger {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 4px;
+        display: block;
+    }
+</style>
+<div class="page-block">
+    <div class="page-heading">
+        <h2>Sửa Sản phẩm</h2>
+        <div class="under"></div>
+    </div>
+    <div class="card-surface form-card">
+        <form asp-action="Edit">
+            <input type="hidden" asp-for="@ViewData["ProductId"]" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="ProductName">Tên Sản phẩm</label>
+                <input asp-for="ProductName" class="form-control" />
+                <span asp-validation-for="ProductName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description">Mô tả</label>
+                <textarea asp-for="Description" class="form-control"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price">Giá</label>
+                <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Stock">Tồn kho</label>
+                <input asp-for="Stock" class="form-control" type="number" />
+                <span asp-validation-for="Stock" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CategoryId">Loại sản phẩm</label>
+                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories"></select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ImageUrl">URL Hình ảnh</label>
+                <input asp-for="ImageUrl" class="form-control" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn-ban unban">Lưu</button>
+                <a asp-action="Index" class="btn-ban btn-sm">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

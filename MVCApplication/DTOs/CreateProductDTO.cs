@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CategoriesAPI.DTOs
+namespace MVCApplication.DTOs
 {
     public class CreateProductDTO
     {

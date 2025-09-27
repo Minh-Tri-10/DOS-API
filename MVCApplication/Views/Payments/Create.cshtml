@@ -1,7 +1,7 @@
 ﻿@model MVCApplication.DTOs.PaymentRequestDTO
 
 <h2>Create Payment</h2>
-<form asp-action="Create">
+<form asp-action="Create" method="post">
     <div class="form-group">
         <label asp-for="OrderID"></label>
         <input asp-for="OrderID" class="form-control" />
@@ -14,5 +14,6 @@
         <label asp-for="PaymentMethod"></label>
         <input asp-for="PaymentMethod" class="form-control" />
     </div>
+    <input type="hidden" asp-for="PaymentStatus" value="Pending" />
     <button type="submit" class="btn btn-primary">Save</button>
 </form>

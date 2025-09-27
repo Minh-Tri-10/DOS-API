@@ -22,7 +22,7 @@ namespace OrderAPI
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();

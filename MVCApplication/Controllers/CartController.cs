@@ -44,5 +44,21 @@ namespace MVCApplication.Controllers
 
             return RedirectToAction("Index");
         }
+        // Thêm vào CartController của MVC (khác với action View)
+        [HttpPut("/api/cart/update/{cartItemId}")]
+        public async Task<IActionResult> ApiUpdateQty(int cartItemId, int quantity)
+        {
+            if (quantity < 1) return BadRequest("quantity >= 1");
+            var ok = await _cartService.UpdateQuantityAsync(cartItemId, quantity);
+            return ok ? Ok() : StatusCode(500);
+        }
+
+        [HttpDelete("/api/cart/remove/{cartItemId}")]
+        public async Task<IActionResult> ApiRemove(int cartItemId)
+        {
+            var ok = await _cartService.RemoveFromCartAsync(cartItemId);
+            return ok ? Ok() : StatusCode(500);
+        }
+
     }
 }
