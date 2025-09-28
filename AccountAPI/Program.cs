@@ -22,8 +22,8 @@ namespace AccountAPI
 
             builder.Services.AddDbContext<DrinkOrderContext>(options =>
 
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
             // Email DI (NEW)
