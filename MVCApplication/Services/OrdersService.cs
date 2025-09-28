@@ -47,6 +47,12 @@ namespace MVCApplication.Services
                 throw new ApplicationException("Có lỗi xảy ra khi gọi API.", ex);
             }
         }
+        // hủy đơn
+        public async Task<bool> CancelAsync(int id, string reason)
+        {
+            var res = await _http.PutAsJsonAsync($"api/order/{id}/cancel", reason);
+            return res.IsSuccessStatusCode;
+        }
 
     }
 }

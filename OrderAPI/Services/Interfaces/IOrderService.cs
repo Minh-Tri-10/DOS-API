@@ -11,5 +11,8 @@ namespace OrderAPI.Services.Interfaces
         Task DeleteAsync(int id);
         Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId);
         Task MarkAsPaidAsync(int orderId);
+        // Hủy đơn hàng
+        Task<bool> CancelAsync(int orderId, string cancelReason);
+
     }
 }

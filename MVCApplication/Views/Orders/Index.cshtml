@@ -4,13 +4,43 @@
     ViewData["Title"] = "Danh sách đơn hàng";
     Layout = "_CustomerLayout";
 
-    // Helper function để lấy class màu dựa trên trạng thái
+    // Helper function để lấy class màu dựa trên trạng thái (sử dụng trạng thái DB - tiếng Anh)
     string GetStatusClass(string status)
     {
-        if (status.Contains("Hoàn thành") || status.Contains("Đã thanh toán")) return "status-ok";
-        if (status.Contains("Đang giao") || status.Contains("Đã xác nhận")) return "status-accent";
-        if (status.Contains("Đã hủy")) return "status-danger";
+        // Chuyển về chữ thường để so sánh không phân biệt hoa/thường
+        status = status.ToLower();
+
+        // Cập nhật logic với trạng thái tiếng Anh của DB (completed, paid, cancelled, pending, v.v.)
+        if (status.Contains("completed") || status.Contains("paid")) return "status-ok";
+        if (status.Contains("delivering") || status.Contains("confirmed") || status.Contains("shipped")) return "status-accent";
+        if (status.Contains("pending") || status.Contains("unpaid")) return "status-muted";
+        if (status.Contains("cancelled")) return "status-danger";
         return "status-muted";
+    }
+
+    // Helper function để dịch trạng thái (status: tiếng Anh) sang tiếng Việt
+    string TranslateStatus(string status)
+    {
+        switch (status.ToLower())
+        {
+            case "pending":
+                return "Đang chờ xử lý";
+            case "confirmed":
+                return "Đã xác nhận";
+            case "shipped":
+            case "delivering":
+                return "Đang giao hàng";
+            case "completed":
+                return "Hoàn thành";
+            case "cancelled":
+                return "Đã hủy";
+            case "paid":
+                return "Đã thanh toán";
+            case "unpaid":
+                return "Chưa thanh toán";
+            default:
+                return status; // Giữ nguyên nếu không tìm thấy
+        }
     }
 }
 
@@ -70,7 +100,6 @@
         }
     }
 
-    /* Keyframes vòng xoay neon từ Cart Index */
     @@keyframes orderCardRing {
         to {
             transform: rotate(1turn)
@@ -114,7 +143,7 @@
             box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
         }
 
-    /* Order Card (tương tự Cart Card) */
+    /* Order Card (Áp dụng Neon Ring) */
     .order-card {
         position: relative;
         isolation: isolate;
@@ -128,34 +157,30 @@
         animation: fadeIn var(--duration) ease-out var(--duration) both;
     }
 
-        /* 1) Vòng xoay neon (dùng ::before) */
+        /* Vòng xoay neon (dùng ::before) */
         .order-card::before {
             content: "";
             position: absolute;
             inset: -1px;
             border-radius: inherit;
             z-index: -1;
-            /* Dùng conic-gradient tương tự Cart Index */
             background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
             filter: blur(12px) saturate(1.2);
             opacity: .38;
             animation: orderCardRing 14s linear infinite;
-            /* Thêm transition cho Light Mode */
             transition: opacity var(--duration) ease, filter var(--duration) ease;
         }
 
-        /* 2) Nội dung nổi lên trên overlays */
+        /* Nội dung nổi lên trên overlays */
         .order-card > * {
             position: relative;
             z-index: 1;
         }
 
-    /* ĐIỀU CHỈNH CHO LIGHT MODE: Giữ lại hiệu ứng vòng xoay nhưng làm cho nó nhẹ nhàng hơn */
+    /* Light Mode Adjustments */
     :root[data-theme="light"] .order-card::before {
-        content: ""; /* Bỏ lệnh content: none; */
-        opacity: .10; /* Giảm độ mờ */
-        filter: blur(3px) saturate(1); /* Giảm độ mờ và độ bão hòa */
-        /* Giữ nguyên animation và background */
+        opacity: .10;
+        filter: blur(3px) saturate(1);
     }
 
     :root[data-theme="light"] .order-card {
@@ -253,7 +278,7 @@
     }
 
 
-    /* ============ STATUS PILLS (Đã có) ============ */
+    /* ============ STATUS PILLS ============ */
     .status-pill {
         display: inline-block;
         padding: 4px 10px;
@@ -293,13 +318,15 @@
         min-width: 120px;
     }
 
-        .action-buttons a {
+        .action-buttons a, .action-buttons button {
             padding: 6px 10px;
             border-radius: 8px;
             font-size: 13px;
             text-decoration: none;
             font-weight: 600;
             transition: transform .12s ease, box-shadow .2s ease;
+            cursor: pointer;
+            border: none;
         }
 
     .btn-view {
@@ -373,6 +400,113 @@
         pointer-events: none;
         opacity: 0.6;
     }
+
+    /* ============================================== */
+    /* ================ Modal/Popup Styles ================ */
+    /* ============================================== */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+    .modal-content {
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 25px;
+        width: 90%;
+        max-width: 400px;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        color: var(--text);
+    }
+
+    .modal-overlay.active .modal-content {
+        transform: scale(1);
+    }
+
+    .modal-content h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+        color: var(--danger);
+        text-shadow: 0 0 5px color-mix(in oklab, var(--danger) 50%, transparent);
+    }
+
+    .modal-content textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        resize: vertical;
+        box-sizing: border-box;
+        transition: border-color var(--duration) ease, box-shadow var(--duration) ease;
+    }
+
+        .modal-content textarea:focus {
+            outline: none;
+            border-color: var(--danger);
+            box-shadow: 0 0 8px color-mix(in oklab, var(--danger) 40%, transparent);
+        }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn-modal-cancel {
+        background: var(--muted);
+        color: var(--bg);
+        padding: 8px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        transition: background 0.2s ease;
+    }
+
+        .btn-modal-cancel:hover {
+            background: color-mix(in oklab, var(--muted) 80%, transparent);
+        }
+
+    .btn-modal-confirm {
+        background: var(--danger);
+        color: #fff;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        transition: transform 0.12s ease, box-shadow 0.2s ease;
+    }
+
+        .btn-modal-confirm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px color-mix(in oklab, var(--danger) 50%, transparent);
+        }
+
 </style>
 
 <div class="order-page">
@@ -403,16 +537,35 @@
                             <tr>
                                 <td class="order-id-cell">#@order.OrderId</td>
                                 <td>@order.FullName</td>
-                                <td><span class="status-pill @GetStatusClass(order.OrderStatus)">@order.OrderStatus</span></td>
-                                <td><span class="status-pill @GetStatusClass(order.PaymentStatus)">@order.PaymentStatus</span></td>
+
+                                @* HIỂN THỊ TRẠNG THÁI ĐƠN HÀNG (Dịch sang tiếng Việt) *@
+                                <td>
+                                    <span class="status-pill @GetStatusClass(order.OrderStatus)">
+                                        @TranslateStatus(order.OrderStatus)
+                                    </span>
+                                </td>
+
+                                @* HIỂN THỊ TRẠNG THÁI THANH TOÁN (Dịch sang tiếng Việt) *@
+                                <td>
+                                    <span class="status-pill @GetStatusClass(order.PaymentStatus)">
+                                        @TranslateStatus(order.PaymentStatus)
+                                    </span>
+                                </td>
+
                                 <td class="total-amount-cell">@order.TotalAmount.ToString("N0")₫</td>
                                 <td class="date-cell">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
                                     <div class="action-buttons">
                                         <a class="btn-view" href="@Url.Action("Details", "Orders", new { id = order.OrderId })">Xem</a>
-                                        @if (order.OrderStatus != "Đã hủy" && order.OrderStatus != "Hoàn thành")
+
+                                        @* ẨN NÚT HỦY KHI TRẠNG THÁI LÀ "cancelled" HOẶC "completed" *@
+                                        @if (order.OrderStatus.ToLower() != "cancelled" && order.OrderStatus.ToLower() != "completed")
                                         {
-                                            <a class="btn-cancel" href="@Url.Action("Edit", "Orders", new { id = order.OrderId })">Hủy</a>
+                                            <button type="button"
+                                                    class="btn-cancel btn-open-modal"
+                                                    data-order-id="@order.OrderId">
+                                                Hủy
+                                            </button>
                                         }
                                     </div>
                                 </td>
@@ -432,7 +585,7 @@
         </div>
     </div>
 
-    @if (Model != null && Model.Any())
+    @if (ViewBag.TotalPages > 1)
     {
         <nav aria-label="Page navigation">
             <ul class="pagination">
@@ -454,3 +607,94 @@
         </nav>
     }
 </div>
+
+@* ============================================== *@
+@* ================ Cancel Order Modal (HTML) ============ *@
+@* ============================================== *@
+<div class="modal-overlay" id="cancelOrderModal">
+    <div class="modal-content">
+        <h4>Xác nhận Hủy đơn hàng</h4>
+        <p>Vui lòng nhập lý do bạn muốn hủy đơn hàng **#<span id="modalOrderId"></span>**:</p>
+        <form id="cancelForm" asp-action="Cancel" asp-controller="Orders" method="post">
+            <input type="hidden" name="id" id="modalOrderIdInput" value="" />
+            <textarea name="reason" id="cancelReasonInput" placeholder="VD: Đổi ý, đặt nhầm, không cần nữa,..." required></textarea>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal-cancel" id="btnCloseModal">Đóng</button>
+                <button type="submit" class="btn-modal-confirm">Hủy Đơn Hàng</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const modalOverlay = document.getElementById('cancelOrderModal');
+            const btnClose = document.getElementById('btnCloseModal');
+            // Lấy tất cả các nút Hủy có class 'btn-open-modal'
+            const btnOpenList = document.querySelectorAll('.btn-open-modal');
+            const modalOrderIdSpan = document.getElementById('modalOrderId');
+            const modalOrderIdInput = document.getElementById('modalOrderIdInput');
+            const cancelReasonInput = document.getElementById('cancelReasonInput');
+
+            // --- Hàm Đóng Modal ---
+            const closeModal = () => {
+                modalOverlay.classList.remove('active');
+                // Đảm bảo không còn focus vào input khi modal đóng
+                cancelReasonInput.blur();
+            };
+
+            // --- Xử lý Mở Modal ---
+            btnOpenList.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    // Lấy Order ID từ data attribute của nút được click
+                    const orderId = e.target.dataset.orderId;
+
+                    // Cập nhật Order ID vào các phần tử hiển thị và input ẩn
+                    modalOrderIdSpan.textContent = orderId;
+                    modalOrderIdInput.value = orderId;
+
+                    // Reset textarea và focus vào đó
+                    cancelReasonInput.value = '';
+
+                    // Hiển thị modal
+                    modalOverlay.classList.add('active');
+                    // Đợi animation mở modal hoàn thành rồi focus
+                    setTimeout(() => {
+                        cancelReasonInput.focus();
+                    }, 300);
+                });
+            });
+
+            // --- Xử lý Đóng Modal ---
+            // 1. Đóng modal khi click nút "Đóng"
+            btnClose.addEventListener('click', closeModal);
+
+            // 2. Đóng modal khi click ra ngoài overlay
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            // 3. Đóng modal khi nhấn ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            // --- Xử lý Form Submit (Ngăn submit nếu lý do rỗng, dù đã có required) ---
+            const cancelForm = document.getElementById('cancelForm');
+            cancelForm.addEventListener('submit', (e) => {
+                if (!cancelReasonInput.value.trim()) {
+                    e.preventDefault();
+                    // Thông báo đơn giản cho người dùng
+                    alert("Vui lòng nhập lý do hủy đơn hàng.");
+                    cancelReasonInput.focus();
+                }
+            });
+        });
+    </script>
+}

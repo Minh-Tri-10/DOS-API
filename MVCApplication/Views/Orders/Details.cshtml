@@ -10,13 +10,43 @@
     decimal shipFee = 30000;
     decimal finalTotal = subtotal + shipFee;
 
-    // Helper function để lấy class màu dựa trên trạng thái
+    // Helper function để lấy class màu dựa trên trạng thái (sử dụng trạng thái DB - tiếng Anh)
     string GetStatusClass(string status)
     {
-        if (status.Contains("Hoàn thành") || status.Contains("Đã thanh toán")) return "status-ok";
-        if (status.Contains("Đang giao") || status.Contains("Đã xác nhận")) return "status-accent";
-        if (status.Contains("Đã hủy")) return "status-danger";
+        // Chuyển về chữ thường để so sánh không phân biệt hoa/thường
+        status = status.ToLower();
+
+        // Cập nhật logic với trạng thái tiếng Anh của DB
+        if (status.Contains("completed") || status.Contains("paid")) return "status-ok";
+        if (status.Contains("delivering") || status.Contains("confirmed") || status.Contains("shipped")) return "status-accent";
+        if (status.Contains("pending") || status.Contains("unpaid")) return "status-muted";
+        if (status.Contains("cancelled")) return "status-danger";
         return "status-muted";
+    }
+
+    // Helper function để dịch trạng thái (status: tiếng Anh) sang tiếng Việt
+    string TranslateStatus(string status)
+    {
+        switch (status.ToLower())
+        {
+            case "pending":
+                return "Đang chờ xử lý";
+            case "confirmed":
+                return "Đã xác nhận";
+            case "shipped":
+            case "delivering":
+                return "Đang giao hàng";
+            case "completed":
+                return "Hoàn thành";
+            case "cancelled":
+                return "Đã hủy";
+            case "paid":
+                return "Đã thanh toán";
+            case "unpaid":
+                return "Chưa thanh toán";
+            default:
+                return status; // Giữ nguyên nếu không tìm thấy
+        }
     }
 }
 <style>
@@ -196,6 +226,37 @@
             font-weight: 700;
         }
 
+    /* Thêm style riêng cho Lý do hủy đơn */
+    .cancel-reason-box {
+        background: color-mix(in oklab, var(--danger) 8%, var(--bg));
+        border: 1px solid color-mix(in oklab, var(--danger) 50%, var(--border));
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 15px;
+        transition: background var(--duration) ease, border-color var(--duration) ease;
+    }
+
+        .cancel-reason-box strong {
+            color: var(--danger);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .cancel-reason-box p {
+            margin: 0;
+            font-style: italic;
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+    :root[data-theme="light"] .cancel-reason-box {
+        background: color-mix(in oklab, var(--danger) 12%, #fff);
+        border-color: color-mix(in oklab, var(--danger) 70%, #eee);
+    }
+
+
     /* ============ STATUS PILLS ============ */
     .status-pill {
         display: inline-block;
@@ -372,13 +433,22 @@
             <p><strong>Người đặt:</strong> @Model.FullName</p>
             <p>
                 <strong>Trạng thái ĐH:</strong>
-                <span class="status-pill @GetStatusClass(Model.OrderStatus)">@Model.OrderStatus</span>
+                <span class="status-pill @GetStatusClass(Model.OrderStatus)">@TranslateStatus(Model.OrderStatus)</span>
             </p>
             <p>
                 <strong>Trạng thái TT:</strong>
-                <span class="status-pill @GetStatusClass(Model.PaymentStatus)">@Model.PaymentStatus</span>
+                <span class="status-pill @GetStatusClass(Model.PaymentStatus)">@TranslateStatus(Model.PaymentStatus)</span>
             </p>
         </div>
+
+        @* THÊM PHẦN HIỂN THỊ LÝ DO HỦY ĐƠN *@
+        @if (Model.OrderStatus.ToLower() == "cancelled" && !string.IsNullOrEmpty(Model.CancelReason))
+        {
+            <div class="cancel-reason-box">
+                <strong>Lý do hủy đơn hàng:</strong>
+                <p>@Model.CancelReason</p>
+            </div>
+        }
     </div>
 
 
