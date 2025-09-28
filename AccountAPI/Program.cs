@@ -25,6 +25,7 @@ namespace AccountAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
 
 
+
             // Email DI (NEW)
             builder.Services.AddSingleton(sp =>
             {

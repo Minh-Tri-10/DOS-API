@@ -420,6 +420,13 @@
         margin-bottom: 20px;
     }
 
+        .form-group label {
+            font-weight: 700;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 8px;
+        }
+
     .control-label {
         display: block;
         font-weight: 700;
@@ -466,8 +473,97 @@
         background: inherit; /* Giữ nguyên nền, không bị trắng */
         color: inherit;
     }
+    /* CSS thêm cho drop-down (select) - nền cùng background, text trắng nổi bật */
+    select.form-control {
+        appearance: none; /* Ẩn mũi tên mặc định */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="var(--muted)"><polygon points="0,0 12,0 6,8"/></svg>'); /* Thêm mũi tên tùy chỉnh */
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+        padding-right: 30px; /* Không gian cho mũi tên */
+        cursor: pointer;
+        color: white; /* Text trắng nổi bật */
+        background: color-mix(in oklab, var(--bg-soft) 100%, transparent); /* Nền cùng background */
+    }
 
+        select.form-control option {
+            background: color-mix(in oklab, var(--bg-soft) 100%, transparent); /* Nền options cùng background */
+            color: white; /* Text options trắng nổi bật */
+        }
 
+        select.form-control:focus {
+            border-color: var(--accent); /* Đổi border khi focus, nếu muốn */
+            box-shadow: 0 0 8px color-mix(in oklab, var(--accent) 30%, transparent); /* Glow nhẹ, tùy chỉnh nếu cần */
+        }
+    /* CSS cho nút chọn ảnh (ẩn input gốc, dùng label làm nút đẹp) */
+    input[type="file"] {
+        display: none;
+    }
+
+    .file-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        background: color-mix(in oklab, var(--bg-soft) 90%, transparent);
+        border: 1px solid var(--border);
+        color: var(--text);
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px color-mix(in oklab, #000 15%, transparent);
+        width: 100%;
+    }
+
+        .file-label:hover {
+            background: color-mix(in oklab, var(--accent) 10%, var(--bg-soft));
+            border-color: var(--accent);
+        }
+
+        .file-label::before {
+            content: ""; /* Văn bản mặc định */
+            margin-right: 8px;
+        }
+    /* CSS cho nút Lưu và Quay lại (tùy chỉnh từ .btn-ban) */
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 20%, transparent), color-mix(in oklab, var(--accent2) 15%, transparent));
+        color: var(--text);
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab, #000 30%, transparent);
+    }
+
+        .btn-custom:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px color-mix(in oklab, var(--accent) 25%, transparent);
+        }
+
+        .btn-custom.save { /* Dành cho nút Lưu */
+            background: linear-gradient(180deg, color-mix(in oklab, #22c55e 20%, transparent), color-mix(in oklab, #16a34a 15%, transparent));
+            border-color: rgba(34,197,94,.35);
+            color: #dcfce7;
+        }
+
+        .btn-custom.back { /* Dành cho nút Quay lại */
+            background: linear-gradient(180deg, color-mix(in oklab, #6b7280 20%, transparent), color-mix(in oklab, #4b5563 15%, transparent));
+            border-color: rgba(107,114,128,.35);
+            color: #f3f4f6;
+            padding: 8px 16px; /* Kích thước nhỏ hơn */
+            font-size: 13px;
+        }
 </style>
 <div class="page-block">
     <div class="page-heading">
@@ -503,18 +599,28 @@
                 <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories"></select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
-
             <div class="form-group">
                 <label>Ảnh sản phẩm</label>
-                <input type="file" name="imageFile" class="form-control" />
+                <label for="imageFile" class="file-label">Chọn tệp ảnh</label>
+                <input type="file" name="imageFile" id="imageFile" />
             </div>
             <div class="actions">
-                <button type="submit" class="btn-ban unban">Lưu</button>
-                <a asp-action="Index" class="btn-ban btn-sm">Quay lại</a>
+                <button type="submit" class="btn-custom save">Lưu</button>
+                <a asp-action="Index" class="btn-custom back">Quay lại</a>
             </div>
         </form>
     </div>
 </div>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('imageFile').addEventListener('change', function() {
+            const label = document.querySelector('.file-label');
+            if (this.files.length > 0) {
+                label.textContent = 'Đã chọn: ' + this.files[0].name;
+            } else {
+                label.textContent = 'Chọn tệp ảnh';
+            }
+        });
+    </script>
 }

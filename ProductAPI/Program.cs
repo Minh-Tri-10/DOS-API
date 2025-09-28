@@ -22,6 +22,7 @@ namespace ProductAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+
     options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
             // Đăng ký AutoMapper
