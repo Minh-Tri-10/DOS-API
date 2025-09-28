@@ -2,58 +2,455 @@
 
 @{
     ViewData["Title"] = "Danh sách đơn hàng";
+    Layout = "_CustomerLayout";
+
+    // Helper function để lấy class màu dựa trên trạng thái
+    string GetStatusClass(string status)
+    {
+        if (status.Contains("Hoàn thành") || status.Contains("Đã thanh toán")) return "status-ok";
+        if (status.Contains("Đang giao") || status.Contains("Đã xác nhận")) return "status-accent";
+        if (status.Contains("Đã hủy")) return "status-danger";
+        return "status-muted";
+    }
 }
 
-<h2>@ViewData["Title"]</h2>
+<style>
+    /* ============================================== */
+    /* ============== UI Variables & Themes ========= */
+    /* ============================================== */
+    :root {
+        --bg: #0b1020;
+        --bg-soft: #0f172a;
+        --text: #e5e7eb;
+        --muted: #9aa3b2;
+        --border: rgba(255,255,255,.12);
+        --accent: #22d3ee;
+        --accent2: #3b82f6;
+        --danger: #ef4444;
+        --ok: #22c55e;
+        --duration: 0.3s;
+    }
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Order ID</th>
-            <th>Người đặt</th>
-            <th>Trạng thái</th>
-            <th>Thanh toán</th>
-            <th>Tổng tiền</th>
-            <th>Ngày đặt</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var order in Model)
-        {
-            <tr>
-                <td>@order.OrderId</td>
-                <td>@order.FullName</td>
-                <td>@order.OrderStatus</td>
-                <td>@order.PaymentStatus</td>
-                <td>@order.TotalAmount.ToString("C")</td>
-                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>
-                    <a class="btn btn-sm btn-primary" href="@Url.Action("Details", "Orders", new { id = order.OrderId })">Xem</a>
-                    <a class="btn btn-sm btn-warning" href="@Url.Action("Edit", "Orders", new { id = order.OrderId })">Hủy đơn</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-<nav aria-label="Page navigation">
-    <ul class="pagination">
-        <!-- Nút Trang trước -->
-        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-            <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage - 1 })" tabindex="-1">Trước</a>
-        </li>
-
-        <!-- Hiển thị số trang -->
-        @for (int i = 1; i <= ViewBag.TotalPages; i++)
-        {
-            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { pageNumber = i })">@i</a>
-            </li>
+        :root[data-theme="light"] {
+            --bg: #f5f7fb;
+            --bg-soft: #ffffff;
+            --text: #0f172a;
+            --muted: #5b6577;
+            --border: rgba(0,0,0,.08);
+            --accent: #0ea5e9;
+            --accent2: #3b82f6;
+            --danger: #dc2626;
+            --ok: #16a34a;
         }
 
-        <!-- Nút Trang kế -->
-        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-            <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage + 1 })">Kế tiếp</a>
-        </li>
-    </ul>
-</nav>
+    /* ============================================== */
+    /* ============ Animations & Keyframes ========== */
+    /* ============================================== */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Keyframes vòng xoay neon từ Cart Index */
+    @@keyframes orderCardRing {
+        to {
+            transform: rotate(1turn)
+        }
+    }
+
+
+    /* ============================================== */
+    /* ============ Layout & Card Styles ============ */
+    /* ============================================== */
+    .order-page {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+        color: var(--text);
+    }
+
+    .order-title {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 24px;
+        animation: fadeIn var(--duration) ease-out both;
+    }
+
+        .order-title h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1;
+            font-size: 28px;
+        }
+
+        .order-title .under {
+            flex: 1;
+            min-width: 100px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            filter: saturate(1.05) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
+        }
+
+    /* Order Card (tương tự Cart Card) */
+    .order-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 12px 32px rgba(2,8,23,.5), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+        padding: 0;
+        margin-bottom: 24px;
+        animation: fadeIn var(--duration) ease-out var(--duration) both;
+    }
+
+        /* 1) Vòng xoay neon (dùng ::before) */
+        .order-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            /* Dùng conic-gradient tương tự Cart Index */
+            background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+            filter: blur(12px) saturate(1.2);
+            opacity: .38;
+            animation: orderCardRing 14s linear infinite;
+            /* Thêm transition cho Light Mode */
+            transition: opacity var(--duration) ease, filter var(--duration) ease;
+        }
+
+        /* 2) Nội dung nổi lên trên overlays */
+        .order-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    /* ĐIỀU CHỈNH CHO LIGHT MODE: Giữ lại hiệu ứng vòng xoay nhưng làm cho nó nhẹ nhàng hơn */
+    :root[data-theme="light"] .order-card::before {
+        content: ""; /* Bỏ lệnh content: none; */
+        opacity: .10; /* Giảm độ mờ */
+        filter: blur(3px) saturate(1); /* Giảm độ mờ và độ bão hòa */
+        /* Giữ nguyên animation và background */
+    }
+
+    :root[data-theme="light"] .order-card {
+        background: #fff;
+        box-shadow: 0 12px 28px rgba(2,8,23,.12);
+        transition: background var(--duration) ease, box-shadow var(--duration) ease;
+    }
+
+
+    /* ============================================== */
+    /* ================ Table Styles ================ */
+    /* ============================================== */
+    .orders-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+        font-size: 14px;
+    }
+
+        .orders-table th {
+            padding: 12px;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            background: var(--bg-soft);
+            transition: border-color var(--duration) ease, background-color var(--duration) ease;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .orders-table td {
+            padding: 12px;
+            border-bottom: 1px dashed var(--border);
+            vertical-align: middle;
+            color: var(--text);
+            transition: color var(--duration) ease, border-color var(--duration) ease;
+        }
+
+        .orders-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .orders-table tbody tr {
+            transition: background-color var(--duration) ease;
+            animation: slideIn 0.4s ease-out both;
+        }
+
+            /* Staggering animation */
+            .orders-table tbody tr:nth-child(2) {
+                animation-delay: 0.3s;
+            }
+
+            .orders-table tbody tr:nth-child(3) {
+                animation-delay: 0.35s;
+            }
+
+            .orders-table tbody tr:nth-child(4) {
+                animation-delay: 0.4s;
+            }
+
+            .orders-table tbody tr:nth-child(5) {
+                animation-delay: 0.45s;
+            }
+
+            .orders-table tbody tr:hover {
+                background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 5%, transparent), transparent 50%);
+            }
+
+    :root[data-theme="light"] .orders-table tbody tr:hover {
+        background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 12%, transparent), transparent 50%);
+    }
+
+    .order-id-cell {
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .total-amount-cell {
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        min-width: 100px;
+        background: linear-gradient(135deg,var(--accent),var(--accent2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .date-cell {
+        color: var(--muted);
+        font-size: 13px;
+        min-width: 130px;
+    }
+
+
+    /* ============ STATUS PILLS (Đã có) ============ */
+    .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        transition: background-color var(--duration) ease, color var(--duration) ease;
+    }
+
+    .status-ok {
+        background: color-mix(in oklab, var(--ok) 15%, transparent);
+        color: var(--ok);
+    }
+
+    .status-accent {
+        background: color-mix(in oklab, var(--accent) 15%, transparent);
+        color: var(--accent);
+    }
+
+    .status-danger {
+        background: color-mix(in oklab, var(--danger) 15%, transparent);
+        color: var(--danger);
+    }
+
+    .status-muted {
+        background: color-mix(in oklab, var(--muted) 15%, transparent);
+        color: var(--muted);
+    }
+
+
+    /* ============ ACTION BUTTONS STYLES ============ */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        min-width: 120px;
+    }
+
+        .action-buttons a {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform .12s ease, box-shadow .2s ease;
+        }
+
+    .btn-view {
+        background: var(--accent);
+        color: var(--bg);
+    }
+
+        .btn-view:hover {
+            background: color-mix(in oklab, var(--accent) 90%, #fff);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 8px color-mix(in oklab, var(--accent2) 50%, transparent);
+        }
+
+    .btn-cancel {
+        background: var(--danger);
+        color: #fff;
+    }
+
+        .btn-cancel:hover {
+            background: color-mix(in oklab, var(--danger) 90%, #fff);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 8px color-mix(in oklab, var(--danger) 50%, transparent);
+        }
+
+
+    /* ============ PAGINATION STYLES ============ */
+    .pagination {
+        display: flex;
+        justify-content: flex-end;
+        list-style: none;
+        padding: 0;
+        margin-top: 20px;
+        animation: fadeIn var(--duration) ease-out 0.6s both;
+    }
+
+    .page-item a {
+        display: block;
+        padding: 8px 14px;
+        margin-left: -1px;
+        line-height: 1.25;
+        color: var(--text);
+        background-color: var(--bg-soft);
+        border: 1px solid var(--border);
+        text-decoration: none;
+        transition: background-color var(--duration) ease, color var(--duration) ease, border-color var(--duration) ease;
+    }
+
+    .page-item:first-child a {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .page-item:last-child a {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .page-item.active a {
+        color: var(--bg);
+        background-color: var(--accent);
+        border-color: var(--accent);
+        z-index: 2;
+    }
+
+    .page-item a:hover {
+        background-color: color-mix(in oklab, var(--accent) 15%, var(--bg-soft));
+    }
+
+    .page-item.disabled a {
+        color: var(--muted);
+        pointer-events: none;
+        opacity: 0.6;
+    }
+</style>
+
+<div class="order-page">
+    <div class="order-title">
+        <h2>@ViewData["Title"]</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="order-card">
+        <div style="overflow-x: auto;">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Mã ĐH</th>
+                        <th>Người đặt</th>
+                        <th>Trạng thái</th>
+                        <th>Thanh toán</th>
+                        <th class="total-amount-cell" style="text-align: right;">Tổng tiền</th>
+                        <th class="date-cell">Ngày đặt</th>
+                        <th style="min-width: 130px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td class="order-id-cell">#@order.OrderId</td>
+                                <td>@order.FullName</td>
+                                <td><span class="status-pill @GetStatusClass(order.OrderStatus)">@order.OrderStatus</span></td>
+                                <td><span class="status-pill @GetStatusClass(order.PaymentStatus)">@order.PaymentStatus</span></td>
+                                <td class="total-amount-cell">@order.TotalAmount.ToString("N0")₫</td>
+                                <td class="date-cell">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a class="btn-view" href="@Url.Action("Details", "Orders", new { id = order.OrderId })">Xem</a>
+                                        @if (order.OrderStatus != "Đã hủy" && order.OrderStatus != "Hoàn thành")
+                                        {
+                                            <a class="btn-cancel" href="@Url.Action("Edit", "Orders", new { id = order.OrderId })">Hủy</a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: var(--muted); border-bottom: none;">
+                                Bạn chưa có đơn hàng nào.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage - 1 })" tabindex="-1">Trước</a>
+                </li>
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { pageNumber = i })">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage + 1 })">Kế tiếp</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
