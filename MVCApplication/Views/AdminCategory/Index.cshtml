@@ -426,31 +426,28 @@
 
 <div class="page-block">
     <div class="page-heading">
-        <h2>Categories List</h2>
+        <h2>Danh sách Danh mục</h2>
         <div class="under"></div>
     </div>
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success">@TempData["Success"]</div>
+        <div class="alert alert-success" role="alert">@TempData["Success"]</div>
     }
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger">@TempData["Error"]</div>
+        <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
     }
     <p>
-        <a asp-action="Create" class="btn-ban unban">Create New Category</a>
+        <a asp-action="Create" class="btn-ban unban">Tạo Danh mục Mới</a>
     </p>
     <div class="card-surface">
         <div class="table-wrap">
             @if (!Model.Any())
             {
                 <div class="empty-state">
-                    <div class="badge">
-                        <!-- Có thể thêm icon hoặc text ở đây, ví dụ: ! -->
-                        !
-                    </div>
-                    <h3>No Categories Found</h3>
-                    <p>Create a new one to get started.</p>
+                    <div class="badge">!</div>
+                    <h3>Không tìm thấy danh mục</h3>
+                    <p>Tạo một danh mục mới để bắt đầu.</p>
                 </div>
             }
             else
@@ -458,10 +455,10 @@
                 <table class="user-table">
                     <thead>
                         <tr>
-                            <th>@Html.DisplayNameFor(model => model.CategoryId)</th>
-                            <th>@Html.DisplayNameFor(model => model.CategoryName)</th>
-                            <th>@Html.DisplayNameFor(model => model.Description)</th>
-                            <th>Actions</th>
+                            <th>ID</th>
+                            <th>Tên Danh mục</th>
+                            <th>Mô tả</th>
+                            <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -473,9 +470,9 @@
                                 <td class="cell-email">@Html.DisplayFor(modelItem => item.Description)</td>
                                 <td>
                                     <div class="actions">
-                                        <a asp-action="Details" asp-route-id="@item.CategoryId" class="btn-ban unban btn-sm">Details</a>
-                                        <a asp-action="Edit" asp-route-id="@item.CategoryId" class="btn-ban btn-sm">Edit</a>
-                                        <a asp-action="Delete" asp-route-id="@item.CategoryId" class="btn-ban ban btn-sm">Delete</a>
+                                        <a asp-action="Details" asp-route-id="@item.CategoryId" class="btn-ban unban btn-sm">Chi tiết</a>
+                                        <a asp-action="Edit" asp-route-id="@item.CategoryId" class="btn-ban btn-sm">Sửa</a>
+                                        <a asp-action="Delete" asp-route-id="@item.CategoryId" class="btn-ban ban btn-sm">Xóa</a>
                                     </div>
                                 </td>
                             </tr>
@@ -486,3 +483,14 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Tự động ẩn alert sau 5 giây
+            setTimeout(function() {
+                $('.alert').fadeOut(300);
+            }, 5000);
+        });
+    </script>
+}
