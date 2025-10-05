@@ -61,18 +61,15 @@
         }
         <!--So sánh để active icon của sidebar-->
         <nav class="rail-nav">
-            <!-- Home -->
-            <a class="rail-item @(currentPage.Equals("/Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
-               asp-area=""
-               asp-page="/Index"
+            <!-- Products List -->
+            <a class="rail-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active" : "")"
+               asp-controller="Customer" asp-action="Index"
                data-bs-toggle="tooltip"
-               data-bs-title="Dashboard"
-               aria-label="Dashboard">
+               data-bs-title="Products"
+               aria-label="Products">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                 </svg>
             </a>
             <!-- Cart (có badge) -->
@@ -85,17 +82,6 @@
                     <circle cx="18" cy="20" r="1.5" />
                 </svg>
                 <span id="cartBadge" class="cart-badge">0</span>
-            </a>
-            <!-- Products List -->
-            <a class="rail-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active" : "")"
-               asp-controller="Customer" asp-action="Index"
-               data-bs-toggle="tooltip"
-               data-bs-title="Products"
-               aria-label="Products">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                </svg>
             </a>
         </nav>
         <!-- Bottom: settings + sign out -->

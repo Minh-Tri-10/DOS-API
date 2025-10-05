@@ -1,8 +1,9 @@
 ﻿@using System.Linq
+
 @{
+    ViewData["Title"] = "Đặt hàng";
     Layout = "_CustomerLayout";
 }
-
 <style>
     /* ===== CART PAGE – WOW UI (dark default; light via :root[data-theme="light"]) ===== */
     /* fallback biến nếu layout chưa có */
@@ -195,14 +196,18 @@
             width: 34px;
             height: 34px;
             border-radius: 50%;
-            display: grid;
-            place-items: center;
+            display: flex; /* ✅ dùng flex thay cho grid */
+            align-items: center; /* ✅ canh giữa theo chiều dọc */
+            justify-content: center; /* ✅ canh giữa theo chiều ngang */
             border: 1px solid var(--border);
             background: transparent;
             color: var(--text);
+            font-size: 18px; /* ✅ tăng size để cân đối */
+            line-height: 1; /* ✅ tránh text bị lệch */
             cursor: pointer;
             transition: transform .12s ease, background .2s ease, filter .2s ease;
         }
+
 
             .cart-qty .cart-btn:hover {
                 transform: translateY(-1px);
@@ -695,8 +700,6 @@
                // Chuyển sang trang Create Order
                window.location.href = '/Orders/Create';
            });
-
-
 
         })();
     </script>

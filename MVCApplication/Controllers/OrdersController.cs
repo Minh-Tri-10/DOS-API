@@ -89,6 +89,21 @@ using MVCApplication.Services.Interfaces;
             TempData["Success"] = "Đặt hàng thành công!";
             return RedirectToAction("Details", new { id = orderId });
         }
+        [HttpPost]
+        public async Task<IActionResult> Cancel(int id, string reason = "Người dùng hủy đơn")
+        {
+            var success = await _service.CancelAsync(id, reason);
+            if (!success)
+            {
+                TempData["Error"] = "Hủy đơn thất bại.";
+            }
+            else
+            {
+                TempData["Success"] = "Đơn hàng đã được hủy.";
+            }
+
+            return RedirectToAction("Index");
+        }
 
     }
 }

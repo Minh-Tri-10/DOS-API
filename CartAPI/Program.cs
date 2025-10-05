@@ -24,6 +24,7 @@ namespace CartAPI
             builder.Services.AddDbContext<CartDbContext>(options =>
 
     options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+
             // Repositories và Services
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();

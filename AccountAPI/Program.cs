@@ -25,6 +25,8 @@ namespace AccountAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
 
+
+
             // Email DI (NEW)
             builder.Services.AddSingleton(sp =>
             {

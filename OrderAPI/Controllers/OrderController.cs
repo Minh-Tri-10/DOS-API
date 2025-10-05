@@ -66,5 +66,14 @@ namespace OrderAPI.Controllers
             await _service.MarkAsPaidAsync(id);
             return NoContent();
         }
+        [HttpPut("{id}/cancel")]
+        public async Task<IActionResult> CancelOrder(int id, [FromBody] string cancelReason)
+        {
+            var success = await _service.CancelAsync(id, cancelReason);
+            if (!success) return NotFound("Order not found or already cancelled");
+
+            return NoContent();
+        }
+
     }
 }
