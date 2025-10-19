@@ -5,9 +5,19 @@ namespace ConnKeySwitcher;
 partial class MainForm
 {
     private System.ComponentModel.IContainer components = null!;
-    private ComboBox cboKey = null!;
+    private TabControl tabs = null!;
+    private TabPage tabSwitch = null!;
+    private TabPage tabRun = null!;
+
+    // Switch tab controls
+    private Panel panelSwitch = null!;
+    private TableLayoutPanel layoutSwitch = null!;
+    private Label lblRoot = null!;
     private TextBox txtRoot = null!;
     private Button btnBrowse = null!;
+    private Label lblKey = null!;
+    private ComboBox cboKey = null!;
+    private FlowLayoutPanel switchActions = null!;
     private Button btnScan = null!;
     private Button btnApply = null!;
     private DataGridView grid = null!;
@@ -16,29 +26,50 @@ partial class MainForm
     private DataGridViewTextBoxColumn colMatches = null!;
     private DataGridViewCheckBoxColumn colChange = null!;
     private DataGridViewTextBoxColumn colStatus = null!;
-    private Label lblKey = null!;
-    private Label lblRoot = null!;
-    private FolderBrowserDialog folderDialog = null!;
+
+    // Run tab controls
+    private Panel panelRun = null!;
+    private TableLayoutPanel runTopLayout = null!;
+    private Label lblRunRoot = null!;
+    private TextBox txtRunRoot = null!;
+    private Button btnRunBrowse = null!;
+    private FlowLayoutPanel runActions = null!;
+    private Button btnDiscover = null!;
+    private Button btnRunSelected = null!;
+    private Button btnStopSelected = null!;
+    private Button btnStopAll = null!;
+    private Button btnSelectAll = null!;
+    private Button btnDeselectAll = null!;
+    private CheckBox chkRunTerminal = null!;
+    private CheckBox chkRunBrowser = null!;
+    private SplitContainer runSplit = null!;
+    private CheckedListBox lstRunProjects = null!;
+    private TextBox txtRunLog = null!;
+
     private StatusStrip status = null!;
     private ToolStripStatusLabel statusText = null!;
     private ToolStripProgressBar statusProgress = null!;
-    private TableLayoutPanel layout = null!;
-    private FlowLayoutPanel actions = null!;
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
-        {
-            components.Dispose();
-        }
+        if (disposing && (components != null)) components.Dispose();
         base.Dispose(disposing);
     }
 
     private void InitializeComponent()
     {
-        cboKey = new ComboBox();
+        components = new System.ComponentModel.Container();
+        tabs = new TabControl();
+        tabSwitch = new TabPage();
+        tabRun = new TabPage();
+        panelSwitch = new Panel();
+        layoutSwitch = new TableLayoutPanel();
+        lblRoot = new Label();
         txtRoot = new TextBox();
         btnBrowse = new Button();
+        lblKey = new Label();
+        cboKey = new ComboBox();
+        switchActions = new FlowLayoutPanel();
         btnScan = new Button();
         btnApply = new Button();
         grid = new DataGridView();
@@ -47,235 +78,304 @@ partial class MainForm
         colMatches = new DataGridViewTextBoxColumn();
         colChange = new DataGridViewCheckBoxColumn();
         colStatus = new DataGridViewTextBoxColumn();
-        lblKey = new Label();
-        lblRoot = new Label();
-        folderDialog = new FolderBrowserDialog();
+        panelRun = new Panel();
+        runTopLayout = new TableLayoutPanel();
+        lblRunRoot = new Label();
+        txtRunRoot = new TextBox();
+        btnRunBrowse = new Button();
+        runActions = new FlowLayoutPanel();
+        btnDiscover = new Button();
+        btnRunSelected = new Button();
+        btnStopSelected = new Button();
+        btnStopAll = new Button();
+        chkRunTerminal = new CheckBox();
+        chkRunBrowser = new CheckBox();
+        runSplit = new SplitContainer();
+        lstRunProjects = new CheckedListBox();
+        txtRunLog = new TextBox();
         status = new StatusStrip();
         statusText = new ToolStripStatusLabel();
         statusProgress = new ToolStripProgressBar();
-        layout = new TableLayoutPanel();
-        actions = new FlowLayoutPanel();
+
+        tabs.SuspendLayout();
+        tabSwitch.SuspendLayout();
+        panelSwitch.SuspendLayout();
+        layoutSwitch.SuspendLayout();
+        switchActions.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)grid).BeginInit();
+        tabRun.SuspendLayout();
+        panelRun.SuspendLayout();
+        runTopLayout.SuspendLayout();
+        runActions.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize)runSplit).BeginInit();
+        runSplit.Panel1.SuspendLayout();
+        runSplit.Panel2.SuspendLayout();
+        runSplit.SuspendLayout();
         status.SuspendLayout();
-        layout.SuspendLayout();
-        actions.SuspendLayout();
         SuspendLayout();
-        // 
-        // cboKey
-        // 
-        cboKey.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        cboKey.DropDownStyle = ComboBoxStyle.DropDownList;
-        cboKey.Location = new Point(143, 56);
-        cboKey.Margin = new Padding(3, 6, 3, 6);
-        cboKey.Name = "cboKey";
-        cboKey.Size = new Size(564, 33);
-        cboKey.TabIndex = 4;
-        // 
+
+        // tabs
+        tabs.Controls.Add(tabSwitch);
+        tabs.Controls.Add(tabRun);
+        tabs.Dock = DockStyle.Fill;
+        tabs.Location = new System.Drawing.Point(0, 0);
+        tabs.Name = "tabs";
+        tabs.SelectedIndex = 0;
+        tabs.Size = new System.Drawing.Size(980, 528);
+
+        // tabSwitch
+        tabSwitch.Text = "Switch Connection";
+        tabSwitch.Controls.Add(panelSwitch);
+
+        // panelSwitch
+        panelSwitch.Dock = DockStyle.Fill;
+        panelSwitch.Controls.Add(grid);
+        panelSwitch.Controls.Add(layoutSwitch);
+
+        // layoutSwitch
+        layoutSwitch.ColumnCount = 3;
+        layoutSwitch.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+        layoutSwitch.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        layoutSwitch.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 250F));
+        layoutSwitch.Dock = DockStyle.Top;
+        layoutSwitch.Padding = new Padding(10, 10, 10, 6);
+        layoutSwitch.RowCount = 2;
+        layoutSwitch.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        layoutSwitch.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        layoutSwitch.Height = 96;
+
+        // lblRoot
+        lblRoot.AutoSize = true;
+        lblRoot.Text = "Repository root:";
+        lblRoot.Anchor = AnchorStyles.Left;
+
         // txtRoot
-        // 
         txtRoot.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        txtRoot.Location = new Point(143, 16);
-        txtRoot.Margin = new Padding(3, 6, 3, 6);
-        txtRoot.Name = "txtRoot";
-        txtRoot.Size = new Size(564, 31);
-        txtRoot.TabIndex = 1;
-        // 
+
         // btnBrowse
-        // 
-        btnBrowse.AutoSize = true;
-        btnBrowse.Location = new Point(716, 14);
-        btnBrowse.Margin = new Padding(6, 4, 0, 4);
-        btnBrowse.Name = "btnBrowse";
-        btnBrowse.Size = new Size(254, 32);
-        btnBrowse.TabIndex = 2;
         btnBrowse.Text = "Browse";
+        btnBrowse.AutoSize = true;
+        btnBrowse.Margin = new Padding(6, 4, 0, 4);
         btnBrowse.Click += BtnBrowse_Click;
-        // 
-        // btnScan
-        // 
-        btnScan.AutoSize = true;
-        btnScan.Location = new Point(6, 4);
-        btnScan.Margin = new Padding(6, 4, 0, 4);
-        btnScan.Name = "btnScan";
-        btnScan.Size = new Size(173, 35);
-        btnScan.TabIndex = 2;
-        btnScan.Text = "Scan";
-        btnScan.Click += BtnScan_Click;
-        // 
-        // btnApply
-        // 
-        btnApply.AutoSize = true;
-        btnApply.Location = new Point(185, 4);
-        btnApply.Margin = new Padding(6, 4, 0, 4);
-        btnApply.Name = "btnApply";
-        btnApply.Size = new Size(75, 35);
-        btnApply.TabIndex = 1;
+
+        // lblKey
+        lblKey.AutoSize = true;
+        lblKey.Text = "Connection key:";
+        lblKey.Anchor = AnchorStyles.Left;
+
+        // cboKey
+        cboKey.DropDownStyle = ComboBoxStyle.DropDownList;
+        cboKey.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+
+        // switchActions
+        switchActions.Dock = DockStyle.Fill;
+        switchActions.FlowDirection = FlowDirection.RightToLeft;
+        switchActions.WrapContents = false;
+
         btnApply.Text = "Apply";
+        btnApply.AutoSize = true;
+        btnApply.Margin = new Padding(6, 4, 0, 4);
         btnApply.Click += BtnApply_Click;
-        // 
+
+        btnScan.Text = "Scan";
+        btnScan.AutoSize = true;
+        btnScan.Margin = new Padding(6, 4, 0, 4);
+        btnScan.Click += BtnScan_Click;
+
+        switchActions.Controls.Add(btnApply);
+        switchActions.Controls.Add(btnScan);
+
+        layoutSwitch.Controls.Add(lblRoot, 0, 0);
+        layoutSwitch.Controls.Add(txtRoot, 1, 0);
+        layoutSwitch.Controls.Add(btnBrowse, 2, 0);
+        layoutSwitch.Controls.Add(lblKey, 0, 1);
+        layoutSwitch.Controls.Add(cboKey, 1, 1);
+        layoutSwitch.Controls.Add(switchActions, 2, 1);
+
         // grid
-        // 
         grid.AllowUserToAddRows = false;
         grid.AllowUserToDeleteRows = false;
         grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        grid.ColumnHeadersHeight = 34;
+        grid.ColumnHeadersHeight = 32;
         grid.Columns.AddRange(new DataGridViewColumn[] { colFile, colKeys, colMatches, colChange, colStatus });
         grid.Dock = DockStyle.Fill;
-        grid.Location = new Point(0, 85);
-        grid.Name = "grid";
         grid.ReadOnly = true;
         grid.RowHeadersVisible = false;
-        grid.RowHeadersWidth = 62;
         grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        grid.Size = new Size(980, 443);
-        grid.TabIndex = 0;
-        grid.CellContentClick += grid_CellContentClick;
-        // 
-        // colFile
-        // 
-        colFile.FillWeight = 62F;
+
         colFile.HeaderText = "File";
+        colFile.FillWeight = 62F;
         colFile.MinimumWidth = 8;
-        colFile.Name = "colFile";
         colFile.ReadOnly = true;
-        // 
-        // colKeys
-        // 
-        colKeys.FillWeight = 18F;
+
         colKeys.HeaderText = "Keys Found";
+        colKeys.FillWeight = 18F;
         colKeys.MinimumWidth = 8;
-        colKeys.Name = "colKeys";
         colKeys.ReadOnly = true;
-        // 
-        // colMatches
-        // 
-        colMatches.FillWeight = 10F;
+
         colMatches.HeaderText = "Matches";
+        colMatches.FillWeight = 10F;
         colMatches.MinimumWidth = 8;
-        colMatches.Name = "colMatches";
         colMatches.ReadOnly = true;
-        // 
-        // colChange
-        // 
-        colChange.FillWeight = 10F;
+
         colChange.HeaderText = "Will Change";
+        colChange.FillWeight = 10F;
         colChange.MinimumWidth = 8;
-        colChange.Name = "colChange";
         colChange.ReadOnly = true;
-        // 
-        // colStatus
-        // 
-        colStatus.FillWeight = 10F;
+
         colStatus.HeaderText = "Status";
+        colStatus.FillWeight = 10F;
         colStatus.MinimumWidth = 8;
-        colStatus.Name = "colStatus";
         colStatus.ReadOnly = true;
-        // 
-        // lblKey
-        // 
-        lblKey.Anchor = AnchorStyles.Left;
-        lblKey.AutoSize = true;
-        lblKey.Location = new Point(13, 50);
-        lblKey.Name = "lblKey";
-        lblKey.Size = new Size(107, 40);
-        lblKey.TabIndex = 3;
-        lblKey.Text = "Connection key:";
-        // 
-        // lblRoot
-        // 
-        lblRoot.Anchor = AnchorStyles.Left;
-        lblRoot.AutoSize = true;
-        lblRoot.Location = new Point(13, 10);
-        lblRoot.Name = "lblRoot";
-        lblRoot.Size = new Size(102, 40);
-        lblRoot.TabIndex = 0;
-        lblRoot.Text = "Repository root:";
-        // 
+
+        // tabRun
+        tabRun.Text = "Run Projects";
+        tabRun.Controls.Add(panelRun);
+
+        // panelRun
+        panelRun.Dock = DockStyle.Fill;
+        panelRun.Controls.Add(runSplit);
+        panelRun.Controls.Add(runActions);
+        panelRun.Controls.Add(runTopLayout);
+
+        // runTopLayout
+        runTopLayout.ColumnCount = 3;
+        runTopLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+        runTopLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        runTopLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+        runTopLayout.Dock = DockStyle.Top;
+        runTopLayout.Padding = new Padding(10, 10, 10, 6);
+        runTopLayout.RowCount = 1;
+        runTopLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+
+        lblRunRoot.AutoSize = true;
+        lblRunRoot.Text = "Repository root:";
+        lblRunRoot.Anchor = AnchorStyles.Left;
+
+        txtRunRoot.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+
+        btnRunBrowse.Text = "Browse";
+        btnRunBrowse.AutoSize = true;
+        btnRunBrowse.Margin = new Padding(6, 4, 0, 4);
+        btnRunBrowse.Click += BtnRunBrowse_Click;
+
+        runTopLayout.Controls.Add(lblRunRoot, 0, 0);
+        runTopLayout.Controls.Add(txtRunRoot, 1, 0);
+        runTopLayout.Controls.Add(btnRunBrowse, 2, 0);
+
+        // runActions
+        runActions.Dock = DockStyle.Top;
+        runActions.Padding = new Padding(10, 0, 10, 6);
+        runActions.Height = 40;
+        runActions.FlowDirection = FlowDirection.LeftToRight;
+        runActions.WrapContents = false;
+
+        btnDiscover.Text = "Discover";
+        btnDiscover.AutoSize = true;
+        btnDiscover.Margin = new Padding(0, 6, 6, 6);
+        btnDiscover.Click += BtnDiscover_Click;
+
+        btnSelectAll = new Button { Text = "Select All", AutoSize = true, Margin = new Padding(0, 6, 6, 6) };
+        btnSelectAll.Click += BtnSelectAll_Click;
+
+        btnDeselectAll = new Button { Text = "Deselect All", AutoSize = true, Margin = new Padding(0, 6, 6, 6) };
+        btnDeselectAll.Click += BtnDeselectAll_Click;
+
+        btnRunSelected.Text = "Run Selected";
+        btnRunSelected.AutoSize = true;
+        btnRunSelected.Margin = new Padding(0, 6, 6, 6);
+        btnRunSelected.Click += BtnRunSelected_Click;
+
+        btnStopSelected.Text = "Stop Selected";
+        btnStopSelected.AutoSize = true;
+        btnStopSelected.Margin = new Padding(0, 6, 6, 6);
+        btnStopSelected.Click += BtnStopSelected_Click;
+
+        btnStopAll.Text = "Stop All";
+        btnStopAll.AutoSize = true;
+        btnStopAll.Margin = new Padding(0, 6, 6, 6);
+        btnStopAll.Click += BtnStopAll_Click;
+
+        chkRunTerminal.Text = "Terminal";
+        chkRunTerminal.AutoSize = true;
+        chkRunTerminal.Checked = true;
+        chkRunTerminal.Margin = new Padding(12, 9, 6, 6);
+
+        chkRunBrowser.Text = "Open Browser";
+        chkRunBrowser.AutoSize = true;
+        chkRunBrowser.Checked = true;
+        chkRunBrowser.Margin = new Padding(6, 9, 6, 6);
+
+        runActions.Controls.Add(btnDiscover);
+        runActions.Controls.Add(btnSelectAll);
+        runActions.Controls.Add(btnDeselectAll);
+        runActions.Controls.Add(btnRunSelected);
+        runActions.Controls.Add(btnStopSelected);
+        runActions.Controls.Add(btnStopAll);
+        runActions.Controls.Add(chkRunTerminal);
+        runActions.Controls.Add(chkRunBrowser);
+
+        // runSplit
+        runSplit.Dock = DockStyle.Fill;
+        runSplit.SplitterDistance = 350;
+
+        lstRunProjects.CheckOnClick = true;
+        lstRunProjects.Dock = DockStyle.Fill;
+
+        txtRunLog.Dock = DockStyle.Fill;
+        txtRunLog.Multiline = true;
+        txtRunLog.ReadOnly = true;
+        txtRunLog.ScrollBars = ScrollBars.Both;
+        txtRunLog.Font = new System.Drawing.Font("Consolas", 9F);
+
+        runSplit.Panel1.Controls.Add(lstRunProjects);
+        runSplit.Panel2.Controls.Add(txtRunLog);
+
         // status
-        // 
-        status.ImageScalingSize = new Size(24, 24);
         status.Items.AddRange(new ToolStripItem[] { statusText, statusProgress });
-        status.Location = new Point(0, 528);
-        status.Name = "status";
-        status.Size = new Size(980, 32);
+        status.Dock = DockStyle.Bottom;
         status.SizingGrip = false;
-        status.TabIndex = 2;
-        // 
-        // statusText
-        // 
-        statusText.Name = "statusText";
-        statusText.Size = new Size(965, 25);
+
         statusText.Spring = true;
         statusText.Text = "Ready";
-        // 
-        // statusProgress
-        // 
+
         statusProgress.Alignment = ToolStripItemAlignment.Right;
-        statusProgress.Name = "statusProgress";
-        statusProgress.Size = new Size(100, 24);
         statusProgress.Visible = false;
-        // 
-        // layout
-        // 
-        layout.ColumnCount = 3;
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 260F));
-        layout.Controls.Add(lblRoot, 0, 0);
-        layout.Controls.Add(txtRoot, 1, 0);
-        layout.Controls.Add(lblKey, 0, 1);
-        layout.Controls.Add(cboKey, 1, 1);
-        layout.Controls.Add(actions, 2, 1);
-        layout.Controls.Add(btnBrowse, 2, 0);
-        layout.Dock = DockStyle.Top;
-        layout.Location = new Point(0, 0);
-        layout.Name = "layout";
-        layout.Padding = new Padding(10, 10, 10, 8);
-        layout.RowCount = 2;
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-        layout.Size = new Size(980, 85);
-        layout.TabIndex = 1;
-        // 
-        // actions
-        // 
-        actions.Controls.Add(btnApply);
-        actions.Controls.Add(btnScan);
-        actions.Dock = DockStyle.Fill;
-        actions.FlowDirection = FlowDirection.RightToLeft;
-        actions.Location = new Point(710, 52);
-        actions.Margin = new Padding(0, 2, 0, 2);
-        actions.Name = "actions";
-        actions.Size = new Size(260, 36);
-        actions.TabIndex = 5;
-        actions.WrapContents = false;
-        // 
+
         // MainForm
-        // 
-        AutoScaleDimensions = new SizeF(10F, 25F);
+        AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(980, 560);
-        Controls.Add(grid);
-        Controls.Add(layout);
+        ClientSize = new System.Drawing.Size(980, 560);
+        Controls.Add(tabs);
         Controls.Add(status);
-        Font = new Font("Segoe UI", 9F);
-        MinimumSize = new Size(900, 540);
-        Name = "MainForm";
+        Font = new System.Drawing.Font("Segoe UI", 9F);
+        MinimumSize = new System.Drawing.Size(900, 540);
         StartPosition = FormStartPosition.CenterScreen;
         Text = "Connection Key Switcher";
         Load += MainForm_Load;
+
+        runSplit.Panel1.ResumeLayout(false);
+        runSplit.Panel2.ResumeLayout(false);
+        runSplit.Panel2.PerformLayout();
+        ((System.ComponentModel.ISupportInitialize)runSplit).EndInit();
+        runSplit.ResumeLayout(false);
+        runActions.ResumeLayout(false);
+        runActions.PerformLayout();
+        runTopLayout.ResumeLayout(false);
+        runTopLayout.PerformLayout();
+        panelRun.ResumeLayout(false);
+        panelSwitch.ResumeLayout(false);
+        layoutSwitch.ResumeLayout(false);
+        layoutSwitch.PerformLayout();
+        switchActions.ResumeLayout(false);
+        switchActions.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)grid).EndInit();
+        tabRun.ResumeLayout(false);
+        tabSwitch.ResumeLayout(false);
+        tabs.ResumeLayout(false);
         status.ResumeLayout(false);
         status.PerformLayout();
-        layout.ResumeLayout(false);
-        layout.PerformLayout();
-        actions.ResumeLayout(false);
-        actions.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
     }
-    private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-    private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
-    private DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
-    private DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn1;
 }
