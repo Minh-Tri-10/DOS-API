@@ -16,4 +16,3 @@
     <EmbeddedResource Include="MainForm.resx" />
   </ItemGroup>
 </Project>
-
