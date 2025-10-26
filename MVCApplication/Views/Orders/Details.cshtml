@@ -1,41 +1,498 @@
 ﻿@model MVCApplication.DTOs.OrderDto
 
-<h2>Chi tiết đơn hàng #@Model.OrderId</h2>
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "_CustomerLayout";
 
-<p><strong>Ngày tạo:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
-<p><strong>Trạng thái:</strong> @Model.OrderStatus</p>
-<p><strong>Thanh toán:</strong> @Model.PaymentStatus</p>
+    // Tính tổng tiền
+    decimal subtotal = Model.Items.Sum(i => i.Quantity * i.UnitPrice);
+    // Giả định phí ship cố định cho việc hiển thị
+    decimal shipFee = 30000;
+    decimal finalTotal = subtotal + shipFee;
 
-<table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%; margin-top: 16px;">
-    <thead>
-        <tr>
-            <th>Sản phẩm</th>
-            <th>Số lượng</th>
-            <th>Đơn giá</th>
-            <th>Thành tiền</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Items)
+    // Helper function để lấy class màu dựa trên trạng thái (sử dụng trạng thái DB - tiếng Anh)
+    string GetStatusClass(string status)
+    {
+        // Chuyển về chữ thường để so sánh không phân biệt hoa/thường
+        status = status.ToLower();
+
+        // Cập nhật logic với trạng thái tiếng Anh của DB
+        if (status.Contains("completed") || status.Contains("paid")) return "status-ok";
+        if (status.Contains("delivering") || status.Contains("confirmed") || status.Contains("shipped")) return "status-accent";
+        if (status.Contains("pending") || status.Contains("unpaid")) return "status-muted";
+        if (status.Contains("cancelled")) return "status-danger";
+        return "status-muted";
+    }
+
+    // Helper function để dịch trạng thái (status: tiếng Anh) sang tiếng Việt
+    string TranslateStatus(string status)
+    {
+        switch (status.ToLower())
         {
-            <tr>
-                <td>@item.ProductName</td>
-                <td>@item.Quantity</td>
-                <td>@item.UnitPrice.ToString("N0")₫</td>
-                <td>@(item.Quantity * item.UnitPrice)₫</td>
-            </tr>
+            case "pending":
+                return "Đang chờ xử lý";
+            case "confirmed":
+                return "Đã xác nhận";
+            case "shipped":
+            case "delivering":
+                return "Đang giao hàng";
+            case "completed":
+                return "Hoàn thành";
+            case "cancelled":
+                return "Đã hủy";
+            case "paid":
+                return "Đã thanh toán";
+            case "unpaid":
+                return "Chưa thanh toán";
+            default:
+                return status; // Giữ nguyên nếu không tìm thấy
         }
-    </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="3" style="text-align:right;"><strong>Tổng tiền:</strong></td>
-            <td>
-                @Model.Items.Sum(i => i.Quantity * i.UnitPrice).ToString("N0")₫
-            </td>
-        </tr>
-    </tfoot>
-</table>
+    }
+}
+<style>
 
-<div style="margin-top: 16px;">
-    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách đơn hàng</a>
+    /* ============================================== */
+    /* ============== UI Variables & Themes ========= */
+    /* ============================================== */
+    :root {
+        --bg: #0b1020;
+        --bg-soft: #0f172a;
+        --text: #e5e7eb;
+        --muted: #9aa3b2;
+        --border: rgba(255,255,255,.12);
+        --accent: #22d3ee;
+        --accent2: #3b82f6;
+        --danger: #ef4444;
+        --ok: #22c55e;
+        --duration: 0.3s;
+    }
+
+        :root[data-theme="light"] {
+            --bg: #f5f7fb;
+            --bg-soft: #ffffff;
+            --text: #0f172a;
+            --muted: #5b6577;
+            --border: rgba(0,0,0,.08);
+            --accent: #0ea5e9;
+            --accent2: #3b82f6;
+            --danger: #dc2626;
+            --ok: #16a34a;
+        }
+
+    /* ============================================== */
+    /* ============ Animations & Keyframes ========== */
+    /* ============================================== */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes orderCardRing {
+        to {
+            transform: rotate(1turn)
+        }
+    }
+
+    @@keyframes pulseGlow {
+        0% {
+            filter: brightness(1);
+        }
+
+        50% {
+            filter: brightness(1.2);
+        }
+
+        100% {
+            filter: brightness(1);
+        }
+    }
+
+    /* ============================================== */
+    /* ============ LAYOUT & CARD STYLES ============ */
+    /* ============================================== */
+    .order-page {
+        max-width: 900px;
+        margin: 24px auto;
+        padding: 0 16px;
+        color: var(--text);
+    }
+
+    .order-title {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px;
+        animation: fadeIn var(--duration) ease-out both;
+    }
+
+        .order-title h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1;
+            font-size: 28px;
+        }
+
+        .order-title .under {
+            flex: 1;
+            min-width: 100px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            filter: saturate(1.05) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
+        }
+
+    .order-card {
+        background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 12px 32px rgba(2,8,23,.5), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+        padding: 20px;
+        margin-bottom: 24px;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        animation: fadeIn var(--duration) ease-out 0.3s both;
+        transition: background var(--duration) ease, border-color var(--duration) ease;
+    }
+
+    /* Thẻ chính chứa chi tiết sản phẩm & summary (Áp dụng Neon Ring) */
+    #main-details-card {
+        animation-delay: 0.35s;
+    }
+
+        #main-details-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+            filter: blur(12px) saturate(1.2);
+            opacity: .38;
+            animation: orderCardRing 14s linear infinite;
+        }
+
+    .order-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+
+    :root[data-theme="light"] .order-card {
+        background: #fff;
+        box-shadow: 0 12px 28px rgba(2,8,23,.12);
+    }
+
+    /* Điều chỉnh Neon Ring cho Light Mode */
+    :root[data-theme="light"] #main-details-card::before {
+        content: "";
+        opacity: .10;
+        filter: blur(3px) saturate(1);
+        transition: opacity var(--duration) ease, filter var(--duration) ease;
+    }
+
+    /* ============================================== */
+    /* ============ INFO HEADER STYLES ============ */
+    /* ============================================== */
+    .order-info-grid {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px 32px;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+        border-bottom: 1px dashed var(--border);
+        transition: border-color var(--duration) ease;
+    }
+
+        .order-info-grid p {
+            margin: 0;
+            font-size: 15px;
+            color: var(--muted);
+            min-width: 150px;
+        }
+
+        .order-info-grid strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+    /* Thêm style riêng cho Lý do hủy đơn */
+    .cancel-reason-box {
+        background: color-mix(in oklab, var(--danger) 8%, var(--bg));
+        border: 1px solid color-mix(in oklab, var(--danger) 50%, var(--border));
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 15px;
+        transition: background var(--duration) ease, border-color var(--duration) ease;
+    }
+
+        .cancel-reason-box strong {
+            color: var(--danger);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .cancel-reason-box p {
+            margin: 0;
+            font-style: italic;
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+    :root[data-theme="light"] .cancel-reason-box {
+        background: color-mix(in oklab, var(--danger) 12%, #fff);
+        border-color: color-mix(in oklab, var(--danger) 70%, #eee);
+    }
+
+
+    /* ============ STATUS PILLS ============ */
+    .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        transition: background-color var(--duration) ease, color var(--duration) ease;
+    }
+
+    .status-ok {
+        background: color-mix(in oklab, var(--ok) 15%, transparent);
+        color: var(--ok);
+    }
+
+    .status-accent {
+        background: color-mix(in oklab, var(--accent) 15%, transparent);
+        color: var(--accent);
+    }
+
+    .status-danger {
+        background: color-mix(in oklab, var(--danger) 15%, transparent);
+        color: var(--danger);
+    }
+
+    .status-muted {
+        background: color-mix(in oklab, var(--muted) 15%, transparent);
+        color: var(--muted);
+    }
+
+
+    /* ============ ORDER ITEMS TABLE STYLES ============ */
+    #orderItemsTable {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+        font-size: 14px;
+    }
+
+        #orderItemsTable th {
+            padding: 10px 12px;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            transition: border-color var(--duration) ease;
+        }
+
+        #orderItemsTable td {
+            padding: 12px;
+            border-bottom: 1px dashed var(--border);
+            vertical-align: middle;
+            transition: border-color var(--duration) ease;
+        }
+
+        #orderItemsTable tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        #orderItemsTable tr:hover {
+            background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 5%, transparent), transparent 50%);
+        }
+
+    :root[data-theme="light"] #orderItemsTable tr:hover {
+        background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 12%, transparent), transparent 50%);
+    }
+
+    .item-name {
+        font-weight: 800;
+    }
+
+    .price-cell {
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+
+
+    /* ============ FOOTER SUMMARY STYLES ============ */
+    .order-summary-footer {
+        margin-top: 20px;
+        display: grid;
+        gap: 10px;
+        max-width: 360px;
+        margin-left: auto;
+    }
+
+    .summary-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 15px;
+    }
+
+        .summary-row .val {
+            font-weight: 800;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+            transition: color var(--duration) ease;
+        }
+
+    .order-total-final {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--border);
+        transition: border-color var(--duration) ease;
+    }
+
+        /* Áp dụng hiệu ứng Neon cho tổng tiền */
+        .order-total-final .val {
+            font-weight: 900;
+            font-size: 22px;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg,var(--accent),var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            /* Animation pulse glow */
+            animation: pulseGlow 3s infinite alternate ease-in-out;
+        }
+
+
+    /* ============ BUTTON STYLES ============ */
+    .back-link {
+        display: inline-block;
+        margin-top: 24px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        color: var(--text);
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        text-decoration: none;
+        font-weight: 600;
+        transition: background .2s ease, border-color .2s ease, transform .1s ease;
+        animation: fadeIn var(--duration) ease-out 0.4s both;
+    }
+
+        .back-link:hover {
+            background: color-mix(in oklab,var(--accent) 8%, var(--bg-soft));
+            border-color: color-mix(in oklab,var(--accent) 50%, var(--border));
+            transform: translateY(-1px);
+        }
+
+    /* Light Mode button adjustments */
+    :root[data-theme="light"] .back-link {
+        color: var(--text);
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+    }
+
+        :root[data-theme="light"] .back-link:hover {
+            background: color-mix(in oklab,var(--accent) 15%, var(--bg-soft));
+            border-color: var(--accent);
+        }
+
+</style>
+
+<div class="order-page">
+    <div class="order-title">
+        <h2>Chi tiết Đơn hàng #@Model.OrderId</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="order-card" style="animation-delay: 0.3s;">
+        <h3>Thông tin chung</h3>
+        <div class="order-info-grid">
+            <p><strong>Mã đơn hàng:</strong> #@Model.OrderId</p>
+            <p><strong>Ngày tạo:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>Người đặt:</strong> @Model.FullName</p>
+            <p>
+                <strong>Trạng thái ĐH:</strong>
+                <span class="status-pill @GetStatusClass(Model.OrderStatus)">@TranslateStatus(Model.OrderStatus)</span>
+            </p>
+            <p>
+                <strong>Trạng thái TT:</strong>
+                <span class="status-pill @GetStatusClass(Model.PaymentStatus)">@TranslateStatus(Model.PaymentStatus)</span>
+            </p>
+        </div>
+
+        @* THÊM PHẦN HIỂN THỊ LÝ DO HỦY ĐƠN *@
+        @if (Model.OrderStatus.ToLower() == "cancelled" && !string.IsNullOrEmpty(Model.CancelReason))
+        {
+            <div class="cancel-reason-box">
+                <strong>Lý do hủy đơn hàng:</strong>
+                <p>@Model.CancelReason</p>
+            </div>
+        }
+    </div>
+
+
+    <div class="order-card" id="main-details-card" style="padding: 0 20px 20px 20px;">
+        <h3 style="padding-top: 20px;">Các mặt hàng đã đặt</h3>
+        <div style="overflow-x: auto;">
+            <table id="orderItemsTable">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th style="width: 100px;">Số lượng</th>
+                        <th class="price-cell" style="width: 120px;">Đơn giá</th>
+                        <th class="price-cell" style="width: 120px;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td><span class="item-name">@item.ProductName</span></td>
+                            <td>@item.Quantity</td>
+                            <td class="price-cell">@item.UnitPrice.ToString("N0")₫</td>
+                            <td class="price-cell">@((item.Quantity * item.UnitPrice).ToString("N0"))₫</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="order-summary-footer">
+            <div class="summary-row">
+                <span>Tạm tính</span>
+                <span class="val">@subtotal.ToString("N0")₫</span>
+            </div>
+            <div class="summary-row">
+                <span>Phí giao hàng (Giả lập)</span>
+                <span class="val">@shipFee.ToString("N0")₫</span>
+            </div>
+            <div class="order-total-final">
+                <span>Tổng thanh toán</span>
+                <span class="val">@finalTotal.ToString("N0")₫</span>
+            </div>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="back-link">Quay lại danh sách đơn hàng</a>
 </div>

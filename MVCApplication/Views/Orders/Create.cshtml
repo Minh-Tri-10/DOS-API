@@ -1,50 +1,391 @@
 ﻿@model MVCApplication.DTOs.CreateOrderDto
+@{
+    ViewData["Title"] = "Đặt hàng";
+    Layout = "_CustomerLayout";
+}
 
-<h2>Đặt hàng</h2>
+<style>
 
-<form id="createOrderForm" asp-action="Create" method="post">
-    <table id="orderItems" border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
-        <thead>
-            <tr>
-                <th>Sản phẩm</th>
-                <th>Số lượng</th>
-                <th>Đơn giá</th>
-                <th>Thành tiền</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- JS sẽ fill vào đây -->
-        </tbody>
-    </table>
+    /* ============================================== */
+    /* ============== UI Variables & Themes ========= */
+    /* ============================================== */
+    :root {
+        --bg: #0b1020;
+        --bg-soft: #0f172a;
+        --text: #e5e7eb;
+        --muted: #9aa3b2;
+        --border: rgba(255,255,255,.12);
+        --accent: #22d3ee;
+        --accent2: #3b82f6;
+        --danger: #ef4444;
+        --ok: #22c55e;
+        --duration: 0.3s;
+    }
 
-    <div style="margin-top: 16px;">
-        <button type="submit">Đặt hàng</button>
+        :root[data-theme="light"] {
+            --bg: #f5f7fb;
+            --bg-soft: #ffffff;
+            --text: #0f172a;
+            --muted: #5b6577;
+            --border: rgba(0,0,0,.08);
+            --accent: #0ea5e9;
+            --accent2: #3b82f6;
+            --danger: #dc2626;
+            --ok: #16a34a;
+        }
+
+    /* ============================================== */
+    /* ============ Animations & Keyframes ========== */
+    /* ============================================== */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes orderCardRing {
+        to {
+            transform: rotate(1turn)
+        }
+    }
+
+    /* Animation cho tổng tiền (tương tự Details) */
+    @@keyframes pulseGlow {
+        0% {
+            filter: brightness(1);
+        }
+
+        50% {
+            filter: brightness(1.2);
+        }
+
+        100% {
+            filter: brightness(1);
+        }
+    }
+
+
+    /* ============================================== */
+    /* ============ LAYOUT & CARD STYLES ============ */
+    /* ============================================== */
+    .order-page {
+        max-width: 800px;
+        margin: 24px auto;
+        padding: 0 16px;
+        color: var(--text);
+    }
+
+    .order-title {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px;
+        animation: fadeIn var(--duration) ease-out both;
+    }
+
+        .order-title h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1;
+            font-size: 28px;
+        }
+
+        .order-title .under {
+            flex: 1;
+            min-width: 100px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            filter: saturate(1.05) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
+        }
+
+    /* Áp dụng Neon Ring lên thẻ form/card */
+    .order-card {
+        background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 12px 32px rgba(2,8,23,.5), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+        padding: 20px;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        animation: fadeIn var(--duration) ease-out var(--duration) both;
+    }
+
+        /* Neon Ring ::before */
+        .order-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+            filter: blur(12px) saturate(1.2);
+            opacity: .38;
+            animation: orderCardRing 14s linear infinite;
+        }
+
+        .order-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    :root[data-theme="light"] .order-card {
+        background: #fff;
+        box-shadow: 0 12px 28px rgba(2,8,23,.12);
+    }
+
+        /* Điều chỉnh Neon Ring cho Light Mode */
+        :root[data-theme="light"] .order-card::before {
+            content: "";
+            opacity: .10;
+            filter: blur(3px) saturate(1);
+        }
+
+
+    /* ============ ORDER ITEMS TABLE STYLES ============ */
+    #orderItems {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+        #orderItems caption {
+            text-align: left;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        #orderItems th {
+            padding: 10px 12px;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+        }
+
+        #orderItems td {
+            padding: 12px;
+            border-bottom: 1px dashed var(--border);
+            vertical-align: middle;
+        }
+
+        #orderItems tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        #orderItems tr:hover {
+            background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 5%, transparent), transparent 50%);
+        }
+
+    :root[data-theme="light"] #orderItems tr:hover {
+        background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 12%, transparent), transparent 50%);
+    }
+
+
+    .item-name {
+        font-weight: 800;
+    }
+
+    .price-cell {
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+
+    .total-cell {
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+
+
+    /* ============ SUMMARY STYLES ============ */
+    .order-summary {
+        display: grid;
+        gap: 10px;
+        max-width: 360px;
+        margin-left: auto;
+        padding-top: 10px;
+    }
+
+    .summary-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 15px;
+    }
+
+        .summary-row .val {
+            font-weight: 800;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+
+    .order-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--border);
+    }
+
+        /* Áp dụng hiệu ứng Neon cho tổng tiền */
+        .order-total .val {
+            font-weight: 900;
+            font-size: 22px;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg,var(--accent),var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            /* Animation pulse glow */
+            animation: pulseGlow 3s infinite alternate ease-in-out;
+        }
+
+
+    /* ============ BUTTON STYLES ============ */
+    .order-btn {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-weight: 800;
+        font-size: 16px;
+        width: 100%;
+        transition: transform .12s ease, filter .2s ease, opacity .2s ease;
+    }
+
+    .order-btn-primary {
+        color: var(--bg); /* Dùng biến bg thay cho #0b1220 */
+        background: linear-gradient(135deg,var(--accent),var(--accent2));
+        box-shadow: 0 8px 18px color-mix(in oklab,var(--accent2) 30%, transparent); /* Dùng accent2 cho shadow */
+    }
+
+        .order-btn-primary:hover {
+            transform: translateY(-2px); /* Tăng độ nổi lên */
+            filter: brightness(1.05);
+            box-shadow: 0 10px 22px color-mix(in oklab,var(--accent2) 50%, transparent); /* Tăng shadow khi hover */
+        }
+
+    /* Vô hiệu hóa nút */
+    .order-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+        filter: none;
+    }
+
+</style>
+
+<div class="order-page">
+    <div class="order-title">
+        <h2>Xác nhận Đặt hàng</h2>
+        <div class="under"></div>
     </div>
-</form>
+
+    <form id="createOrderForm" asp-action="Create" method="post" class="order-card">
+
+        <div class="order-details-section">
+            <table id="orderItems">
+                <caption>Các mặt hàng đã chọn</caption>
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th style="width: 100px;">SL</th>
+                        <th class="price-cell" style="width: 120px;">Đơn giá</th>
+                        <th class="total-cell" style="width: 120px;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="order-summary">
+            <div class="summary-row">
+                <span>Tạm tính</span>
+                <span class="val" id="sumSubtotal">0₫</span>
+            </div>
+            <div class="summary-row">
+                <span>Phí giao hàng</span>
+                <span class="val" id="sumShip">0₫</span>
+            </div>
+            <div class="order-total">
+                <span>Tổng thanh toán</span>
+                <span class="val" id="sumTotal">0₫</span>
+            </div>
+            <button type="submit" class="order-btn order-btn-primary">Xác nhận Đặt hàng</button>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // ---------------- CONSTANTS & UTILS ----------------
             const items = JSON.parse(sessionStorage.getItem('checkoutItems') || '[]');
             const tbody = document.querySelector('#orderItems tbody');
+            const elSubtotal = document.getElementById('sumSubtotal');
+            const elShip = document.getElementById('sumShip');
+            const elTotal = document.getElementById('sumTotal');
+            const checkoutForm = document.getElementById('createOrderForm');
+            const orderButton = checkoutForm.querySelector('.order-btn'); // Lấy nút
 
-            items.forEach((item, i) => {
-                const total = item.Quantity * item.UnitPrice;
+            const SHIP_FEE = 30000; // Giả lập Phí giao hàng 30,000đ
+            const fmtVND = n => n.toLocaleString('vi-VN') + '₫';
+            let subtotal = 0;
 
-                // Thêm hàng hiển thị
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.ProductName}
-                        <input type="hidden" name="Items[${i}].ProductId" value="${item.ProductId}" />
-                        <input type="hidden" name="Items[${i}].Quantity" value="${item.Quantity}" />
-                        <input type="hidden" name="Items[${i}].UnitPrice" value="${item.UnitPrice}" />
-                    </td>
-                    <td>${item.Quantity}</td>
-                    <td>${item.UnitPrice.toLocaleString('vi-VN')}₫</td>
-                    <td>${total.toLocaleString('vi-VN')}₫</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            // ---------------- RENDER ITEMS ----------------
+            if (items.length === 0) {
+                // Nếu không có item nào
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--muted); padding: 20px; border-bottom: none;">Không có sản phẩm nào được chọn. Vui lòng quay lại giỏ hàng.</td></tr>`;
+                orderButton.disabled = true; // Vô hiệu hóa nút
+            } else {
+                items.forEach((item, i) => {
+                    const total = item.Quantity * item.UnitPrice;
+                    subtotal += total;
+
+                    // Thêm hàng hiển thị
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <span class="item-name">${item.ProductName}</span>
+                            <input type="hidden" name="Items[${i}].ProductId" value="${item.ProductId}" />
+                            <input type="hidden" name="Items[${i}].Quantity" value="${item.Quantity}" />
+                            <input type="hidden" name="Items[${i}].UnitPrice" value="${item.UnitPrice}" />
+                        </td>
+                        <td>${item.Quantity}</td>
+                        <td class="price-cell">${fmtVND(item.UnitPrice)}</td>
+                        <td class="total-cell">${fmtVND(total)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // ---------------- CALCULATE SUMMARY ----------------
+                const finalShipFee = SHIP_FEE;
+                const finalTotal = subtotal + finalShipFee;
+
+                elSubtotal.textContent = fmtVND(subtotal);
+                elShip.textContent = fmtVND(finalShipFee);
+                elTotal.textContent = fmtVND(finalTotal);
+            }
         });
     </script>
 }

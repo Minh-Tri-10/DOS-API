@@ -123,5 +123,20 @@ namespace OrderAPI.Services
 
         public async Task MarkAsPaidAsync(int orderId) =>
             await _repo.MarkOrderAsPaidAsync(orderId);
+
+        // Hủy đơn hàng
+        public async Task<bool> CancelAsync(int orderId, string cancelReason)
+        {
+            var order = await _repo.GetByIdAsync(orderId);
+            if (order == null || order.OrderStatus == "cancelled")
+                return false;
+
+            order.OrderStatus = "cancelled";
+            order.CancelReason = cancelReason;
+            await _repo.UpdateAsync(order);
+
+            return true;
+        }
+
     }
 }

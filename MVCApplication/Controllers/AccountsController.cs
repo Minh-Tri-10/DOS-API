@@ -39,7 +39,7 @@ namespace MVCApplication.Controllers
             if (user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
                 return RedirectToAction("Index", "AdminAccounts");
             else
-                return RedirectToAction("Profile", "Accounts");
+                return RedirectToAction("Index", "Customer");
         }
 
         [HttpGet]

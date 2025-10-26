@@ -1,4 +1,6 @@
-﻿using AccountAPI.DTOs;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AccountAPI.DTOs;
 
 namespace AccountAPI.Services.Interfaces
 {
@@ -9,11 +11,12 @@ namespace AccountAPI.Services.Interfaces
         Task<IEnumerable<UserDTO>> GetAllAsync();
         Task<UserDTO?> GetByIdAsync(int id);
 
-        Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto); // NEW
-        Task<bool> ChangePasswordAsync(ChangePasswordDTO dto);                // NEW
-        Task<bool> SetBanAsync(int userId, bool isBanned);                    // NEW
+        Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto);
+        Task<bool> ChangePasswordAsync(ChangePasswordDTO dto);
+        Task<bool> SetBanAsync(int userId, bool isBanned);
 
-        Task<string?> ForgotPasswordAsync(ForgotPasswordDTO dto);             // NEW (trả token test)
-        Task<bool> ResetPasswordAsync(ResetPasswordDTO dto);                  // NEW
+        Task<string?> ForgotPasswordAsync(ForgotPasswordDTO dto);
+        Task<bool> ResetPasswordAsync(ResetPasswordDTO dto);
     }
 }
+
