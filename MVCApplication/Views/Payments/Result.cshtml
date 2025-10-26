@@ -1,0 +1,26 @@
+﻿@{
+    var status = ViewBag.Status as string;
+    var paymentId = ViewBag.PaymentId;
+}
+
+<div class="container text-center mt-5">
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-body">
+            <h2 class="card-title">
+                @if (status == "success")
+                {
+                    <span class="text-success">Thanh toán #@paymentId thành công!</span>
+                }
+                else
+                {
+                    <span class="text-danger">Thanh toán #@paymentId không thành công.w</span>
+                }
+            </h2>
+
+            <a href="~/"
+               class="btn btn-primary mt-4">
+                Quay về trang chủ
+            </a>
+        </div>
+    </div>
+</div>

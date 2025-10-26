@@ -93,5 +93,14 @@ namespace MVCApplication.Controllers
             await _paymentService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
+
+        //GET: Paymets/Result
+        public IActionResult Result(string status, int id)
+        {
+            ViewBag.Status = status;
+            ViewBag.PaymentId = id;
+
+            return View();
+        }
     }
 }

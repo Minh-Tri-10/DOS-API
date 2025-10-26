@@ -24,7 +24,7 @@ namespace OrderAPI
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
 
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
             // Product microservice (nếu có)
             builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
             {
