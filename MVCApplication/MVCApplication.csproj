@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\js\" />
+    <Folder Include="wwwroot\media\icons\" />
   </ItemGroup>
 
   <ItemGroup>
