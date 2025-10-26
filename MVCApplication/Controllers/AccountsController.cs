@@ -34,6 +34,8 @@ namespace MVCApplication.Controllers
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("Role", user.Role);
+            HttpContext.Session.SetString("Email", user.Email ?? "");
+            HttpContext.Session.SetString("AvatarUrl", user.AvatarUrl ?? "https://i.pravatar.cc/128?img=47");
 
             // Điều hướng theo Role
             if (user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
@@ -153,35 +155,76 @@ namespace MVCApplication.Controllers
             return RedirectToAction("Login");
         }
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto, IFormFile? avatarFile)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login");
+            if (userId == null)
+                return RedirectToAction("Login");
 
-            var ok = await _service.UpdateProfileAsync(userId.Value, dto);
-            if (ok==null)
+            // ⚙️ 1. Validation check
+            if (!ModelState.IsValid)
             {
-                ViewBag.Error = "Cập nhật thất bại.";
+                var user = await _service.GetByIdAsync(userId.Value);
+                if (user != null)
+                {
+                    dto.UserId = user.UserId;
+                    dto.Username = user.Username;
+                    dto.Role = user.Role;
+                    dto.IsBanned = user.IsBanned;
+                    dto.AvatarUrl ??= user.AvatarUrl;
+                }
+                ViewBag.KeepEditing = true;
                 return View("Profile", dto);
             }
 
-            // Sau khi update thành công, load lại user mới
-            var updated = await _service.GetByIdAsync(userId.Value);
+            // ⚙️ 2. Upload avatar (nếu có)
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsDir))
+                    Directory.CreateDirectory(uploadsDir);
 
-            // Map sang UpdateProfileViewModel để hiển thị
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(avatarFile.FileName)}";
+                var savePath = Path.Combine(uploadsDir, fileName);
+
+                using (var stream = new FileStream(savePath, FileMode.Create))
+                {
+                    await avatarFile.CopyToAsync(stream);
+                }
+
+                dto.AvatarUrl = $"/uploads/{fileName}";
+            }
+
+            // ⚙️ 3. Gọi service update
+            var updatedUser = await _service.UpdateProfileAsync(userId.Value, dto);
+            if (updatedUser == null)
+            {
+                ViewBag.Error = "Cập nhật thất bại.";
+                ViewBag.KeepEditing = true;
+                return View("Profile", dto);
+            }
+
+            // ⚙️ 4. Load lại view mới
             var vm = new UpdateProfileViewModel
             {
-                UserId = updated!.UserId,
-                Username = updated.Username,
-                Role = updated.Role,
-                IsBanned = updated.IsBanned,
-                FullName = updated.FullName,
-                Email = updated.Email,
-                Phone = updated.Phone,
-                AvatarUrl = updated.AvatarUrl
+                UserId = updatedUser.UserId,
+                Username = updatedUser.Username,
+                Role = updatedUser.Role,
+                IsBanned = updatedUser.IsBanned,
+                FullName = updatedUser.FullName,
+                Email = updatedUser.Email,
+                Phone = updatedUser.Phone,
+                AvatarUrl = updatedUser.AvatarUrl
             };
+
+            // ⚙️ 5. Reset trạng thái edit
+            ViewBag.KeepEditing = false;
+            ViewBag.Success = "Cập nhật thông tin thành công!";
+            HttpContext.Session.SetString("AvatarUrl", vm.AvatarUrl ?? "");
+            HttpContext.Session.SetString("FullName", vm.FullName ?? "");
+            HttpContext.Session.SetString("Email", vm.Email ?? "");
             return View("Profile", vm);
         }
-
     }
 }

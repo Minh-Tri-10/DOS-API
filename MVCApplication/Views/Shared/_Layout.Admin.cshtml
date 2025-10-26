@@ -1,10 +1,18 @@
 ﻿@{
-    // ====== Config cơ bản ======
-    var userName = "Sample Admin";
-    var userEmail = "admin@demo.com";
-    var avatarUrl = "https://i.pravatar.cc/128?img=47";
+    // ====== Lấy thông tin từ Session ======
+    var sessionUserId = Context.Session.GetInt32("UserId");
+    var sessionUsername = Context.Session.GetString("Username");
+    var sessionEmail = Context.Session.GetString("Email");
+    var sessionRole = Context.Session.GetString("Role");
+    var sessionAvatar = Context.Session.GetString("AvatarUrl");
 
-    // Lấy route theo MVC
+    bool isLoggedIn = sessionUserId != null && sessionUserId > 0;
+
+    var userName = isLoggedIn ? sessionUsername ?? "Admin" : "Khách";
+    var userEmail = isLoggedIn ? sessionEmail ?? "Chưa có email" : "guest@example.com";
+    var avatarUrl = sessionAvatar ?? "https://i.pravatar.cc/128?img=47";
+
+    // ====== Lấy route MVC ======
     var area = (ViewContext.RouteData.Values["area"]?.ToString() ?? "");
     var controller = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "");
     var action = (ViewContext.RouteData.Values["action"]?.ToString() ?? "");
@@ -12,16 +20,15 @@
     bool Is(string c, string a) =>
         controller.Equals(c, StringComparison.OrdinalIgnoreCase) &&
         action.Equals(a, StringComparison.OrdinalIgnoreCase) &&
-        (string.IsNullOrEmpty(area) || area.Equals("", StringComparison.OrdinalIgnoreCase)); // nếu bạn chưa dùng Areas
+        (string.IsNullOrEmpty(area) || area.Equals("", StringComparison.OrdinalIgnoreCase));
 
-    // Flags active cho 5 mục
+    // Flags active cho các mục menu
     bool isOrders = Is("Orders", "Index");
     bool isCategories = Is("AdminCategory", "Index");
     bool isProducts = Is("AdminProduct", "Index");
     bool isAccounts = Is("AdminAccounts", "Index");
     bool isRevenue = Is("Revenue", "Index");
     bool isPayments = Is("Payment", "Index");
-
 }
 
 <!DOCTYPE html>
@@ -148,19 +155,25 @@
         @RenderBody()
     </main>
 
-    <!-- ===== USER MODAL (chỉ View Profile) ===== -->
+    <!-- USER MODAL -->
     <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content modal-surface">
-                <div class="modal-body p-4 text-center">
-                    <img src="@avatarUrl" class="avatar-lg mb-3" alt="Avatar" />
-                    <div class="fw-bold">@userName</div>
-                    <div class="text-muted small mb-3">@userEmail</div>
-                    <a class="btn btn-outline-light-soft w-100"
-                       asp-controller="AdminAccounts"
-                       asp-action="Profile">
-                        View Profile
-                    </a>
+                <div class="modal-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="@avatarUrl" class="avatar-lg rounded-circle" alt="Avatar" />
+                        <div>
+                            <div class="fw-bold">@userName</div>
+                            <div class="text-muted small">@userEmail • admin</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <a class="btn btn-outline-light-soft"
+                           asp-controller="AdminAccounts" asp-action="Profile">
+                            Thông tin tài khoản
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
