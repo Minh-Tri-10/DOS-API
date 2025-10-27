@@ -21,7 +21,31 @@ namespace OrderAPI.Repositories
                 //.ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
+        public async Task<(List<Order>, int)> GetPagedAsync(int page, int pageSize)
+        {
+            var query = _context.Orders
+                //.Include(o => o.User)
+                .OrderByDescending(o => o.OrderDate);
 
+            var totalCount = await query.CountAsync();
+
+            var orders = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new Order
+                {
+                    OrderId = o.OrderId,
+                    UserId = o.UserId,
+                    //FullName = o.User.FullName,
+                    OrderStatus = o.OrderStatus,
+                    PaymentStatus = o.PaymentStatus,
+                    TotalAmount = o.TotalAmount,
+                    OrderDate = o.OrderDate
+                })
+                .ToListAsync();
+
+            return (orders, totalCount);
+        }
         public async Task<Order> GetByIdAsync(int id) =>
             await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == id);
 

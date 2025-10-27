@@ -11,6 +11,14 @@ namespace MVCApplication.Services
         {
             return await _http.GetFromJsonAsync<List<OrderDto>>("api/order");
         }
+        public async Task<PagedResult<OrderDto>?> GetPagedAsync(int page = 1, int pageSize = 10)
+        {
+            var response = await _http.GetAsync($"api/order?page={page}&pageSize={pageSize}");
+            if (!response.IsSuccessStatusCode) return null;
+
+            var result = await response.Content.ReadFromJsonAsync<PagedResult<OrderDto>>();
+            return result;
+        }
 
         public async Task<OrderDto?> GetByIdAsync(int id)
         {

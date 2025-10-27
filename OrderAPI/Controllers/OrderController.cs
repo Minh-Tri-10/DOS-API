@@ -16,11 +16,22 @@ namespace OrderAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var orders = await _service.GetAllAsync();
-            return Ok(orders);
+            (List<OrderDto> orders, int totalCount) = await _service.GetPagedAsync(page, pageSize);
+
+            var result = new
+            {
+                data = orders,
+                totalCount,
+                page,
+                pageSize
+            };
+
+            return Ok(result);
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
