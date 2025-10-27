@@ -91,6 +91,18 @@
                 </svg>
                 <span id="cartBadge" class="cart-badge">0</span>
             </a>
+            <a class="rail-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Orders" ? "active" : "")"
+               asp-controller="Orders" asp-action="Index"
+               data-bs-toggle="tooltip"
+               data-bs-title="Orders"
+               aria-label="Orders">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12.5 17h-11a.5.5 0 0 1-.5-.5v-12a.5.5 0 0 1 .5-.5h20a.5.5 0 0 1 .5.5v7m-18 4h18m-17 0v-4" />
+                    <rect width="20" height="15" x="2" y="3" rx="1.5" ry="1.5" />
+                    <circle cx="12" cy="18.5" r="1.5" />
+                    <path d="M19 19l2 2m0-2l-2 2" />
+                </svg>
+            </a>
         </nav>
         <!-- Bottom: settings + sign out -->
         <div class="rail-bottom">
@@ -126,6 +138,7 @@
                             <div class="text-muted small">@userEmail • @userRole</div>
                         </div>
                     </div>
+
                     <div class="d-grid">
                         @if (isLoggedIn)
                         {
