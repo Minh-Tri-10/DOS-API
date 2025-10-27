@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnKeySwitcher", "ConnKeySwitcher.csproj", "{DB876600-B304-D6A8-0CC3-F06E9D2B9540}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB876600-B304-D6A8-0CC3-F06E9D2B9540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB876600-B304-D6A8-0CC3-F06E9D2B9540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB876600-B304-D6A8-0CC3-F06E9D2B9540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB876600-B304-D6A8-0CC3-F06E9D2B9540}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F27D11BC-4AC2-4333-8FF2-DDD39D9A8B57}
+	EndGlobalSection
+EndGlobal

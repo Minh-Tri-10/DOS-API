@@ -22,7 +22,7 @@ namespace AccountAPI
 
             builder.Services.AddDbContext<DrinkOrderContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
             builder.Services.AddSingleton(sp =>
             {

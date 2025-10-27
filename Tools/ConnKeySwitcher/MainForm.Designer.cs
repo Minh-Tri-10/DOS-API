@@ -224,6 +224,7 @@ partial class MainForm
         colChange.ReadOnly = true;
 
         colStatus.HeaderText = "Status";
+        colStatus.Name = "colStatus";
         colStatus.FillWeight = 10F;
         colStatus.MinimumWidth = 8;
         colStatus.ReadOnly = true;

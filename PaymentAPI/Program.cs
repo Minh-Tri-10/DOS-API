@@ -16,7 +16,7 @@ namespace PaymentAPI
             var builder = WebApplication.CreateBuilder(args);
             // Register DbContext
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
             // Add services to the container.
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
