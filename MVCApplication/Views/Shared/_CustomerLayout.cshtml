@@ -1,22 +1,23 @@
-﻿@using System.Linq
+﻿﻿@using System.Linq
 @{
     // 🔹 Lấy page hiện tại từ RouteData (Razor Pages)
     var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
     if (currentPage.EndsWith("/") && currentPage.Length > 1) currentPage = currentPage.TrimEnd('/');
 
-    // 🔹 Lấy dữ liệu user từ Session
-    var sessionUserId = Context.Session.GetInt32("UserId") ?? 0;
-    var sessionUsername = Context.Session.GetString("Username");
-    var sessionRole = Context.Session.GetString("Role");
-    var sessionEmail = Context.Session.GetString("Email");
-    var sessionAvatar = Context.Session.GetString("AvatarUrl");
+    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var isLoggedIn = User.Identity?.IsAuthenticated ?? false;
+    var currentUserId = 0;
+    if (int.TryParse(userIdClaim, out var parsedUserId))
+    {
+        currentUserId = parsedUserId;
+    }
 
-    var isLoggedIn = sessionUserId != 0;
-
-    var userName = isLoggedIn ? sessionUsername ?? "Người dùng" : "Khách";
-    var userEmail = isLoggedIn ? sessionEmail ?? "Chưa có email" : "guest@example.com";
-    var userRole = isLoggedIn ? sessionRole ?? "customer" : "guest";
-    var avatarUrl = sessionAvatar ?? "https://i.pravatar.cc/128?img=47";
+    var avatarUrl = User.FindFirst("avatar_url")?.Value ?? "https://i.pravatar.cc/128?img=47";
+    var userName = User.FindFirst("full_name")?.Value
+        ?? User.FindFirst("username")?.Value
+        ?? (isLoggedIn ? "Người dùng" : "Khách");
+    var userEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? (isLoggedIn ? "Chưa có email" : "guest@example.com");
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? (isLoggedIn ? "customer" : "guest");
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -106,26 +107,59 @@
         </nav>
         <!-- Bottom: settings + sign out -->
         <div class="rail-bottom">
-            <button class="rail-item" data-bs-toggle="modal" data-bs-target="#settingsModal" data-bs-title="Settings" aria-label="Settings">
+            <button class="rail-item" data-bs-toggle="modal" data-bs-target="#settingsModal" aria-label="Quick settings">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V22a2 2 0 1 1-4 0v-.07a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4 15.4c0-.6-.24-1.18-.66-1.6l-.06-.06A2 2 0 1 1 6.1 10.9l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 13.1 6.1l-.06.06c-.42.42-.66 1-.66 1.6 0 .6.24 1.18.66 1.6l.06.06c.42.42 1 .66 1.6.66.6 0 1.18-.24 1.6-.66l.06-.06A2 2 0 1 1 19.4 15Z" />
+                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.19.42.29.88.29 1.35s-.1.93-.29 1.35Z"></path>
                 </svg>
             </button>
-            <a asp-controller="Accounts" asp-action="Logout"
-               class="rail-item" data-bs-toggle="tooltip" data-bs-title="Sign out" aria-label="Sign out">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <path d="M16 17l5-5-5-5" />
-                    <path d="M21 12H9" />
-                </svg>
-            </a>
+            @if (isLoggedIn)
+            {
+                <form asp-controller="Accounts" asp-action="Logout" method="post">
+                    <button class="rail-item" type="submit" aria-label="Sign out">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M16 17l5-5-5-5" />
+                            <path d="M21 12H9" />
+                            <path d="M12 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2" />
+                        </svg>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a class="rail-item" asp-controller="Accounts" asp-action="Login" aria-label="Sign in">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M8 17l-5-5 5-5" />
+                        <path d="M3 12h12" />
+                        <path d="M15 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2" />
+                    </svg>
+                </a>
+            }
         </div>
     </aside>
-    <!-- CONTENT -->
-    <main class="content">
-        @RenderBody()
+
+    <!-- MAIN CONTENT -->
+    <main class="content-area">
+        <header class="content-header">
+            <div>
+                <h1 class="content-title">Xin chào, @userName!</h1>
+                <p class="content-subtitle">Chọn đồ uống yêu thích của bạn và đặt hàng ngay.</p>
+            </div>
+            <div class="content-actions">
+                <button class="btn btn-primary-soft" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                    Quick settings
+                </button>
+                <button class="btn btn-outline-light-soft">
+                    Support
+                </button>
+            </div>
+        </header>
+
+        <section class="content-body">
+            @RenderBody()
+        </section>
     </main>
+
     <!-- USER MODAL -->
     <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -194,26 +228,26 @@
     </div>
     <!-- Expose CURRENT_USER_ID cho JS -->
     <script>
-        window.CURRENT_USER_ID = @sessionUserId;
+        window.CURRENT_USER_ID = @currentUserId;
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <!-- 🔹 Script: load số món trong giỏ & hiển thị badge -->
     <script>
-        async function fetchCartCount(userId) {
+        async function fetchCartCount() {
           try {
-            const res = await fetch(`/api/cart/user/${userId}`);
+            const res = await fetch('/api/cart/count');
             if (!res.ok) return 0;
-            const cart = await res.json();
-            return Array.isArray(cart?.cartItems) ? cart.cartItems.length : 0;
+            const data = await res.json();
+            return typeof data.count === 'number' ? data.count : 0;
           } catch { return 0; }
         }
         async function updateCartBadge() {
           const badge = document.getElementById('cartBadge');
           const userId = window.CURRENT_USER_ID || 0;
-          if (!badge || !userId) { badge.style.display = 'none'; return; }
-          const count = await fetchCartCount(userId);
+          if (!badge || !userId) { badge?.style?.setProperty('display', 'none'); return; }
+          const count = await fetchCartCount();
           if (count > 0) {
             badge.textContent = count > 99 ? '99+' : String(count);
             badge.style.display = 'inline-flex';

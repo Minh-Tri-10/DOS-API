@@ -1,63 +1,61 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PaymentAPI.DTOs;
-using PaymentAPI.Models;
 using PaymentAPI.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PaymentAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _service;
         public PaymentsController(IPaymentService service) => _service = service;
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var p = await _service.GetByIdAsync(id);
-            if (p == null) return NotFound();
-            return Ok(p);
+            var payment = await _service.GetByIdAsync(id);
+            if (payment == null) return NotFound();
+            return Ok(payment);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PaymentRequestDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var r = await _service.CreatePaymentAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = r.PaymentId }, r);
+            var created = await _service.CreatePaymentAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.PaymentId }, created);
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] PaymentUpdateDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var r = await _service.UpdateAsync(id, dto);
-            return Ok(r);
+            var updated = await _service.UpdateAsync(id, dto);
+            return Ok(updated);
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var r = await _service.DeleteAsync(id);
-            return Ok(r);
+            var removed = await _service.DeleteAsync(id);
+            return Ok(removed);
         }
 
-        // optional: endpoint để confirm (manual) khi tạm thời không tích hợp cổng online
         [HttpPost("{id}/confirm")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Confirm(int id, [FromQuery] string status)
         {
-            var r = await _service.ConfirmPaymentAsync(id, status);
-            return Ok(r);
+            var result = await _service.ConfirmPaymentAsync(id, status);
+            return Ok(result);
         }
     }
 }

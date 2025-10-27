@@ -1,11 +1,9 @@
-﻿// CategoryService.cs
-using System.Net.Http;
+﻿using System;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using MVCApplication.Services.Interfaces;
-using MVCApplication.Models;
 using MVCApplication.DTOs;
+using MVCApplication.Models;
+using MVCApplication.Services.Interfaces;
 
 namespace MVCApplication.Services
 {
@@ -16,13 +14,10 @@ namespace MVCApplication.Services
 
         public CategoryService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClientFactory.CreateClient();
-            _httpClient.BaseAddress = new Uri("https://localhost:7021/"); // API base URL with port 7021
-            _httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
+            _httpClient = httpClientFactory.CreateClient("ProductAPI");
             _jsonOptions = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true // Handle case insensitivity if needed
+                PropertyNameCaseInsensitive = true
             };
         }
 
@@ -34,15 +29,18 @@ namespace MVCApplication.Services
             return JsonSerializer.Deserialize<IEnumerable<CategoryDTO>>(content, _jsonOptions) ?? Enumerable.Empty<CategoryDTO>();
         }
 
-        public async Task<CategoryDTO?> GetByIdAsync(int id)
+        public async Task<CategoryDTO> GetByIdAsync(int id)
         {
             var response = await _httpClient.GetAsync($"api/ManageCategory/{id}");
             if (!response.IsSuccessStatusCode)
             {
-                return null;
+                var error = await response.Content.ReadAsStringAsync();
+                throw new InvalidOperationException(string.IsNullOrWhiteSpace(error) ? "Unable to load category." : error);
             }
+
             var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<CategoryDTO>(content, _jsonOptions);
+            return JsonSerializer.Deserialize<CategoryDTO>(content, _jsonOptions)
+                   ?? throw new InvalidOperationException("Category payload is empty.");
         }
 
         public async Task<CategoryDTO> AddAsync(CreateCategoryDTO dto)

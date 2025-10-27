@@ -6,7 +6,7 @@ namespace AccountAPI.Services.Interfaces
 {
     public interface IAccountService
     {
-        Task<UserDTO?> LoginAsync(LoginDTO dto);
+        Task<AuthResponseDTO?> LoginAsync(LoginDTO dto);
         Task<UserDTO> RegisterAsync(RegisterDTO dto);
         Task<IEnumerable<UserDTO>> GetAllAsync();
         Task<UserDTO?> GetByIdAsync(int id);
