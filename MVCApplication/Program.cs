@@ -50,7 +50,7 @@ namespace MVCApplication
                 c.BaseAddress = new Uri("https://localhost:7001/");
             }).AddHttpMessageHandler<AccessTokenHandler>();
 
-            builder.Services.AddHttpClient("ProductAPI", c =>
+            builder.Services.AddHttpClient("CategoriesAPI", c =>
             {
                 c.BaseAddress = new Uri("https://localhost:7001/");
             }).AddHttpMessageHandler<AccessTokenHandler>();
@@ -98,3 +98,4 @@ namespace MVCApplication
         }
     }
 }
+

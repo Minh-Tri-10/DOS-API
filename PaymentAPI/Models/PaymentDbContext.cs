@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
 namespace PaymentAPI.Models;
 
-public partial class DrinkOrderDbContext : DbContext
+public partial class PaymentDbContext : DbContext
 {
-    public DrinkOrderDbContext()
+    public PaymentDbContext()
     {
     }
 
-    public DrinkOrderDbContext(DbContextOptions<DrinkOrderDbContext> options)
+    public PaymentDbContext(DbContextOptions<PaymentDbContext> options)
         : base(options)
     {
     }

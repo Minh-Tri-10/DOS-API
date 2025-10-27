@@ -1,4 +1,4 @@
-﻿using CategoriesAPI.Models;
+using CategoriesAPI.Models;
 using CategoriesAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,9 @@ namespace CategoriesAPI.Repositories
 {
     public class CategoryRepository : ICategoryRepository
     {
-        private readonly DrinkOrderDbContext _context; // Giả định DbContext của bạn
+        private readonly CatalogDbContext _context; // Gi? d?nh DbContext c?a b?n
 
-        public CategoryRepository(DrinkOrderDbContext context)
+        public CategoryRepository(CatalogDbContext context)
         {
             _context = context;
         }
@@ -63,13 +63,13 @@ namespace CategoriesAPI.Repositories
                 }
                 catch (DbUpdateException ex)
                 {
-                    // Nếu lỗi do ràng buộc FK
+                    // N?u l?i do r�ng bu?c FK
                     if (ex.InnerException is SqlException sqlEx && sqlEx.Number == 547)
                     {
-                        throw new InvalidOperationException("Không thể xóa category vì có dữ liệu khác đang tham chiếu.", ex);
+                        throw new InvalidOperationException("Kh�ng th? x�a category v� c� d? li?u kh�c dang tham chi?u.", ex);
                     }
 
-                    // Nếu lỗi khác thì ném tiếp
+                    // N?u l?i kh�c th� n�m ti?p
                     throw;
                 }
             }

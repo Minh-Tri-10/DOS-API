@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -73,7 +73,7 @@ namespace MVCApplication.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("ProductAPI");
+                var client = _httpClientFactory.CreateClient("CategoriesAPI");
                 using var formData = BuildMultipartPayload(dto, imageFile);
 
                 var response = await client.PostAsync("api/Product", formData);
@@ -84,7 +84,7 @@ namespace MVCApplication.Controllers
             }
             catch (HttpRequestException ex)
             {
-                ModelState.AddModelError(string.Empty, "Khong the ket noi toi ProductAPI: " + ex.Message);
+                ModelState.AddModelError(string.Empty, "Khong the ket noi toi CategoriesAPI: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -128,7 +128,7 @@ namespace MVCApplication.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("ProductAPI");
+                var client = _httpClientFactory.CreateClient("CategoriesAPI");
                 using var formData = BuildMultipartPayload(dto, imageFile);
 
                 var response = await client.PutAsync($"api/Product/{id}", formData);
@@ -139,7 +139,7 @@ namespace MVCApplication.Controllers
             }
             catch (HttpRequestException ex)
             {
-                ModelState.AddModelError(string.Empty, "Khong the ket noi toi ProductAPI: " + ex.Message);
+                ModelState.AddModelError(string.Empty, "Khong the ket noi toi CategoriesAPI: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -225,3 +225,4 @@ namespace MVCApplication.Controllers
         }
     }
 }
+

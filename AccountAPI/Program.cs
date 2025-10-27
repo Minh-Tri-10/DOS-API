@@ -24,7 +24,7 @@ namespace AccountAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<DrinkOrderContext>(options =>
+            builder.Services.AddDbContext<AccountDbContext>(options =>
 
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 

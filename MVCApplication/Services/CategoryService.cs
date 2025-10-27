@@ -14,7 +14,7 @@ namespace MVCApplication.Services
 
         public CategoryService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClientFactory.CreateClient("ProductAPI");
+            _httpClient = httpClientFactory.CreateClient("CategoriesAPI");
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -76,3 +76,4 @@ namespace MVCApplication.Services
         }
     }
 }
+

@@ -16,7 +16,7 @@ namespace MVCApplication.Services
 
         public ProductService(IHttpClientFactory httpClientFactory, ILogger<ProductService> logger)
         {
-            _httpClient = httpClientFactory.CreateClient("ProductAPI");
+            _httpClient = httpClientFactory.CreateClient("CategoriesAPI");
             _logger = logger;
             _jsonOptions = new JsonSerializerOptions
             {
@@ -104,3 +104,4 @@ namespace MVCApplication.Services
         }
     }
 }
+

@@ -9,9 +9,6 @@ using CategoriesAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ProductAPI.Mapping;
-using ProductAPI.Repositories;
-using ProductAPI.Services;
 
 namespace CategoriesAPI
 {
@@ -25,7 +22,7 @@ namespace CategoriesAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+            builder.Services.AddDbContext<CatalogDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
@@ -97,3 +94,4 @@ namespace CategoriesAPI
         }
     }
 }
+

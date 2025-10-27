@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountAPI.Models;
 
-public partial class DrinkOrderContext : DbContext
+public partial class AccountDbContext : DbContext
 {
-    public DrinkOrderContext()
+    public AccountDbContext()
     {
     }
 
-    public DrinkOrderContext(DbContextOptions<DrinkOrderContext> options)
+    public AccountDbContext(DbContextOptions<AccountDbContext> options)
         : base(options)
     {
     }

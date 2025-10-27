@@ -2,13 +2,14 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using CategoriesAPI.Models;
-namespace ProductAPI.Repositories;
+
+namespace CategoriesAPI.Repositories;
 public class ProductRepository : IProductRepository
 {
-    private readonly DrinkOrderDbContext _context;
-    public ProductRepository(DrinkOrderDbContext context) => _context = context;
+    private readonly CatalogDbContext _context;
+    public ProductRepository(CatalogDbContext context) => _context = context;
 
-    // Lấy tất cả, Include Category
+    // L?y t?t c?, Include Category
     public async Task<IEnumerable<Product>> GetAllAsync()
     {
         return await _context.Products
@@ -16,7 +17,7 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
-    // Lấy theo Id, Include Category
+    // L?y theo Id, Include Category
     public async Task<Product?> GetByIdAsync(int id)
     {
         return await _context.Products
@@ -39,7 +40,7 @@ public class ProductRepository : IProductRepository
     public async Task DeleteAsync(int id)
     {
         var product = await GetByIdAsync(id);
-        if (product == null) return; // Hoặc throw nếu cần
+        if (product == null) return; // Ho?c throw n?u c?n
 
         try
         {
@@ -56,3 +57,4 @@ public class ProductRepository : IProductRepository
         }
     }
 }
+
