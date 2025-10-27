@@ -2,26 +2,26 @@
 using OrderAPI.DTOs;
 using OrderAPI.Models;
 using OrderAPI.Repositories.Interfaces;
-using OrderAPI.Services.Interfaces;        // nếu cần entity
+using OrderAPI.Services.Interfaces;
 namespace OrderAPI.Repositories;
 
 public sealed class StatsRepository : IStatsRepository
 {
-    private readonly DrinkOrderDbContext _db;
-    private readonly IProductClient _productClient;
+    private readonly OrderDbContext _db;
+    private readonly ICatalogProductClient _catalogProductClient;
     private readonly ICategoryClient _categoryClient;
 
-    public StatsRepository(DrinkOrderDbContext db, IProductClient productClient, ICategoryClient categoryClient)
+    public StatsRepository(OrderDbContext db, ICatalogProductClient productClient, ICategoryClient categoryClient)
     {
         _db = db;
-        _productClient = productClient;
+        _catalogProductClient = productClient;
         _categoryClient = categoryClient;
     }
     // --- Helpers ---
     private static DateTime NormalizeStart(DateTime start) => DateTime.SpecifyKind(start, DateTimeKind.Utc);
     private static DateTime NormalizeEnd(DateTime end)
     {
-        // dùng [start, end) để tránh trùng biên; nếu end là ngày, lấy 00:00 hôm sau
+        // Use [start, end) to avoid overlaps; shift end-of-day to the next midnight
         var e = DateTime.SpecifyKind(end, DateTimeKind.Utc);
         if (e.TimeOfDay == TimeSpan.Zero) e = e.AddDays(1);
         return e;
@@ -59,7 +59,7 @@ public sealed class StatsRepository : IStatsRepository
     //    start = NormalizeStart(start);
     //    end = NormalizeEnd(end);
 
-    //    // Dùng navigation, tránh Join + AsQueryable().Sum gây không dịch được
+    //    // Dùng navigation, tránh Join + AsQueryable().Sum gây không d?ch du?c
     //    var rows = await _db.OrderItems
     //        .AsNoTracking()
     //        .Where(oi => oi.Order.PaymentStatus == "paid"
@@ -119,7 +119,7 @@ public sealed class StatsRepository : IStatsRepository
             .ToListAsync();
 
         var productIds = items.Select(x => x.ProductId).Distinct();
-        var productTasks = productIds.Select(id => _productClient.GetProductByIdAsync(id));
+        var productTasks = productIds.Select(id => _catalogProductClient.GetProductByIdAsync(id));
         var products = await Task.WhenAll(productTasks);
 
         var productDict = products.Where(p => p != null)
@@ -156,7 +156,7 @@ public sealed class StatsRepository : IStatsRepository
             .ToListAsync();
 
         var productIds = items.Select(x => x.ProductId).Distinct();
-        var productTasks = productIds.Select(id => _productClient.GetProductByIdAsync(id));
+        var productTasks = productIds.Select(id => _catalogProductClient.GetProductByIdAsync(id));
         var products = await Task.WhenAll(productTasks);
 
         var categoryIds = products.Where(p => p != null).Select(p => p!.CategoryId).Distinct();
@@ -192,8 +192,8 @@ public sealed class StatsRepository : IStatsRepository
         start = NormalizeStart(start);
         end = NormalizeEnd(end);
 
-        // Để tránh vấn đề translate với bucket theo tuần/tháng,
-        // chọn dữ liệu tối thiểu rồi GroupBy trên memory (ổn với dữ liệu demo).
+        // Avoid translation issues when bucketing by week or month
+        // Load minimal data and group in-memory (acceptable for demo workloads)
         var baseData = await _db.Orders
             .AsNoTracking()
             .Where(o => o.PaymentStatus == "paid"
@@ -232,3 +232,4 @@ public sealed class StatsRepository : IStatsRepository
         return rows;
     }
 }
+

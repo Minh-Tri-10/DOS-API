@@ -5,10 +5,7 @@ using CategoriesAPI.Repositories;
 using CategoriesAPI.Repositories.Interfaces;
 using CategoriesAPI.Services;
 using CategoriesAPI.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using ProductAPI.Mapping;
-using ProductAPI.Repositories;
-using ProductAPI.Services;
+using Microsoft.EntityFrameworkCore;\r\nusing CategoriesAPI.Mapping;\r\nusing CategoriesAPI.Repositories;\r\nusing CategoriesAPI.Services;
 
 namespace CategoriesAPI
 {
@@ -61,3 +58,4 @@ namespace CategoriesAPI
         }
     }
 }
+

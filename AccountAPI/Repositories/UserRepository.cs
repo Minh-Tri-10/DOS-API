@@ -1,4 +1,4 @@
-﻿using AccountAPI.Models;
+using AccountAPI.Models;
 using AccountAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,8 +6,8 @@ namespace AccountAPI.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly DrinkOrderContext _ctx;
-        public UserRepository(DrinkOrderContext ctx) => _ctx = ctx;
+        private readonly AccountDbContext _ctx;
+        public UserRepository(AccountDbContext ctx) => _ctx = ctx;
 
         public Task<User?> GetByUsernameAsync(string username) =>
             _ctx.Users.FirstOrDefaultAsync(u => u.Username == username);
@@ -29,30 +29,30 @@ namespace AccountAPI.Repositories
 
         public async Task UpdateAsync(User user)
         {
-            // Lấy entry đang được track (nếu có)
+            // L?y entry dang du?c track (n?u c�)
             var entry = _ctx.Entry(user);
 
             if (entry.State == EntityState.Detached)
             {
-                // Nếu entity chưa được track (Detached), attach rồi đánh dấu Modified
+                // N?u entity chua du?c track (Detached), attach r?i d�nh d?u Modified
                 _ctx.Attach(user);
                 entry = _ctx.Entry(user);
-                entry.State = EntityState.Modified; // mặc định: mọi property = Modified
+                entry.State = EntityState.Modified; // m?c d?nh: m?i property = Modified
             }
             else
             {
-                // Nếu entity đã được truy xuất bằng cùng DbContext trước đó (Tracked),
-                // EF đã tự so sánh thay đổi. Ta chỉ cần chặn các cột không cho ghi đè.
-                entry.State = EntityState.Modified; // hợp nhất hành vi, rồi loại trừ từng cột
+                // N?u entity d� du?c truy xu?t b?ng c�ng DbContext tru?c d� (Tracked),
+                // EF d� t? so s�nh thay d?i. Ta ch? c?n ch?n c�c c?t kh�ng cho ghi d�.
+                entry.State = EntityState.Modified; // h?p nh?t h�nh vi, r?i lo?i tr? t?ng c?t
             }
 
-            // KHÓA những cột không bao giờ ghi đè qua UpdateAsync chung:
+            // KH�A nh?ng c?t kh�ng bao gi? ghi d� qua UpdateAsync chung:
             entry.Property(x => x.CreatedAt).IsModified = false;
             entry.Property(x => x.Username).IsModified = false;
             entry.Property(x => x.Role).IsModified = false;
 
-            // Các cột khác (FullName, Email, Phone, AvatarUrl, PasswordHash, IsBanned, UpdatedAt)
-            // vẫn để Modified theo trạng thái hiện tại
+            // C�c c?t kh�c (FullName, Email, Phone, AvatarUrl, PasswordHash, IsBanned, UpdatedAt)
+            // v?n d? Modified theo tr?ng th�i hi?n t?i
 
             await _ctx.SaveChangesAsync();
         }

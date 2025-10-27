@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +17,7 @@ namespace PaymentAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+            builder.Services.AddDbContext<PaymentDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();

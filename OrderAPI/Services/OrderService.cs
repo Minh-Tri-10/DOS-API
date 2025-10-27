@@ -11,15 +11,15 @@ namespace OrderAPI.Services
         private readonly IOrderRepository _repo;
         private readonly IMapper _mapper;
         private readonly IUserClient _userClient;
-        private readonly IProductClient _productClient;
+        private readonly ICatalogProductClient _catalogProductClient;
         private readonly ICategoryClient _categoryClient;
-        public OrderService(IOrderRepository repo, IMapper mapper, IUserClient userClient, IProductClient productClient
+        public OrderService(IOrderRepository repo, IMapper mapper, IUserClient userClient, ICatalogProductClient productClient
             , ICategoryClient categoryClient)
         {
             _repo = repo;
             _mapper = mapper;
             _userClient = userClient;
-            _productClient = productClient;
+            _catalogProductClient = productClient;
             _categoryClient = categoryClient;
         }
 
@@ -43,10 +43,10 @@ namespace OrderAPI.Services
             {
                 dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
 
-                // Gọi sang ProductService và CategoryService để enrich dữ liệu
+                // Enrich with product and category data from CategoriesAPI
                 foreach (var item in dto.Items)
                 {
-                    var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                    var product = await _catalogProductClient.GetProductByIdAsync(item.ProductId);
                     if (product != null)
                     {
                         item.ProductName = product.ProductName;
@@ -65,19 +65,19 @@ namespace OrderAPI.Services
         {
             var (orders, totalCount) = await _repo.GetPagedAsync(page, pageSize);
 
-            // Map sang DTO
+            // Map to DTO
             var orderDtos = _mapper.Map<List<OrderDto>>(orders);
 
-            // Gọi các service khác để enrich dữ liệu
+            // Enrich data by calling supporting services
             foreach (var dto in orderDtos)
             {
-                // Lấy tên người dùng
+                // Fetch user name
                 dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
 
-                // Lấy chi tiết sản phẩm & category
+                // Fetch product and category details
                 foreach (var item in dto.Items)
                 {
-                    var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                    var product = await _catalogProductClient.GetProductByIdAsync(item.ProductId);
                     if (product != null)
                     {
                         item.ProductName = product.ProductName;
@@ -102,7 +102,7 @@ namespace OrderAPI.Services
 
             foreach (var item in dto.Items)
             {
-                var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                var product = await _catalogProductClient.GetProductByIdAsync(item.ProductId);
                 if (product != null)
                 {
                     item.ProductName = product.ProductName;
@@ -141,10 +141,10 @@ namespace OrderAPI.Services
             var orders = await _repo.GetOrdersByUserIdAsync(userId);
             var orderDtos = _mapper.Map<List<OrderDto>>(orders);
 
-            // Gọi sang UserService để lấy FullName
+            // Fetch user full name from Account service
             var fullName = await _userClient.GetFullNameByIdAsync(userId);
 
-            // Gán fullname cho tất cả orders của user này
+            // Apply full name to each order
             foreach (var dto in orderDtos)
             {
                 dto.FullName = fullName;
@@ -171,3 +171,4 @@ namespace OrderAPI.Services
 
     }
 }
+

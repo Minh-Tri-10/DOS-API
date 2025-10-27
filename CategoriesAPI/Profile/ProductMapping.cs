@@ -2,7 +2,7 @@
 using CategoriesAPI.DTOs;
 using CategoriesAPI.Models;
 
-namespace ProductAPI.Mapping
+namespace CategoriesAPI.Mapping
 {
     public class ProductProfile : Profile
     {
@@ -21,3 +21,4 @@ namespace ProductAPI.Mapping
         }
     }
 }
+

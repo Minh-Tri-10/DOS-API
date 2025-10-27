@@ -3,11 +3,11 @@ using OrderAPI.Services.Interfaces;
 
 namespace OrderAPI.Services
 {
-    public class ProductClient : IProductClient
+    public class CatalogProductClient : ICatalogProductClient
     {
         private readonly HttpClient _http;
 
-        public ProductClient(HttpClient http) => _http = http;
+        public CatalogProductClient(HttpClient http) => _http = http;
 
         public async Task<ProductDto?> GetProductByIdAsync(int productId)
         {
@@ -15,3 +15,4 @@ namespace OrderAPI.Services
         }
     }
 }
+

@@ -13,7 +13,7 @@ namespace MVCApplication.Services
         public CartService(IHttpClientFactory factory)
         {
             _cartApi = factory.CreateClient("CartAPI");
-            _productApi = factory.CreateClient("ProductAPI"); // base 7021
+            _productApi = factory.CreateClient("CategoriesAPI"); // base 7021
         }
 
         public async Task<CartViewModel?> GetCartWithProductsAsync(int userId)
@@ -25,7 +25,7 @@ namespace MVCApplication.Services
 
             foreach (var item in cart.CartItems)
             {
-                // Product controller nằm ở CategoriesAPI: /api/Product/{id}
+                // Product endpoints are exposed by CategoriesAPI: /api/Product/{id}
                 var product = await _productApi.GetFromJsonAsync<ProductDTO>($"api/Product/{item.ProductId}");
 
                 vm.CartItems.Add(new CartItemViewModel
@@ -67,3 +67,4 @@ namespace MVCApplication.Services
         }
     }
 }
+

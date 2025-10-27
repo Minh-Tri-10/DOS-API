@@ -22,7 +22,7 @@ namespace OrderAPI
             builder.Services.AddSwaggerGen();
             builder.Services.AddAutoMapper(typeof(Program));
 
-            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+            builder.Services.AddDbContext<OrderDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
             builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
@@ -30,7 +30,7 @@ namespace OrderAPI
                 client.BaseAddress = new Uri("https://localhost:7021/");
             });
 
-            builder.Services.AddHttpClient<IProductClient, ProductClient>(client =>
+            builder.Services.AddHttpClient<ICatalogProductClient, CatalogProductClient>(client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7021/");
             });
@@ -106,4 +106,6 @@ namespace OrderAPI
         }
     }
 }
+
+
 
