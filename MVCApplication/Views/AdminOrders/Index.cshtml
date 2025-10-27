@@ -658,14 +658,43 @@
             </table>
             @if (totalPages > 1)
             {
-                <nav class="orders-pagination-center">
-                    <ul class="pagination">
-                        @for (int i = 1; i <= totalPages; i++)
+                <nav class="orders-pagination-center mt-4">
+                    <ul class="pagination justify-content-center">
+
+                        <li class="page-item @(page == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?page=1" aria-label="Trang đầu">
+                                <span aria-hidden="true">«</span>
+                            </a>
+                        </li>
+
+                        <li class="page-item @(page == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(page - 1)" aria-label="Trang trước">
+                                <span aria-hidden="true">‹</span>
+                            </a>
+                        </li>
+
+                        @{
+                            int start = Math.Max(1, page - 2);
+                            int end = Math.Min(totalPages, page + 2);
+                        }
+                        @for (int i = start; i <= end; i++)
                         {
                             <li class="page-item @(i == page ? "active" : "")">
                                 <a class="page-link" href="?page=@i">@i</a>
                             </li>
                         }
+
+                        <li class="page-item @(page == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(page + 1)" aria-label="Trang sau">
+                                <span aria-hidden="true">›</span>
+                            </a>
+                        </li>
+
+                        <li class="page-item @(page == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="?page=@totalPages" aria-label="Trang cuối">
+                                <span aria-hidden="true">»</span>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             }
