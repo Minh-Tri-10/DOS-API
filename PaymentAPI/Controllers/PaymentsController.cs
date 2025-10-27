@@ -36,13 +36,33 @@ namespace PaymentAPI.Controllers
             return Ok(p);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] PaymentRequestDTO dto)
+        //Create payment
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] PaymentRequestDTO req)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var r = await _service.CreatePaymentAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = r.PaymentId }, r);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            switch (req.PaymentMethod?.ToUpper())
+            {
+                case "COD":
+                    {
+                        var r = await _service.CreatePaymentAsync(req);
+                        return CreatedAtAction(nameof(GetById), new { id = r.PaymentId }, r);
+                    }
+
+                case "VNPAY":
+                    {
+                        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+                        var r = await _service.CreateVnPayPaymentAsync(req, ip);
+                        return Ok(r);
+                    }
+
+                default:
+                    return BadRequest("Unsupported payment method");
+            }
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] PaymentUpdateDTO dto)
@@ -65,15 +85,6 @@ namespace PaymentAPI.Controllers
         {
             var r = await _service.ConfirmPaymentAsync(id, status);
             return Ok(r);
-        }
-
-        [HttpPost("create-vnpay")]
-        public async Task<IActionResult> CreateVnPay([FromBody] PaymentRequestDTO request)
-        {
-            // lấy IP client
-            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var res = await _service.CreateVnPayPaymentAsync(request, ip ?? "127.0.0.1");
-            return Ok(res);
         }
 
         // VNPAY sẽ redirect user -> GET with query params
