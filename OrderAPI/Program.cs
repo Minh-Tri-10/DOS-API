@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.EntityFrameworkCore;
 using OrderAPI.Repositories;
 using OrderAPI.Repositories.Interfaces;
@@ -23,10 +23,7 @@ namespace OrderAPI
 
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
 
-
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
-
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             // Product microservice (nếu có)
             builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
             {

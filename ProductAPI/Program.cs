@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.EntityFrameworkCore;
 using ProductAPI.Mapping;
 using ProductAPI.Models;
@@ -23,7 +23,7 @@ namespace ProductAPI
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Đăng ký AutoMapper
             builder.Services.AddAutoMapper(typeof(ProductProfile));

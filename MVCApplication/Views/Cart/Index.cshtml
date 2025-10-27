@@ -336,6 +336,55 @@
         background: linear-gradient(90deg, color-mix(in oklab,var(--accent) 16%, transparent), transparent 55%)
     }
 
+    .cart-empty-page {
+        text-align: center;
+        padding: 120px 20px;
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text);
+    }
+
+    .empty-cart-img {
+        width: 180px;
+        height: auto;
+        opacity: 0.9;
+        margin-bottom: 20px;
+        animation: floatCart 3s ease-in-out infinite;
+    }
+
+    .cart-empty-page h3 {
+        font-weight: 800;
+        font-size: 24px;
+        margin-top: 8px;
+    }
+
+    .cart-empty-page p {
+        color: var(--muted);
+        margin: 6px 0 20px;
+        font-size: 15.5px;
+    }
+
+    .cart-empty-page .cart-btn-primary {
+        color: #0b1220;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        box-shadow: 0 8px 18px color-mix(in oklab,#000 30%, transparent);
+        border: none;
+        font-weight: 800;
+        padding: 10px 18px;
+        border-radius: 10px;
+        transition: transform .12s ease, filter .2s ease;
+    }
+
+        .cart-empty-page .cart-btn-primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+
+
     /* Responsive */
     @@media (max-width: 980px) {
         .cart-row {
@@ -450,27 +499,38 @@
 
 @model MVCApplication.Models.CartViewModel
 
-<div class="cart-page">
-    <div class="cart-title">
-        <h2>Giỏ hàng</h2>
-        <div class="under"></div>
+@if (Model == null || !Model.CartItems.Any())
+{
+    <!-- 🔹 GIAO DIỆN GIỎ HÀNG TRỐNG -->
+    <div class="cart-empty-page">
+        <img src="/media/icons/empty-cart.png" alt="Empty cart" class="empty-cart-img" />
+        <h3>“Hổng” có gì trong giỏ hết!</h3>
+        <p>Hãy lướt và lựa chọn sản phẩm mà bạn muốn nhé!</p>
+        <a href="/Customer/Index" class="cart-btn cart-btn-primary">Mua sắm ngay!</a>
     </div>
-
-    <div class="cart-card" id="cartCard">
-        <!-- head -->
-        <div class="cart-head">
-            <label class="cart-check">
-                <input type="checkbox" class="cart-checkbox" id="checkAll">
-                <span>Chọn tất cả</span>
-            </label>
-            <button type="button" class="cart-btn cart-btn-ghost" id="removeSelected">Xóa các mục đã chọn</button>
+}
+else
+{
+    <!-- 🔹 GIAO DIỆN GIỎ HÀNG CÓ SẢN PHẨM -->
+    <div class="cart-page">
+        <div class="cart-title">
+            <h2>Giỏ hàng</h2>
+            <div class="under"></div>
         </div>
 
-        <!-- list -->
-        <div class="cart-list" id="cartList">
-            @if (Model != null && Model.CartItems.Any())
-            {
-                foreach (var item in Model.CartItems)
+        <div class="cart-card" id="cartCard">
+            <!-- head -->
+            <div class="cart-head">
+                <label class="cart-check">
+                    <input type="checkbox" class="cart-checkbox" id="checkAll">
+                    <span>Chọn tất cả</span>
+                </label>
+                <button type="button" class="cart-btn cart-btn-ghost" id="removeSelected">Xóa các mục đã chọn</button>
+            </div>
+
+            <!-- list -->
+            <div class="cart-list" id="cartList">
+                @foreach (var item in Model.CartItems)
                 {
                     <div class="cart-row" data-id="@item.CartItemId" data-price="@item.Price" data-product-id="@item.ProductId">
                         <div class="cell-check">
@@ -498,43 +558,29 @@
                         </div>
                     </div>
                 }
-            }
-            else
-            {
-                <p>Giỏ hàng của bạn đang trống.</p>
-            }
-        </div>
-
-
-        <!-- footer -->
-        <div class="cart-foot">
-            <div class="cart-note">
-                <label for="note">Ghi chú cho đơn hàng</label>
-                <textarea id="note" placeholder="Ví dụ: Ít đá, thêm ngọt…"></textarea>
             </div>
 
-            <div class="cart-summary">
-                <div class="cart-summary-row">
-                    <span>Số mục đã chọn</span>
-                    <span class="val" id="sumCount">0</span>
+            <!-- footer -->
+            <div class="cart-foot">
+                <div class="cart-summary">
+                    <div class="cart-summary-row">
+                        <span>Số mục đã chọn</span>
+                        <span class="val" id="sumCount">0</span>
+                    </div>
+                    <div class="cart-summary-row">
+                        <span>Tạm tính</span>
+                        <span class="val" id="sumSubtotal">0₫</span>
+                    </div>
+                    <div class="cart-total">
+                        <span>Tổng tiền</span>
+                        <span class="val" id="sumTotal">0₫</span>
+                    </div>
+                    <button type="button" class="cart-btn cart-btn-primary" id="checkoutBtn" disabled>Đặt hàng</button>
                 </div>
-                <div class="cart-summary-row">
-                    <span>Tạm tính</span>
-                    <span class="val" id="sumSubtotal">0₫</span>
-                </div>
-                <div class="cart-summary-row">
-                    <span>Phí giao (giả lập)</span>
-                    <span class="val" id="sumShip">0₫</span>
-                </div>
-                <div class="cart-total">
-                    <span>Tổng tiền </span>
-                    <span class="val" id="sumTotal">0₫</span>
-                </div>
-                <button type="button" class="cart-btn cart-btn-primary" id="checkoutBtn" disabled>Đặt hàng </button>
             </div>
         </div>
     </div>
-</div>
+}
 
 @section Scripts {
     <script>
@@ -545,11 +591,9 @@
 
           const elCount = document.getElementById('sumCount');
           const elSubtotal = document.getElementById('sumSubtotal');
-          const elShip = document.getElementById('sumShip');
           const elTotal = document.getElementById('sumTotal');
           const checkoutBtn = document.getElementById('checkoutBtn');
 
-          const SHIP_FEE = 0; // giả lập
           const fmtVND = n => n.toLocaleString('vi-VN') + '₫';
 
           // ---------------- API CALLS ----------------
@@ -604,8 +648,7 @@
             }
             elCount.textContent = count;
             elSubtotal.textContent = fmtVND(subtotal);
-            elShip.textContent = fmtVND(count > 0 ? SHIP_FEE : 0);
-            elTotal.textContent = fmtVND(subtotal + (count > 0 ? SHIP_FEE : 0));
+            elTotal.textContent = fmtVND(subtotal);
             checkoutBtn.disabled = count === 0;
             syncCheckAll();
           }
@@ -636,7 +679,7 @@
             input.value = val;
             updateLine(row);
             recalc();
-            updateQuantity(id, val); // 🔹 gọi API update
+            updateQuantity(id, val);
           });
 
           list.addEventListener('input', (e) => {
@@ -647,7 +690,7 @@
             const { id, qty } = getRowData(row);
             updateLine(row);
             recalc();
-            updateQuantity(id, qty); // 🔹 gọi API update
+            updateQuantity(id, qty);
           });
 
           list.addEventListener('change', (e) => {
@@ -666,43 +709,35 @@
             for (const cb of selected) {
               const row = cb.closest('.cart-row');
               const id = row.dataset.id;
-              const ok = await removeItem(id); // 🔹 gọi API delete
+              const ok = await removeItem(id);
               if (ok) row.remove();
             }
             recalc();
-
-            // 🔹 cập nhật lại badge ngay sau khi xóa
-            if (window.updateCartBadge) {
-              window.updateCartBadge();
-            }
+            if (window.updateCartBadge) window.updateCartBadge();
           });
 
           list.querySelectorAll('.cart-row').forEach(updateLine);
           recalc();
 
-        // 🔹 Checkout
-           checkoutBtn.addEventListener('click', () => {
-               const selectedItems = [...list.querySelectorAll('.cart-item-check:checked')].map(cb => {
-                   const row = cb.closest('.cart-row');
-                   return {
-                       ProductId: parseInt(row.dataset.productId, 10),
-                       ProductName: row.querySelector('.cart-name')?.textContent.trim() || '',
-                       Quantity: parseInt(row.querySelector('.cart-qty-input').value, 10),
-                       UnitPrice: parseInt(row.dataset.price, 10)
-                   };
-               });
+          // 🔹 Checkout
+          checkoutBtn.addEventListener('click', () => {
+            const selectedItems = [...list.querySelectorAll('.cart-item-check:checked')].map(cb => {
+              const row = cb.closest('.cart-row');
+              return {
+                ProductId: parseInt(row.dataset.productId, 10),
+                ProductName: row.querySelector('.cart-name')?.textContent.trim() || '',
+                Quantity: parseInt(row.querySelector('.cart-qty-input').value, 10),
+                UnitPrice: parseInt(row.dataset.price, 10)
+              };
+            });
 
-               if (selectedItems.length === 0) return;
-
-               // Lưu vào sessionStorage
-               sessionStorage.setItem('checkoutItems', JSON.stringify(selectedItems));
-
-               // Chuyển sang trang Create Order
-               window.location.href = '/Orders/Create';
-           });
-
+            if (selectedItems.length === 0) return;
+            sessionStorage.setItem('checkoutItems', JSON.stringify(selectedItems));
+            window.location.href = '/Orders/Create';
+          });
         })();
     </script>
+}
 }
 
 

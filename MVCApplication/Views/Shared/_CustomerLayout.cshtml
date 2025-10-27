@@ -1,14 +1,22 @@
 ﻿@using System.Linq
 @{
-    // Lấy page hiện tại từ RouteData (Razor Pages)
+    // 🔹 Lấy page hiện tại từ RouteData (Razor Pages)
     var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
     if (currentPage.EndsWith("/") && currentPage.Length > 1) currentPage = currentPage.TrimEnd('/');
-    var isAuth = User?.Identity?.IsAuthenticated == true;
-    var userName = isAuth ? User.Identity?.Name : "Guest";
-    var userEmail = isAuth ? User.Claims.FirstOrDefault(c => c.Type.Contains("email"))?.Value ?? "guest@example.com" : "guest@example.com";
-    var avatarUrl = "https://i.pravatar.cc/128?img=5";
-    // 🔹 Lấy UserId từ Session (MVC)
+
+    // 🔹 Lấy dữ liệu user từ Session
     var sessionUserId = Context.Session.GetInt32("UserId") ?? 0;
+    var sessionUsername = Context.Session.GetString("Username");
+    var sessionRole = Context.Session.GetString("Role");
+    var sessionEmail = Context.Session.GetString("Email");
+    var sessionAvatar = Context.Session.GetString("AvatarUrl");
+
+    var isLoggedIn = sessionUserId != 0;
+
+    var userName = isLoggedIn ? sessionUsername ?? "Người dùng" : "Khách";
+    var userEmail = isLoggedIn ? sessionEmail ?? "Chưa có email" : "guest@example.com";
+    var userRole = isLoggedIn ? sessionRole ?? "customer" : "guest";
+    var avatarUrl = sessionAvatar ?? "https://i.pravatar.cc/128?img=47";
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -115,19 +123,30 @@
                         <img src="@avatarUrl" class="avatar-lg" alt="Avatar" />
                         <div>
                             <div class="fw-bold">@userName</div>
-                            <div class="text-muted small">@userEmail</div>
+                            <div class="text-muted small">@userEmail • @userRole</div>
                         </div>
                     </div>
                     <div class="d-grid">
-                        <a class="btn btn-outline-light-soft"
-                           asp-controller="Accounts" asp-action="Profile">
-                            View Profile
-                        </a>
+                        @if (isLoggedIn)
+                        {
+                            <a class="btn btn-outline-light-soft"
+                               asp-controller="Accounts" asp-action="Profile">
+                                Thông tin tài khoản
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-primary-soft"
+                               asp-controller="Accounts" asp-action="Login">
+                                Đăng nhập
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- QUICK SETTINGS -->
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

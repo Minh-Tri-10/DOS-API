@@ -13,7 +13,7 @@ namespace MVCApplication.DTOs
         [Phone, StringLength(20)]
         public string? Phone { get; set; }
 
-        [Url, StringLength(255)]
+        [StringLength(255)]
         public string? AvatarUrl { get; set; }
     }
 }

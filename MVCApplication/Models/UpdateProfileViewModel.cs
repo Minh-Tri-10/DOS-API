@@ -11,16 +11,22 @@ namespace MVCApplication.Models
         public bool IsBanned { get; set; }
 
         // ========== Các field cho phép update ==========
-        [Required, StringLength(100)]
+        [Display(Name = "Họ và tên")]
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Họ tên phải từ 3 đến 100 ký tự")]
         public string? FullName { get; set; }
 
-        [EmailAddress, StringLength(100)]
+        [Display(Name = "Email")]
+        [Required(ErrorMessage = "Vui lòng nhập email")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         public string? Email { get; set; }
 
-        [Phone, StringLength(20)]
+        [Display(Name = "Số điện thoại")]
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
+        [RegularExpression(@"^\d{9,11}$", ErrorMessage = "Số điện thoại phải gồm 9–11 chữ số")]
         public string? Phone { get; set; }
 
-        [Url, StringLength(255)]
+        [Display(Name = "Ảnh đại diện")]
         public string? AvatarUrl { get; set; }
     }
 }

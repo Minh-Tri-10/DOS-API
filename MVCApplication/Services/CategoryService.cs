@@ -51,7 +51,7 @@ namespace MVCApplication.Services
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                throw new InvalidOperationException($"API error: {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException(errorContent);
             }
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<CategoryDTO>(content, _jsonOptions) ?? throw new InvalidOperationException("Failed to deserialize new category");
@@ -63,7 +63,7 @@ namespace MVCApplication.Services
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                throw new InvalidOperationException($"API error: {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException(errorContent);
             }
         }
 
@@ -73,7 +73,7 @@ namespace MVCApplication.Services
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                throw new InvalidOperationException($"API error: {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException(errorContent);
             }
         }
     }
