@@ -1,87 +1,171 @@
-﻿# PRN232 â€“ DrinkOrder System (DOS) Microservices
 
-Repo nay chua nhieu dich vu .NET 8 tach biet (Account, Categories, Cart, Order, Payment), mot API Gateway dang Ocelot va mot ung dung MVC lam frontend.
+# 🥤 DrinkOrder System (DOS) – PRN232 Microservices Project
 
-## Má»¥c lá»¥c
-- Giá»›i thiá»‡u nhanh
-- Kiáº¿n trÃºc & thÃ nh pháº§n
-- CÃ´ng nghá»‡ sá»­ dá»¥ng
-- YÃªu cáº§u há»‡ thá»‘ng
-- Cáº¥u hÃ¬nh mÃ´i trÆ°á»ng (appsettings, secrets)
-- Cháº¡y dá»± Ã¡n (CLI/Visual Studio)
-- API Gateway (Ocelot)
-- Swagger & Ä‘Æ°á»ng dáº«n truy cáº­p
-- CÃ´ng cá»¥ há»— trá»£: ConnKeySwitcher
-- Ghi chÃº CSDL
-- ÄÃ³ng gÃ³p & phÃ¡t triá»ƒn
+![.NET 8](https://img.shields.io/badge/.NET-8.0-blueviolet)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-Active-success)
+![Architecture](https://img.shields.io/badge/architecture-Microservices-orange)
 
-## Giá»›i thiá»‡u nhanh
-- Nhiá»u service ASP.NET Core Web API Ä‘á»™c láº­p, giao tiáº¿p qua HTTP.
-- EF Core káº¿t ná»‘i SQL Server, dÃ¹ng AutoMapper cho mapping DTO, Swagger Ä‘á»ƒ thá»­ API.
-- EmailJS Ä‘Æ°á»£c dÃ¹ng á»Ÿ AccountAPI cho luá»“ng quÃªn/máº·t kháº©u; CategoriesAPI dÃ¹ng Cloudinary cho media.
-- MVCApplication tiÃªu thá»¥ cÃ¡c API vÃ  cung cáº¥p giao diá»‡n ngÆ°á»i dÃ¹ng.
+> A modularized Drink Ordering System built with **.NET 8**, using a **microservices architecture** with **Ocelot API Gateway** and an **ASP.NET MVC frontend**.
 
-## Kiáº¿n trÃºc & thÃ nh pháº§n
-CÃ¡c dá»± Ã¡n chÃ­nh trong solution:
-- AccountAPI: quáº£n lÃ½ tÃ i khoáº£n, Ä‘Äƒng kÃ½/Ä‘Äƒng nháº­p, Ä‘á»•i/quÃªn máº­t kháº©u (EmailJS), quáº£n lÃ½ profile, khÃ³a tÃ i khoáº£n. Tham kháº£o cáº¥u hÃ¬nh: `AccountAPI/Program.cs` vÃ  `AccountAPI/appsettings.json`.
-- CategoriesAPI: manages categories and product catalog, integrates with Cloudinary for media.
-- CartAPI: giá» hÃ ng.
-- OrderAPI: handles orders and reporting; fetches catalog data from CategoriesAPI and user info from AccountAPI via HttpClient.
-- PaymentAPI: thanh toÃ¡n (mock), cáº­p nháº­t tráº¡ng thÃ¡i thanh toÃ¡n.
-- APIGateways: API Gateway dÃ¹ng Ocelot, gom cÃ¡c route xuá»‘ng cÃ¡c service.
-- MVCApplication: frontend MVC .NET hiá»ƒn thá»‹ vÃ  thao tÃ¡c vá»›i cÃ¡c service.
+---
 
+## 📚 Table of Contents
 
-## CÃ´ng nghá»‡ sá»­ dá»¥ng
-- .NET 8, ASP.NET Core Web API, MVC
-- Entity Framework Core (SQL Server)
-- AutoMapper
-- Swagger/Swashbuckle
-- Ocelot API Gateway
-- BCrypt (bÄƒm máº­t kháº©u)
-- MemoryCache (token reset máº­t kháº©u)
-- EmailJS (gá»­i mail), Cloudinary (media)
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
+- [System Requirements](#-system-requirements)
+- [Environment Configuration](#-environment-configuration)
+- [Running the Project](#-running-the-project)
+- [API Gateway (Ocelot)](#-api-gateway-ocelot)
+- [Swagger Endpoints](#-swagger-endpoints)
+- [Utility Tool: ConnKeySwitcher](#-utility-tool-connkeyswitcher)
+- [Database Notes](#-database-notes)
+- [Contributing](#-contributing)
 
-## YÃªu cáº§u há»‡ thá»‘ng
-- .NET SDK 8.x
-- SQL Server (local/remote)
-- Visual Studio 2022 hoáº·c VS Code + C# extension
+---
 
-## Cáº¥u hÃ¬nh mÃ´i trÆ°á»ng
-1) Connection strings (SQL Server)
-- Má»—i service cÃ³ `appsettings.json` chá»©a `ConnectionStrings` vá»›i nhiá»u key vÃ­ dá»¥: `HuyConnection`, `TriConnection`, `WeiConnection`, `DefaultConnection`, ...
-- Code thÆ°á»ng láº¥y chuá»—i káº¿t ná»‘i báº±ng tÃªn key (vÃ­ dá»¥ `HuyConnection`). Báº¡n cÃ³ thá»ƒ:
-  - Sá»­a giÃ¡ trá»‹ tÆ°Æ¡ng á»©ng trong tá»«ng `appsettings.json`, hoáº·c
-  - DÃ¹ng tool ConnKeySwitcher (bÃªn dÆ°á»›i) Ä‘á»ƒ Ä‘á»“ng bá»™ nhanh tÃªn key dÃ¹ng trong `Program.cs` cá»§a táº¥t cáº£ service.
+## 🚀 Overview
 
-2) Frontend base URL
-- AccountAPI gá»­i link reset password dá»±a trÃªn `Frontend:BaseUrl`.
-- Äáº·t trÃ¹ng vá»›i HTTPS cá»§a MVCApplication (máº·c Ä‘á»‹nh `https://localhost:7223`).
+The **DrinkOrder System (DOS)** consists of multiple independent **.NET 8 Web API microservices**, each responsible for a domain area.
 
-3) EmailJS (AccountAPI)
-- Cáº¥u hÃ¬nh táº¡i `AccountAPI/appsettings.json` má»¥c `Email` vá»›i `ServiceId`, `TemplateId`, `PublicKey`, `AccessToken`, `FromName`, `Origin`.
-- Khuyáº¿n nghá»‹: khÃ´ng commit secret tháº­t; dÃ¹ng `appsettings.Development.json` hoáº·c UserSecrets.
+These services communicate via **HTTP**, with an **Ocelot API Gateway** aggregating routes, and an **MVC frontend** that consumes all APIs.
 
-4) Cloudinary (CategoriesAPI)
-- Cáº¥u hÃ¬nh táº¡i `CategoriesAPI/appsettings.json` má»¥c `CloudinarySettings` (`CloudName`, `ApiKey`, `ApiSecret`).
-- Khuyáº¿n nghá»‹: dÃ¹ng UserSecrets trong quÃ¡ trÃ¬nh dev.
+Key Highlights:
+- Fully decoupled microservices using EF Core + SQL Server
+- Centralized API Gateway (Ocelot)
+- MVC front-end for user interaction
+- Cloud integration: EmailJS (Account), Cloudinary (Media)
+- Scalable and ready for deployment in containerized environments
 
-LÆ°u Ã½: Repo hiá»‡n cÃ³ má»™t sá»‘ sample secret máº·c Ä‘á»‹nh phá»¥c vá»¥ demo. Khi triá»ƒn khai/thá»­ nghiá»‡m thá»±c táº¿, vui lÃ²ng thay toÃ n bá»™ secret báº±ng giÃ¡ trá»‹ vÃ  KHÃ”NG commit.
+---
 
-## Cháº¡y dá»± Ã¡n
-### CÃ¡ch 1: DÃ²ng lá»‡nh (CLI)
-- KhÃ´i phá»¥c & build
+## 🧩 Architecture
+
+### 🔹 Main Projects
+| Service | Description |
+|----------|--------------|
+| **AccountAPI** | User authentication, registration, password reset (via EmailJS), profile management |
+| **CategoriesAPI** | Product catalog and categories, integrated with Cloudinary for image hosting |
+| **CartAPI** | Shopping cart operations |
+| **OrderAPI** | Order creation, reporting; communicates with Account & Categories APIs |
+| **PaymentAPI** | Mock payment processing and order status updates |
+| **APIGateways** | Central Ocelot Gateway routing client → service |
+| **MVCApplication** | ASP.NET MVC frontend, calling APIs and rendering UI |
+
+📁 Each service has its own database and `appsettings.json` configuration.
+
+---
+
+## 🧱 Tech Stack
+
+- **Framework**: .NET 8 (ASP.NET Core Web API + MVC)
+- **Database**: SQL Server
+- **ORM**: Entity Framework Core
+- **Mapping**: AutoMapper
+- **Security**: BCrypt (Password Hashing)
+- **Communication**: HTTP + Ocelot Gateway
+- **Cloud Services**:
+  - EmailJS (Password Reset Flow)
+  - Cloudinary (Media Storage)
+- **Caching**: MemoryCache
+- **API Docs**: Swagger / Swashbuckle
+
+---
+
+## 🖥️ System Requirements
+
+- [.NET SDK 8.x](https://dotnet.microsoft.com/download)
+- [SQL Server](https://www.microsoft.com/en-us/sql-server/)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
+- (Optional) GitHub Codespaces for cloud development
+
+---
+
+## ⚙️ Environment Configuration
+
+### 1️⃣ Connection Strings
+Each service contains a `ConnectionStrings` section in `appsettings.json`, e.g.:
+
+```json
+"ConnectionStrings": {
+  "HuyConnection": "Server=Z14;Database=DOSAccountDb;User=sa;Password=123456;"
+}
+````
+
+You can:
+
+* Edit directly per service, or
+* Use **ConnKeySwitcher** (see below) to apply a single connection key (e.g. `"HuyConnection"`) across all services.
+
+---
+
+### 2️⃣ Frontend Base URL (AccountAPI)
+
+For password reset emails, AccountAPI uses:
+
+```json
+"Frontend": {
+  "BaseUrl": "https://localhost:7223"
+}
+```
+
+This must match your MVC application’s HTTPS URL.
+
+---
+
+### 3️⃣ EmailJS (AccountAPI)
+
+In `AccountAPI/appsettings.json`:
+
+```json
+"Email": {
+  "ServiceId": "",
+  "TemplateId": "",
+  "PublicKey": "",
+  "AccessToken": "",
+  "FromName": "DrinkOrder System"
+}
+```
+
+> ⚠️ Do **not** commit real credentials. Use `UserSecrets` or environment variables.
+
+---
+
+### 4️⃣ Cloudinary (CategoriesAPI)
+
+```json
+"CloudinarySettings": {
+  "CloudName": "",
+  "ApiKey": "",
+  "ApiSecret": ""
+}
+```
+
+Store secrets using `dotnet user-secrets` during development.
+
+---
+
+## ▶️ Running the Project
+
+### 🧭 Option 1: CLI
+
 ```bash
-# Táº¡i thÆ° má»¥c gá»‘c repo
+# Restore dependencies
 dotnet restore
+
+# Build solution
 dotnet build DOS.sln -c Debug
 ```
-- Cháº¡y tá»«ng service (má»Ÿ nhiá»u terminal tab)
+
+Then start services in separate terminals:
+
 ```bash
 # API Gateway
 dotnet run -p APIGateways/APIGateways.csproj
 
-# CÃ¡c microservice
+# APIs
 dotnet run -p AccountAPI/AccountAPI.csproj
 dotnet run -p CategoriesAPI/CategoriesAPI.csproj
 dotnet run -p CartAPI/CartAPI.csproj
@@ -91,53 +175,138 @@ dotnet run -p PaymentAPI/PaymentAPI.csproj
 # Frontend MVC
 dotnet run -p MVCApplication/MVCApplication.csproj
 ```
-- Cá»•ng máº·c Ä‘á»‹nh (theo launchSettings)
-  - AccountAPI: https://localhost:7005
-  - CategoriesAPI: https://localhost:7021
-  - CartAPI: https://localhost:7143
-  - OrderAPI: https://localhost:7269
-  - PaymentAPI: https://localhost:7011
-  - APIGateways (Ocelot): https://localhost:7001
-  - MVCApplication: https://localhost:7223
 
-### CÃ¡ch 2: Visual Studio 2022
-- Má»Ÿ `DOS.sln`.
-- Chá»‰nh â€œMultiple startup projectsâ€ Ä‘á»ƒ khá»Ÿi Ä‘á»™ng cÃ¡c service cáº§n thiáº¿t (Gateway, cÃ¡c API vÃ  MVCApplication).
-- Cháº¡y á»Ÿ cáº¥u hÃ¬nh Debug.
+### 🧭 Option 2: Visual Studio
 
-## API Gateway (Ocelot)
-- Cáº¥u hÃ¬nh route táº¡i: `APIGateways/Ocelot.json`.
-- `GlobalConfiguration.BaseUrl` máº·c Ä‘á»‹nh: `http://localhost:7000` 
+1. Open `DOS.sln`
+2. Go to Solution Properties → Set **Multiple Startup Projects**
+3. Start:
 
+   * `APIGateways`
+   * All APIs
+   * `MVCApplication`
+4. Run in `Debug` mode
 
-## Swagger & Ä‘Æ°á»ng dáº«n truy cáº­p nhanh
-- Má»—i service báº­t Swagger á»Ÿ mÃ´i trÆ°á»ng Development:
-  - AccountAPI: https://localhost:7005/swagger
-  - CategoriesAPI: https://localhost:7021/swagger
-  - CartAPI: https://localhost:7143/swagger
-  - OrderAPI: https://localhost:7269/swagger
-  - PaymentAPI: https://localhost:7011/swagger
-- Frontend MVC: https://localhost:7223
-- API Gateway (Ocelot): https://localhost:7001 (Gateway khÃ´ng cÃ³ Swagger tá»•ng há»£p máº·c Ä‘á»‹nh)
+---
 
-## CÃ´ng cá»¥ há»— trá»£: ConnKeySwitcher
-- Má»¥c tiÃªu: Ä‘á»•i nhanh tÃªn key dÃ¹ng trong `GetConnectionString("...")` cá»§a táº¥t cáº£ `Program.cs` theo 1 key Ä‘Ã£ chá»n.
-- Vá»‹ trÃ­: `Tools/ConnKeySwitcher`.
-- CÃ¡ch dÃ¹ng nhanh:
-  1. Build: `dotnet build Tools/ConnKeySwitcher/ConnKeySwitcher.csproj -c Release`
-  2. Cháº¡y file `ConnKeySwitcher.exe` trong `Tools/ConnKeySwitcher/bin/Release/net8.0-windows/`.
-  3. Chá»n thÆ° má»¥c repo vÃ  key (vÃ­ dá»¥ `HuyConnection`).
-  4. Scan Ä‘á»ƒ xem trÆ°á»›c, Apply Ä‘á»ƒ Ã¡p dá»¥ng. Tool sáº½ táº¡o `.bak` cáº¡nh file `Program.cs` Ä‘Ã£ chá»‰nh.
-- Chi tiáº¿t: xem `Tools/ConnKeySwitcher/README.md`.
+### 🌐 Default Ports
 
-## Ghi chu CSDL
-- Moi service nay da duoc tach sang mot database rieng: `DOSAccountDb`, `DOSCartDb`, `DOSCatalogDb`, `DOSOrderDb`, `DOSPaymentDb`. Connection string mau trong tung `appsettings.json` giu nguyen ten key (vd `HuyConnection`) de nguoi dung tool cu van hoat dong.
-- Tham khao `docs/database-separation.md` de tao schema moi va script copy du lieu tu database hop nhat cu (`DrinkOrderDB`) sang tung database doc lap.
+| Service         | URL                                              |
+| --------------- | ------------------------------------------------ |
+| AccountAPI      | [https://localhost:7005](https://localhost:7005) |
+| CategoriesAPI   | [https://localhost:7021](https://localhost:7021) |
+| CartAPI         | [https://localhost:7143](https://localhost:7143) |
+| OrderAPI        | [https://localhost:7269](https://localhost:7269) |
+| PaymentAPI      | [https://localhost:7011](https://localhost:7011) |
+| API Gateway     | [https://localhost:7001](https://localhost:7001) |
+| MVC Application | [https://localhost:7223](https://localhost:7223) |
 
-##  ÄÃ³ng gÃ³p & phÃ¡t triá»ƒn
-- Quy Æ°á»›c code: tuÃ¢n thá»§ phong cÃ¡ch sáºµn cÃ³ cá»§a tá»«ng service, sá»­ dá»¥ng AutoMapper cho mapping.
-- Báº£o máº­t: Ä‘Æ°a secret (EmailJS, Cloudinary, connection strings tháº­t) vÃ o UserSecrets hoáº·c biáº¿n mÃ´i trÆ°á»ng; khÃ´ng commit.
-- Váº¥n Ä‘á» biáº¿t trÆ°á»›c:
-  - `APIGateways/Ocelot.json` lÃ  vÃ­ dá»¥ minh há»a, cáº§n Ä‘á»“ng bá»™ port downstream theo cá»•ng thá»±c táº¿ cá»§a service.
+---
+
+## 🔀 API Gateway (Ocelot)
+
+* Config file: `APIGateways/Ocelot.json`
+* Default base URL: `http://localhost:7000`
+
+Each route maps from **upstream (client)** → **downstream (microservice)**.
+
+> If ports change, update `Ocelot.json` accordingly.
+
+---
+
+## 📘 Swagger Endpoints
+
+| Service       | Swagger URL                                                      |
+| ------------- | ---------------------------------------------------------------- |
+| AccountAPI    | [https://localhost:7005/swagger](https://localhost:7005/swagger) |
+| CategoriesAPI | [https://localhost:7021/swagger](https://localhost:7021/swagger) |
+| CartAPI       | [https://localhost:7143/swagger](https://localhost:7143/swagger) |
+| OrderAPI      | [https://localhost:7269/swagger](https://localhost:7269/swagger) |
+| PaymentAPI    | [https://localhost:7011/swagger](https://localhost:7011/swagger) |
+
+> API Gateway doesn’t aggregate Swagger by default — test individual services via their URLs.
+
+---
+
+## 🧰 Utility Tool: ConnKeySwitcher
+
+> Quickly sync all connection string keys across services.
+
+**Path:** `Tools/ConnKeySwitcher`
+
+**Usage:**
+
+```bash
+dotnet build Tools/ConnKeySwitcher/ConnKeySwitcher.csproj -c Release
+```
+
+Then run:
+
+```
+Tools/ConnKeySwitcher/bin/Release/net8.0-windows/ConnKeySwitcher.exe
+```
+
+Steps:
+
+1. Choose repo folder
+2. Select key (e.g. `HuyConnection`)
+3. Click **Scan** → preview changes
+4. Click **Apply** → update all `Program.cs`
+   (Backup `.bak` files will be created automatically)
+
+---
+
+## 🗃️ Database Notes
+
+Each microservice has its own database:
+
+| Service       | Database     |
+| ------------- | ------------ |
+| AccountAPI    | DOSAccountDb |
+| CartAPI       | DOSCartDb    |
+| CategoriesAPI | DOSCatalogDb |
+| OrderAPI      | DOSOrderDb   |
+| PaymentAPI    | DOSPaymentDb |
+
+Reference migration doc:
+
+```
+docs/database-separation.md
+```
+
+Includes scripts to migrate data from the legacy monolith (`DrinkOrderDB`).
+
+---
+
+## 🤝 Contributing
+
+**Coding Rules**
+
+* Follow existing folder structure & naming conventions
+* Use AutoMapper for DTO ↔ Entity
+* Keep business logic in Services, not Controllers
+
+**Security**
+
+* Do not commit secrets or credentials
+* Use UserSecrets or environment variables
+
+**When adding new services**
+
+* Create new DB & context
+* Add to Ocelot routes
+* Include Swagger setup
+* Register as startup project in solution
+
+---
+
+## 🧾 License
+
+This project is open-source under the [MIT License](LICENSE).
+
+---
+
+### ⭐ Star this repo if you find it helpful!
+
 
 
