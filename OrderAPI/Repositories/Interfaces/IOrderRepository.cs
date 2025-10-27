@@ -1,4 +1,5 @@
-﻿using OrderAPI.Models;
+﻿using OrderAPI.DTOs;
+using OrderAPI.Models;
 
 namespace OrderAPI.Repositories.Interfaces
 {
@@ -13,5 +14,7 @@ namespace OrderAPI.Repositories.Interfaces
         Task<List<Order>> GetOrdersByUserIdAsync(int userId);
         //Task<User> GetUserByIdAsync(int userId);
         Task MarkOrderAsPaidAsync(int orderId);
+        Task<(List<Order> Orders, int TotalCount)> GetPagedAsync(int page, int pageSize);
+
     }
 }

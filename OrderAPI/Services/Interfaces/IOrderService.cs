@@ -13,6 +13,7 @@ namespace OrderAPI.Services.Interfaces
         Task MarkAsPaidAsync(int orderId);
         // Hủy đơn hàng
         Task<bool> CancelAsync(int orderId, string cancelReason);
+        Task<(List<OrderDto> Orders, int TotalCount)> GetPagedAsync(int page, int pageSize);
 
     }
 }

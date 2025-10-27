@@ -3,6 +3,10 @@
     Layout = "_Layout.Admin";
 }
 @{
+    int totalCount = ViewBag.TotalCount;
+    int page = ViewBag.Page;
+    int pageSize = ViewBag.PageSize;
+    int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
     string StatusClass(string s)
     {
         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
@@ -580,7 +584,11 @@
         }
     }
 
-
+    .orders-pagination-center {
+        display: flex; /* Bật Flexbox cho container */
+        justify-content: center; /* Căn giữa theo chiều ngang */
+        margin-top: 20px; /* Thêm khoảng cách phía trên */
+    }
 </style>
 
 <div class="orders-page">
@@ -648,6 +656,19 @@
                     }
                 </tbody>
             </table>
+            @if (totalPages > 1)
+            {
+                <nav class="orders-pagination-center">
+                    <ul class="pagination">
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == page ? "active" : "")">
+                                <a class="page-link" href="?page=@i">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
         </div>
     </div>
 </div>
