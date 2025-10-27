@@ -1,10 +1,12 @@
 ﻿// Controllers/StatsController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderAPI.DTOs;
 using OrderAPI.Services.Interfaces;
 
 [ApiController]
 [Route("api/stats")]
+[Authorize(Roles = "Admin")]
 public class StatsController : ControllerBase
 {
     private readonly IStatsService _stats;

@@ -43,8 +43,14 @@ namespace MVCApplication.Services
 
         public async Task<bool> AddToCartAsync(int userId, int productId, int quantity)
         {
-            // CartAPI.Add nhận JSON body: { userId, productId, quantity }
-            var res = await _cartApi.PostAsJsonAsync("api/Cart/add", new { userId, productId, quantity });
+            var dto = new AddCartItemDTO
+            {
+                UserId = userId,
+                ProductId = productId,
+                Quantity = quantity
+            };
+
+            var res = await _cartApi.PostAsJsonAsync("api/Cart/add", dto);
             return res.IsSuccessStatusCode;
         }
 

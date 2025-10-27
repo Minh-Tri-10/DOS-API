@@ -1,201 +1,227 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
-using System.Security.Claims;
 
-    namespace MVCApplication.Controllers
+namespace MVCApplication.Controllers
+{
+    [Authorize(Roles = "Admin")]
+    public class AdminProductController : Controller
     {
-        public class AdminProductController : Controller
-        {
-            private readonly IProductService _productService;
-            private readonly ICategoryService _categoryService;
+        private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public AdminProductController(IProductService productService, ICategoryService categoryService, IHttpClientFactory httpClientFactory)
+        public AdminProductController(
+            IProductService productService,
+            ICategoryService categoryService,
+            IHttpClientFactory httpClientFactory)
         {
             _productService = productService;
             _categoryService = categoryService;
             _httpClientFactory = httpClientFactory;
         }
 
-        // Property helper để lấy CurrentUserId từ Claims (hoặc thay bằng Session.GetInt32("UserId") nếu dùng session)
-        private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
+        private int? CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                return int.TryParse(userIdClaim, out var userId) ? userId : null;
+            }
+        }
 
         public async Task<IActionResult> Index()
         {
             if (CurrentUserId == null) return RedirectToAction("Login", "Accounts");
+
             var products = await _productService.GetAllAsync();
             var categories = await _categoryService.GetAllAsync();
             ViewBag.Categories = categories.ToDictionary(c => c.CategoryId, c => c.CategoryName);
-            var debug = string.Join(", ", categories.Select(c => $"{c.CategoryId}:{c.CategoryName}"));
-            Console.WriteLine(debug);
+
             return View(products);
         }
 
-        // GET: Product/Details/5
         public async Task<IActionResult> Details(int id)
-            {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
-                {
-                    return NotFound();
-                }
-                return View(product);
-            }
+        {
+            var product = await _productService.GetByIdAsync(id);
+            return product == null ? NotFound() : View(product);
+        }
 
-            // GET: Product/Create
-            public async Task<IActionResult> Create()
-            {
-                var categories = await _categoryService.GetAllAsync();
-                ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName");
-                return View();
-            }
+        public async Task<IActionResult> Create()
+        {
+            var categories = await _categoryService.GetAllAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName");
+            return View();
+        }
 
-        // POST: Product/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateProductDTO dto, IFormFile? imageFile)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    var client = _httpClientFactory.CreateClient();
-                    var formData = new MultipartFormDataContent();
-                    formData.Add(new StringContent(dto.ProductName), "ProductName");
-                    formData.Add(new StringContent(dto.Description ?? ""), "Description");
-                    formData.Add(new StringContent(dto.Price.ToString()), "Price");
-                    formData.Add(new StringContent(dto.Stock?.ToString() ?? ""), "Stock");
-                    formData.Add(new StringContent(dto.CategoryId?.ToString() ?? ""), "CategoryId");
-                    if (imageFile != null)
-                    {
-                        var memoryStream = new MemoryStream();
-                        await imageFile.CopyToAsync(memoryStream);
-                        memoryStream.Position = 0; // Reset vị trí đọc
-                        formData.Add(new StreamContent(memoryStream), "ImageFile", imageFile.FileName);
-                    }
-                    Console.WriteLine($"ImageFile từ form: {(imageFile != null ? "Có file, tên: " + imageFile.FileName : "Null")}");
-                    var response = await client.PostAsync("https://localhost:7021/api/Product", formData);
-                    response.EnsureSuccessStatusCode();               
-                    TempData["Success"] = "Sản phẩm được tạo thành công.";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (HttpRequestException ex)
-                {
-                    ModelState.AddModelError("", "Không thể kết nối đến CategoryAPI: " + ex.Message);
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", "Không thể tạo sản phẩm: " + ex.Message);
-                }
+                await PopulateCategoriesAsync(dto.CategoryId);
+                return View(dto);
             }
 
-            var categories = await _categoryService.GetAllAsync();
-            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", dto.CategoryId);
+            try
+            {
+                var client = _httpClientFactory.CreateClient("ProductAPI");
+                using var formData = BuildMultipartPayload(dto, imageFile);
+
+                var response = await client.PostAsync("api/Product", formData);
+                response.EnsureSuccessStatusCode();
+
+                TempData["Success"] = "San pham duoc tao thanh cong.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (HttpRequestException ex)
+            {
+                ModelState.AddModelError(string.Empty, "Khong the ket noi toi ProductAPI: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Khong the tao san pham: " + ex.Message);
+            }
+
+            await PopulateCategoriesAsync(dto.CategoryId);
             return View(dto);
         }
 
-
-        // GET: Product/Edit/5
         public async Task<IActionResult> Edit(int id)
+        {
+            var product = await _productService.GetByIdAsync(id);
+            if (product == null) return NotFound();
+
+            var dto = new UpdateProductDTO
             {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
-                {
-                    return NotFound();
-                }
+                ProductName = product.ProductName,
+                Description = product.Description,
+                Price = product.Price,
+                Stock = product.Stock,
+                ImageUrl = product.ImageUrl,
+                CategoryId = product.CategoryId
+            };
 
-                var updateDto = new UpdateProductDTO
-                {
-                    ProductName = product.ProductName,
-                    Description = product.Description,
-                    Price = product.Price,
-                    Stock = product.Stock,
-                    ImageUrl = product.ImageUrl,
-                    CategoryId = product.CategoryId
-                };
+            await PopulateCategoriesAsync(dto.CategoryId);
+            ViewData["ProductId"] = product.ProductId;
+            return View(dto);
+        }
 
-                var categories = await _categoryService.GetAllAsync();
-                ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", updateDto.CategoryId);
-
-                ViewData["ProductId"] = product.ProductId;
-                return View(updateDto);
-            }
-
-
-        // POST: Product/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, UpdateProductDTO dto, IFormFile? imageFile)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    var client = _httpClientFactory.CreateClient();
-                    var formData = new MultipartFormDataContent();
-                    formData.Add(new StringContent(dto.ProductName), "ProductName");
-                    formData.Add(new StringContent(dto.Description ?? ""), "Description");
-                    formData.Add(new StringContent(dto.Price.ToString()), "Price");
-                    formData.Add(new StringContent(dto.Stock?.ToString() ?? ""), "Stock");
-                    formData.Add(new StringContent(dto.CategoryId?.ToString() ?? ""), "CategoryId");
-                    formData.Add(new StringContent(dto.ImageUrl ?? ""), "ImageUrl");
-                    if (imageFile != null)
-                    {
-                        var memoryStream = new MemoryStream();
-                        await imageFile.CopyToAsync(memoryStream);
-                        memoryStream.Position = 0; // Reset vị trí đọc
-                        formData.Add(new StreamContent(memoryStream), "ImageFile", imageFile.FileName);
-                    }
-
-                    var response = await client.PutAsync($"https://localhost:7021/api/Product/{id}", formData);
-                    response.EnsureSuccessStatusCode();
-                    TempData["Success"] = "Sản phẩm được cập nhật thành công.";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (HttpRequestException ex)
-                {
-                    ModelState.AddModelError("", "Không thể kết nối đến CategoryAPI: " + ex.Message);
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", "Không thể cập nhật sản phẩm: " + ex.Message);
-                }
+                await PopulateCategoriesAsync(dto.CategoryId);
+                ViewData["ProductId"] = id;
+                return View(dto);
             }
 
-            var categories = await _categoryService.GetAllAsync();
-            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", dto.CategoryId);
+            try
+            {
+                var client = _httpClientFactory.CreateClient("ProductAPI");
+                using var formData = BuildMultipartPayload(dto, imageFile);
+
+                var response = await client.PutAsync($"api/Product/{id}", formData);
+                response.EnsureSuccessStatusCode();
+
+                TempData["Success"] = "San pham duoc cap nhat thanh cong.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (HttpRequestException ex)
+            {
+                ModelState.AddModelError(string.Empty, "Khong the ket noi toi ProductAPI: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Khong the cap nhat san pham: " + ex.Message);
+            }
+
+            await PopulateCategoriesAsync(dto.CategoryId);
             ViewData["ProductId"] = id;
             return View(dto);
         }
 
-        // GET: Product/Delete/5
         public async Task<IActionResult> Delete(int id)
+        {
+            var product = await _productService.GetByIdAsync(id);
+            return product == null ? NotFound() : View(product);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
             {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
-                {
-                    return NotFound();
-                }
-                return View(product);
+                await _productService.DeleteAsync(id);
+                TempData["Success"] = "San pham duoc xoa thanh cong.";
+            }
+            catch
+            {
+                TempData["Error"] = "Khong the xoa san pham.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        private MultipartFormDataContent BuildMultipartPayload(CreateProductDTO dto, IFormFile? imageFile)
+        {
+            var formData = new MultipartFormDataContent
+            {
+                { new StringContent(dto.ProductName ?? string.Empty), "ProductName" },
+                { new StringContent(dto.Description ?? string.Empty), "Description" },
+                { new StringContent(dto.Price.ToString()), "Price" },
+                { new StringContent(dto.Stock?.ToString() ?? string.Empty), "Stock" },
+                { new StringContent(dto.CategoryId?.ToString() ?? string.Empty), "CategoryId" }
+            };
+
+            if (imageFile != null)
+            {
+                var memoryStream = new MemoryStream();
+                imageFile.CopyTo(memoryStream);
+                memoryStream.Position = 0;
+                formData.Add(new StreamContent(memoryStream), "ImageFile", imageFile.FileName);
             }
 
-            // POST: Product/Delete/5
-            [HttpPost, ActionName("Delete")]
-            [ValidateAntiForgeryToken]
-            public async Task<IActionResult> DeleteConfirmed(int id)
+            return formData;
+        }
+
+        private MultipartFormDataContent BuildMultipartPayload(UpdateProductDTO dto, IFormFile? imageFile)
+        {
+            var formData = new MultipartFormDataContent
             {
-                try
-                {
-                    await _productService.DeleteAsync(id);
-                    TempData["Success"] = "Sản phẩm được xóa thành công.";
-                }
-                catch
-                {
-                    TempData["Error"] = "Không thể xóa sản phẩm.";
-                }
-                return RedirectToAction(nameof(Index));
+                { new StringContent(dto.ProductName ?? string.Empty), "ProductName" },
+                { new StringContent(dto.Description ?? string.Empty), "Description" },
+                { new StringContent(dto.Price.ToString()), "Price" },
+                { new StringContent(dto.Stock?.ToString() ?? string.Empty), "Stock" },
+                { new StringContent(dto.CategoryId?.ToString() ?? string.Empty), "CategoryId" },
+                { new StringContent(dto.ImageUrl ?? string.Empty), "ImageUrl" }
+            };
+
+            if (imageFile != null)
+            {
+                var memoryStream = new MemoryStream();
+                imageFile.CopyTo(memoryStream);
+                memoryStream.Position = 0;
+                formData.Add(new StreamContent(memoryStream), "ImageFile", imageFile.FileName);
             }
+
+            return formData;
+        }
+
+        private async Task PopulateCategoriesAsync(int? selectedCategoryId)
+        {
+            var categories = await _categoryService.GetAllAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", selectedCategoryId);
         }
     }
+}

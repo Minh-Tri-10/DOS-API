@@ -61,7 +61,38 @@ namespace OrderAPI.Services
 
             return orderDtos;
         }
+        public async Task<(List<OrderDto>, int)> GetPagedAsync(int page, int pageSize)
+        {
+            var (orders, totalCount) = await _repo.GetPagedAsync(page, pageSize);
 
+            // Map sang DTO
+            var orderDtos = _mapper.Map<List<OrderDto>>(orders);
+
+            // Gọi các service khác để enrich dữ liệu
+            foreach (var dto in orderDtos)
+            {
+                // Lấy tên người dùng
+                dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
+
+                // Lấy chi tiết sản phẩm & category
+                foreach (var item in dto.Items)
+                {
+                    var product = await _productClient.GetProductByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        item.ProductName = product.ProductName;
+
+                        if (product.CategoryId > 0)
+                        {
+                            var category = await _categoryClient.GetCategoryByIdAsync(product.CategoryId);
+                            item.CategoryName = category?.CategoryName;
+                        }
+                    }
+                }
+            }
+
+            return (orderDtos, totalCount);
+        }
         public async Task<OrderDto> GetByIdAsync(int id)
         {
             var order = await _repo.GetOrderDetailsByIdAsync(id);

@@ -1,48 +1,65 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using MVCApplication.Models;
 using MVCApplication.Services.Interfaces;
 
 namespace MVCApplication.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminAccountsController : Controller
     {
         private readonly IAccountService _service;
-        public AdminAccountsController(IAccountService service) => _service = service;
+        private readonly ILogger<AdminAccountsController> _logger;
 
-        // Danh sách tài khoản
+        public AdminAccountsController(IAccountService service, ILogger<AdminAccountsController> logger)
+        {
+            _service = service;
+            _logger = logger;
+        }
+
         public async Task<IActionResult> Index()
         {
-            // Kiểm tra role trước khi load danh sách
-            if (!IsAdmin()) return RedirectToAction("Login", "Accounts");
+            var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("AdminAccounts Index accessed by user {User} with role claim {Role}. Authenticated={Authenticated}",
+                User.Identity?.Name ?? "(unknown)",
+                roleClaim ?? "(none)",
+                User.Identity?.IsAuthenticated ?? false);
 
             var list = await _service.GetAllAsync();
             return View(list);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleBan(int id, bool isBanned)
         {
-            Console.WriteLine($"[FE] ToggleBan -> id={id}, isBanned={isBanned}"); // phải là True khi bấm Ban
-            if (!IsAdmin()) return RedirectToAction("Login", "Accounts");
-
             var ok = await _service.SetBanAsync(id, isBanned);
-            if (!ok) TempData["Error"] = "Không thể cập nhật trạng thái tài khoản";
-            return RedirectToAction("Index");
+            if (!ok)
+            {
+                TempData["Error"] = "Khong the cap nhat trang thai tai khoan.";
+            }
+            return RedirectToAction(nameof(Index));
         }
-
-        private bool IsAdmin()
-            => HttpContext.Session.GetString("Role")?.Equals("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
 
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
-            if (!IsAdmin()) return RedirectToAction("Login", "Accounts");
+            if (!TryGetAuthenticatedUserId(out var adminId))
+            {
+                return RedirectToAction("Login", "Accounts");
+            }
 
-            var adminId = HttpContext.Session.GetInt32("UserId");
-            if (adminId == null) return RedirectToAction("Login", "Accounts");
-
-            var user = await _service.GetByIdAsync(adminId.Value);
-            if (user == null) return RedirectToAction("Login", "Accounts");
+            var user = await _service.GetByIdAsync(adminId);
+            if (user == null)
+            {
+                await SignOutAsync();
+                return RedirectToAction("Login", "Accounts");
+            }
 
             var vm = new UpdateProfileViewModel
             {
@@ -56,34 +73,31 @@ namespace MVCApplication.Controllers
                 AvatarUrl = user.AvatarUrl
             };
 
-            return View(vm); // Views/AdminAccounts/Profile.cshtml
+            return View(vm);
         }
 
-        // POST: /AdminAccounts/UpdateProfile
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto)
         {
-            if (!IsAdmin()) return RedirectToAction("Login", "Accounts");
-
-            var adminId = HttpContext.Session.GetInt32("UserId");
-            if (adminId == null) return RedirectToAction("Login", "Accounts");
+            if (!TryGetAuthenticatedUserId(out var adminId))
+            {
+                return RedirectToAction("Login", "Accounts");
+            }
 
             if (!ModelState.IsValid)
             {
                 return View("Profile", dto);
             }
 
-            var ok = await _service.UpdateProfileAsync(adminId.Value, dto);
-            if (ok == null)
+            var updated = await _service.UpdateProfileAsync(adminId, dto);
+            if (updated == null)
             {
-                ViewBag.Error = "Cập nhật thất bại!";
+                ViewBag.Error = "Cap nhat that bai.";
                 return View("Profile", dto);
             }
 
-            // reload lại dữ liệu sau khi cập nhật
-            var updated = await _service.GetByIdAsync(adminId.Value);
-            if (updated == null) return RedirectToAction("Login", "Accounts");
+            await RefreshClaimsAsync(updated);
 
             var vm = new UpdateProfileViewModel
             {
@@ -97,9 +111,61 @@ namespace MVCApplication.Controllers
                 AvatarUrl = updated.AvatarUrl
             };
 
-            TempData["Success"] = "Cập nhật thông tin thành công!";
+            TempData["Success"] = "Cap nhat thong tin thanh cong!";
             return View("Profile", vm);
         }
-    }
 
+        private bool TryGetAuthenticatedUserId(out int userId)
+        {
+            userId = 0;
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(userIdClaim, out userId);
+        }
+
+        private async Task RefreshClaimsAsync(UserViewModel updatedUser)
+        {
+            var claims = User.Claims
+                .Where(c => c.Type != "avatar_url" && c.Type != "full_name" && c.Type != ClaimTypes.Email && c.Type != "username")
+                .ToList();
+
+            claims.Add(new Claim("avatar_url", updatedUser.AvatarUrl ?? string.Empty));
+            claims.Add(new Claim("full_name", updatedUser.FullName ?? string.Empty));
+            claims.Add(new Claim("username", updatedUser.Username));
+
+            if (!string.IsNullOrWhiteSpace(updatedUser.Email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, updatedUser.Email));
+            }
+
+            var accessToken = claims.FirstOrDefault(c => c.Type == "access_token")?.Value;
+            DateTimeOffset? expiresUtc = null;
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                try
+                {
+                    var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+                    expiresUtc = jwt.ValidTo;
+                }
+                catch
+                {
+                    expiresUtc = DateTimeOffset.UtcNow.AddMinutes(30);
+                }
+            }
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties
+                {
+                    IsPersistent = false,
+                    ExpiresUtc = expiresUtc ?? DateTimeOffset.UtcNow.AddMinutes(30)
+                });
+        }
+
+        private async Task SignOutAsync()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        }
+    }
 }
