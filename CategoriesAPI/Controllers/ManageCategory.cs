@@ -1,14 +1,15 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using CategoriesAPI.DTOs;
-using CategoriesAPI.Models;
-using CategoriesAPI.Repositories.Interfaces;
 using CategoriesAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CategoriesAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ManageCategoryController : ControllerBase
     {
         private readonly ICategoryService _service;
@@ -19,6 +20,7 @@ namespace CategoriesAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var categories = await _service.GetAllAsync();
@@ -26,6 +28,7 @@ namespace CategoriesAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             var category = await _service.GetByIdAsync(id);
@@ -34,6 +37,7 @@ namespace CategoriesAPI.Controllers
         }
 
         [HttpPost("by-ids")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByIds([FromBody] List<int> ids)
         {
             var categories = await _service.GetByIdsAsync(ids);
@@ -41,6 +45,7 @@ namespace CategoriesAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateCategoryDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -51,11 +56,12 @@ namespace CategoriesAPI.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);  // Trả thông báo lỗi
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -75,6 +81,7 @@ namespace CategoriesAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -87,6 +94,5 @@ namespace CategoriesAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
     }
 }

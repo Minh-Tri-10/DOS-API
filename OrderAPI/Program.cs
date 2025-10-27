@@ -1,10 +1,14 @@
-
+﻿using Microsoft.Extensions.Logging;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using OrderAPI.Models;
 using OrderAPI.Repositories;
 using OrderAPI.Repositories.Interfaces;
 using OrderAPI.Services;
 using OrderAPI.Services.Interfaces;
-using OrderAPI.Models;
+
 namespace OrderAPI
 {
     public class Program
@@ -13,42 +17,78 @@ namespace OrderAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            // Product microservice (nếu có)
             builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7021/");
             });
+
             builder.Services.AddHttpClient<IProductClient, ProductClient>(client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7021/");
             });
 
-            builder.Services.AddHttpClient<IUserClient, UserClient>(c =>
+            builder.Services.AddHttpClient<IUserClient, UserClient>(client =>
             {
-                c.BaseAddress = new Uri("https://localhost:7005/");
+                client.BaseAddress = new Uri("https://localhost:7005/");
             });
+
             builder.Services.AddAutoMapper(typeof(OrderAPI.Profiles.OrderProfile).Assembly);
             builder.Services.AddScoped<IStatsService, StatsService>();
             builder.Services.AddScoped<IStatsRepository, StatsRepository>();
-
-
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
 
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var signingKey = jwtSection["Key"];
+            if (string.IsNullOrWhiteSpace(signingKey))
+            {
+                throw new InvalidOperationException("JWT:Key configuration is missing for OrderAPI.");
+            }
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
+                        ValidIssuer = jwtSection["Issuer"],
+                        ValidAudience = jwtSection["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
+                        ClockSkew = TimeSpan.FromMinutes(1)
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogError(context.Exception, "JWT authentication failed for {Path}", context.HttpContext.Request.Path);
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context =>
+                        {
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogWarning("JWT challenge triggered for {Path}. Error: {Error}, Description: {Description}", context.HttpContext.Request.Path, context.Error, context.ErrorDescription);
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+
+            builder.Services.AddAuthorization();
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -57,8 +97,8 @@ namespace OrderAPI
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 
@@ -66,3 +106,4 @@ namespace OrderAPI
         }
     }
 }
+

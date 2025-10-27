@@ -1,11 +1,12 @@
-
-//using CartAPI.Data;
+﻿using System.Text;
 using CartAPI.Models;
 using CartAPI.Repositories;
 using CartAPI.Repositories.Interfaces;
 using CartAPI.Services;
 using CartAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CartAPI
 {
@@ -15,26 +16,45 @@ namespace CartAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
             builder.Services.AddDbContext<CartDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-            // Repositories và Services
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-            //// AutoMapper
-            builder.Services.AddAutoMapper(typeof(MappingProfile)); // MappingProfile như trước
-    
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var signingKey = jwtSection["Key"];
+            if (string.IsNullOrWhiteSpace(signingKey))
+            {
+                throw new InvalidOperationException("JWT:Key configuration is missing for CartAPI.");
+            }
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
+                        ValidIssuer = jwtSection["Issuer"],
+                        ValidAudience = jwtSection["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
+                        ClockSkew = TimeSpan.FromMinutes(1)
+                    };
+                });
+
+            builder.Services.AddAuthorization();
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -42,12 +62,9 @@ namespace CartAPI
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }

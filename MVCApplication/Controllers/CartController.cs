@@ -1,18 +1,31 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
 
 namespace MVCApplication.Controllers
 {
+    [Authorize]
     [Route("api/cart")]
     public class CartController : Controller
     {
         private readonly ICartService _cartService;
-        public CartController(ICartService cartService) => _cartService = cartService;
 
-        private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
+        public CartController(ICartService cartService)
+        {
+            _cartService = cartService;
+        }
 
-        // Trang giỏ hàng (MVC view)
+        private int? CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                return int.TryParse(userIdClaim, out var userId) ? userId : null;
+            }
+        }
+
         [HttpGet("/Cart")]
         public async Task<IActionResult> Index()
         {
@@ -21,13 +34,12 @@ namespace MVCApplication.Controllers
             return View(cart);
         }
 
-        // ---------- AJAX APIs ----------
-
         [HttpPost("add")]
         public async Task<IActionResult> ApiAdd([FromBody] AddCartItemDTO body)
         {
-            if (CurrentUserId == null) return Unauthorized(new { message = "Bạn cần đăng nhập" });
-            if (body == null || body.ProductId <= 0) return BadRequest(new { message = "Dữ liệu không hợp lệ" });
+            if (CurrentUserId == null) return Unauthorized(new { message = "Ban can dang nhap." });
+            if (body == null || body.ProductId <= 0) return BadRequest(new { message = "Du lieu khong hop le." });
+            if (body.UserId != CurrentUserId.Value) return Forbid();
 
             var ok = await _cartService.AddToCartAsync(
                 CurrentUserId.Value,
@@ -36,39 +48,43 @@ namespace MVCApplication.Controllers
             );
 
             return ok
-                ? Ok(new { message = "Đã thêm/cộng dồn sản phẩm vào giỏ!" })
-                : StatusCode(500, new { message = "Không thể thêm sản phẩm" });
+                ? Ok(new { message = "Da them hoac cap nhat san pham vao gio." })
+                : StatusCode(500, new { message = "Khong the them san pham." });
         }
 
         [HttpPut("update/{cartItemId}")]
         public async Task<IActionResult> ApiUpdateQty(int cartItemId, int quantity)
         {
-            if (CurrentUserId == null) return Unauthorized(new { message = "Bạn cần đăng nhập" });
-            if (quantity < 1) return BadRequest(new { message = "Số lượng phải >= 1" });
+            if (CurrentUserId == null) return Unauthorized(new { message = "Ban can dang nhap." });
+            if (quantity < 1) return BadRequest(new { message = "So luong phai >= 1." });
 
             var ok = await _cartService.UpdateQuantityAsync(cartItemId, quantity);
-            return ok ? Ok(new { message = "Cập nhật số lượng thành công" })
-                      : StatusCode(500, new { message = "Lỗi cập nhật" });
+            return ok ? Ok(new { message = "Cap nhat so luong thanh cong." })
+                      : StatusCode(500, new { message = "Loi cap nhat." });
         }
 
         [HttpDelete("remove/{cartItemId}")]
         public async Task<IActionResult> ApiRemove(int cartItemId)
         {
-            if (CurrentUserId == null) return Unauthorized(new { message = "Bạn cần đăng nhập" });
+            if (CurrentUserId == null) return Unauthorized(new { message = "Ban can dang nhap." });
 
             var ok = await _cartService.RemoveFromCartAsync(cartItemId);
-            return ok ? Ok(new { message = "Đã xóa sản phẩm" })
-                      : StatusCode(500, new { message = "Không thể xóa" });
+            return ok ? Ok(new { message = "Da xoa san pham." })
+                      : StatusCode(500, new { message = "Khong the xoa." });
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> ApiGetCartByUser(int userId)
         {
+            if (CurrentUserId == null || CurrentUserId != userId)
+            {
+                return Forbid();
+            }
+
             var cart = await _cartService.GetCartWithProductsAsync(userId);
             return cart == null ? NotFound() : Ok(cart);
         }
 
-        // 🔹 NEW: GET api/cart/count  -> trả về số mặt hàng trong giỏ của user hiện tại
         [HttpGet("count")]
         public async Task<IActionResult> ApiCount()
         {
