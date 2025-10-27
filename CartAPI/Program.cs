@@ -23,7 +23,7 @@ namespace CartAPI
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<CartDbContext>(options =>
 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
             // Repositories và Services
             builder.Services.AddScoped<ICartRepository, CartRepository>();
