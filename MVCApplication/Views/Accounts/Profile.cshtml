@@ -287,7 +287,23 @@
     :root[data-theme="light"] .page-title .under {
         box-shadow: 0 0 18px color-mix(in oklab, var(--accent,#0ea5e9) 40%, transparent)
     }
+    /* ✅ Khi disabled thì chuột phải hiện dấu cấm */
+    button:disabled,
+    .btn-ghost:disabled,
+    #btnChooseAvatar:disabled,
+    input[type="file"]:disabled,
+    #avatarFile:disabled {
+        cursor: not-allowed !important;
+        opacity: 0.55;
+    }
 
+        /* ✅ Chặn hover hiệu ứng khi disabled */
+        button:disabled:hover,
+        .btn-ghost:disabled:hover {
+            transform: none !important;
+            filter: none !important;
+            box-shadow: none !important;
+        }
     /* Responsive */
     @@media (max-width:768px) {
         .profile-body
@@ -412,6 +428,25 @@
 }
 
 @section Scripts {
+    @if (ViewBag.Success != null || TempData["Success"] != null)
+    {
+        <script>
+            (() => {
+                const avatarNew = "@Model.AvatarUrl";
+                const timestamp = "?t=" + Date.now();
+
+                document.querySelectorAll(".avatar-img, #userModal .avatar-lg")
+                    .forEach(img => img.src = avatarNew + timestamp);
+
+                const nameEl = document.querySelector("#userModal .fw-bold");
+                if (nameEl) nameEl.textContent = "@Html.Raw(Model.FullName)";
+
+                const infoEl = document.querySelector("#userModal .text-muted.small");
+                if (infoEl)
+                    infoEl.innerHTML = "@Html.Raw(Model.Email) • @Html.Raw(Model.Role)";
+            })();
+        </script>
+    }
     <partial name="_ValidationScriptsPartial" />
     <script>
         (function () {

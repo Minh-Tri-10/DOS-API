@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using CategoriesAPI.Mapping;
 using CategoriesAPI.Models;
@@ -23,7 +23,7 @@ namespace CategoriesAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CatalogDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
 
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

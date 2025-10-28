@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -78,7 +78,7 @@ namespace MVCApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto)
+        public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto, IFormFile? avatarFile)
         {
             if (!TryGetAuthenticatedUserId(out var adminId))
             {
@@ -90,13 +90,15 @@ namespace MVCApplication.Controllers
                 return View("Profile", dto);
             }
 
-            var updated = await _service.UpdateProfileAsync(adminId, dto);
+            // ✅ Gửi FormData đến API để upload lên Cloudinary
+            var updated = await _service.UpdateProfileAsync(adminId, dto, avatarFile);
             if (updated == null)
             {
-                ViewBag.Error = "Cap nhat that bai.";
+                ViewBag.Error = "Cập nhật thất bại!";
                 return View("Profile", dto);
             }
 
+            // ✅ Cập nhật lại Claims (AvatarUrl, Name...)
             await RefreshClaimsAsync(updated);
 
             var vm = new UpdateProfileViewModel
@@ -111,9 +113,10 @@ namespace MVCApplication.Controllers
                 AvatarUrl = updated.AvatarUrl
             };
 
-            TempData["Success"] = "Cap nhat thong tin thanh cong!";
+            TempData["Success"] = "Cập nhật thông tin thành công!";
             return View("Profile", vm);
         }
+
 
         private bool TryGetAuthenticatedUserId(out int userId)
         {

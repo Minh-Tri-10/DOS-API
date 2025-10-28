@@ -284,7 +284,23 @@
     :root[data-theme="light"] .page-title .under {
         box-shadow: 0 0 18px color-mix(in oklab, var(--accent,#0ea5e9) 40%, transparent)
     }
+    /* ✅ Khi disabled thì chuột phải hiện dấu cấm */
+    button:disabled,
+    .btn-ghost:disabled,
+    #btnChooseAvatar:disabled,
+    input[type="file"]:disabled,
+    #avatarFile:disabled {
+        cursor: not-allowed !important;
+        opacity: 0.55;
+    }
 
+        /* ✅ Chặn hover hiệu ứng khi disabled */
+        button:disabled:hover,
+        .btn-ghost:disabled:hover {
+            transform: none !important;
+            filter: none !important;
+            box-shadow: none !important;
+        }
     /* Responsive */
     @@media (max-width:768px) {
         .profile-body {
@@ -305,7 +321,7 @@
 
     <div class="profile-card" id="profileCard" data-editing="false">
         <div class="profile-head">
-            <img class="avatar"
+            <img class="avatar" id="previewAvatar"
                  src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "https://i.pravatar.cc/180?img=47" : Model.AvatarUrl)"
                  alt="Avatar" />
             <div class="head-meta">
@@ -318,29 +334,60 @@
             </div>
         </div>
 
-        <!-- Form update -->
-        <form asp-action="UpdateProfile" method="post" id="profileForm">
+        <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data" id="profileForm">
             <div class="profile-body">
+
+                <!-- Ảnh đại diện -->
+                <div class="field" style="grid-column: span 2;">
+                    <label class="label">Ảnh đại diện</label>
+                    <div style="display:flex;align-items:center;gap:16px;">
+                        <img id="previewAvatarSmall" class="avatar"
+                             src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "https://i.pravatar.cc/180?img=47" : Model.AvatarUrl)"
+                             alt="Avatar nhỏ" style="width:72px;height:72px;border-radius:16px;" />
+                        <div style="display:grid;gap:6px;">
+                            <input type="file" id="avatarFile" name="avatarFile" accept="image/*" style="display:none;" disabled />
+                            <button type="button" class="btn-ghost" id="btnChooseAvatar" disabled>Chọn ảnh mới</button>
+                            <input type="hidden" name="AvatarUrl" id="inpAvatarUrl" value="@Model.AvatarUrl" />
+                            <small class="text-muted">Ảnh mới sẽ hiển thị xem trước trước khi lưu</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Username -->
                 <div class="field">
                     <label class="label">Tên đăng nhập</label>
-                    <input class="input" type="text" value="@Model.Username" disabled />
+                    <input class="input" type="text" value="@Model.Username" readonly disabled />
+                    <small class="text-muted">Không thể thay đổi tên đăng nhập</small>
                 </div>
+
+                <!-- Full name -->
                 <div class="field">
-                    <label class="label">Họ tên</label>
-                    <input class="input" id="inpFullName" name="FullName" type="text" value="@Model.FullName" disabled />
+                    <label class="label">Họ và tên</label>
+                    <input class="input" id="inpFullName" name="FullName" value="@Model.FullName" disabled />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
                 </div>
+
+                <!-- Email -->
                 <div class="field">
                     <label class="label">Email</label>
                     <input class="input" id="inpEmail" name="Email" type="email" value="@Model.Email" disabled />
+                    <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
+
+                <!-- Phone -->
                 <div class="field">
                     <label class="label">Số điện thoại</label>
                     <input class="input" id="inpPhone" name="Phone" type="tel" value="@Model.Phone" disabled />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
                 </div>
+
+                <!-- Role -->
                 <div class="field">
-                    <label class="label">Role</label>
+                    <label class="label">Vai trò</label>
                     <input class="input" type="text" value="@Model.Role" disabled />
                 </div>
+
+                <!-- Trạng thái -->
                 <div class="field">
                     <label class="label">Trạng thái</label>
                     @if (Model.IsBanned)
@@ -352,46 +399,100 @@
                         <span class="status-pill active">Hoạt động</span>
                     }
                 </div>
-                <input type="hidden" name="AvatarUrl" value="@Model.AvatarUrl" />
             </div>
 
             <div class="profile-footer">
-                <button type="button" class="btn-ghost hidden" id="btnCancel">Cancel</button>
-                <button type="submit" class="btn-primary hidden" id="btnSave" disabled>Save Changes</button>
+                <button type="button" class="btn-ghost hidden" id="btnCancel">Hủy</button>
+                <button type="submit" class="btn-primary hidden" id="btnSave" disabled>Lưu thay đổi</button>
             </div>
         </form>
     </div>
 </div>
 
+@if (ViewBag.KeepEditing != null && (bool)ViewBag.KeepEditing)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('btnEdit').click();
+        });
+    </script>
+}
+
 @section Scripts {
+    @if (ViewBag.Success != null || TempData["Success"] != null)
+    {
+        <script>
+            (() => {
+                const avatarNew = "@Model.AvatarUrl";
+                const timestamp = "?t=" + Date.now();
+
+                document.querySelectorAll(".avatar-img, #userModal .avatar-lg")
+                    .forEach(img => img.src = avatarNew + timestamp);
+
+                const nameEl = document.querySelector("#userModal .fw-bold");
+                if (nameEl) nameEl.textContent = "@Html.Raw(Model.FullName)";
+
+                const infoEl = document.querySelector("#userModal .text-muted.small");
+                if (infoEl)
+                    infoEl.innerHTML = "@Html.Raw(Model.Email) • @Html.Raw(Model.Role)";
+            })();
+        </script>
+    }
+    <partial name="_ValidationScriptsPartial" />
     <script>
         (() => {
             const card = document.getElementById('profileCard');
             const btnEdit = document.getElementById('btnEdit');
             const btnSave = document.getElementById('btnSave');
             const btnCancel = document.getElementById('btnCancel');
-            const editable = ['inpFullName','inpEmail','inpPhone'].map(id => document.getElementById(id));
+            const btnChooseAvatar = document.getElementById('btnChooseAvatar');
+            const avatarFile = document.getElementById('avatarFile');
+            const preview = document.getElementById('previewAvatarSmall');
+            const editable = ['inpFullName', 'inpEmail', 'inpPhone', 'btnChooseAvatar']
+                .map(id => document.getElementById(id)).filter(x => x);
 
-            function setEditing(on){
+            function setEditing(on) {
                 card.dataset.editing = on ? 'true' : 'false';
                 editable.forEach(i => i.disabled = !on);
+                avatarFile.disabled = !on;
                 btnSave.classList.toggle('hidden', !on);
                 btnCancel.classList.toggle('hidden', !on);
-                btnEdit.textContent = on ? 'Editing…' : 'Edit';
+                btnEdit.textContent = on ? 'Đang chỉnh sửa…' : 'Edit';
                 if (on) btnSave.disabled = true;
             }
 
-            btnEdit.addEventListener('click', ()=> setEditing(true));
-            btnCancel.addEventListener('click', ()=>{
-                editable.forEach(i => i.value = i.defaultValue); // restore value ban đầu
-                setEditing(false);
-            });
-            editable.forEach(i=>{
-                i.addEventListener('input', ()=>{
-                    if (card.dataset.editing==='true'){
-                        btnSave.disabled = false;
+            btnEdit.addEventListener('click', () => setEditing(true));
+            btnCancel.addEventListener('click', () => {
+                editable.forEach(i => {
+                    if (i.tagName === 'INPUT' && i.type !== 'file') {
+                        i.value = i.defaultValue;
                     }
                 });
+                preview.src = document.getElementById('inpAvatarUrl').value;
+                setEditing(false);
+            });
+
+            editable.forEach(i => {
+                if (i && i.tagName === 'INPUT') {
+                    i.addEventListener('input', () => {
+                        if (card.dataset.editing === 'true') btnSave.disabled = false;
+                    });
+                }
+            });
+
+            btnChooseAvatar.addEventListener('click', () => {
+                if (!btnChooseAvatar.disabled) avatarFile.click();
+            });
+
+            avatarFile.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    preview.src = ev.target.result;
+                    btnSave.disabled = false;
+                };
+                reader.readAsDataURL(file);
             });
         })();
     </script>
