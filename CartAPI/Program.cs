@@ -21,7 +21,7 @@ namespace CartAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CartDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();

@@ -271,6 +271,42 @@
         transition: transform .12s ease, filter .2s ease, opacity .2s ease;
     }
 
+    /* ============ PAYMENT METHOD SELECT ============ */
+    .payment-method {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 16px;
+        animation: fadeIn var(--duration) ease-out both;
+    }
+
+        .payment-method label {
+            font-weight: 700;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .payment-method select {
+            background: color-mix(in oklab, var(--bg-soft) 92%, transparent);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            padding: 10px 12px;
+            font-size: 15px;
+            transition: border-color .2s ease, box-shadow .2s ease;
+            outline: none;
+        }
+
+            .payment-method select:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px color-mix(in oklab,var(--accent) 25%, transparent);
+            }
+
+    :root[data-theme="light"] .payment-method select {
+        background: #fff;
+    }
+
+
     .order-btn-primary {
         color: var(--bg); /* Dùng biến bg thay cho #0b1220 */
         background: linear-gradient(135deg,var(--accent),var(--accent2));
@@ -331,8 +367,19 @@
                 <span>Tổng thanh toán</span>
                 <span class="val" id="sumTotal">0₫</span>
             </div>
+
+            <!-- ============ PAYMENT METHOD SELECT ============ -->
+            <div class="payment-method">
+                <label for="PaymentMethod">Phương thức thanh toán</label>
+                <select id="PaymentMethod" name="PaymentMethod" required>
+                    <option value="VNPAY">Chuyển khoản VNPay</option>
+                    <option value="COD">Tiền mặt khi nhận hàng</option>
+                </select>
+            </div>
+
             <button type="submit" class="order-btn order-btn-primary">Xác nhận Đặt hàng</button>
         </div>
+
     </form>
 </div>
 

@@ -11,5 +11,6 @@ namespace PaymentAPI.Services.Interfaces
         Task<PaymentDeleteResultDTO> DeleteAsync(int id);
         Task<PaymentResultDTO> ConfirmPaymentAsync(int paymentId, string status, string? transactionId = null);
         Task<PaymentResponseDTO> CreateVnPayPaymentAsync(PaymentRequestDTO request, string ipAddress);
+        Task<IEnumerable<PaymentResultDTO>> GetByOrderIdAsync(int orderId);
     }
 }

@@ -8,10 +8,13 @@ namespace MVCApplication.Controllers
     public class PaymentsController : Controller
     {
         private readonly IPaymentService _paymentService;
+        private readonly IOrderService _orderService;
 
-        public PaymentsController(IPaymentService paymentService)
+
+        public PaymentsController(IPaymentService paymentService, IOrderService orderService)
         {
             _paymentService = paymentService;
+            _orderService = orderService;
         }
 
         // GET: /Payments
@@ -102,5 +105,22 @@ namespace MVCApplication.Controllers
 
             return View();
         }
+
+
+        // GET: /Payments/PaymentsByOrder?orderId=123
+        [HttpGet]
+        public async Task<IActionResult> PaymentsByOrder(int orderId)
+        {
+            var payments = await _paymentService.GetPaymentsByOrderIdAsync(orderId);
+
+            // Gọi sang service/lớp khác để lấy tổng tiền đơn hàng
+            var order = await _orderService.GetByIdAsync(orderId);
+
+            ViewBag.OrderId = orderId;
+            ViewBag.TotalAmount = order?.TotalAmount ?? 0;
+
+            return View(payments);
+        }
+
     }
 }

@@ -8,8 +8,9 @@ namespace MVCApplication.Services.Interfaces
     {
         Task<IEnumerable<PaymentResponseDTO>> GetAllAsync();
         Task<PaymentResponseDTO> GetByIdAsync(int id);
-        Task CreateAsync(PaymentRequestDTO dto);
+        Task<string?> CreateAsync(PaymentRequestDTO dto);
         Task UpdateAsync(int id, PaymentRequestDTO dto);
         Task DeleteAsync(int id);
+        Task<IEnumerable<PaymentResponseDTO>> GetPaymentsByOrderIdAsync(int orderId);
     }
 }

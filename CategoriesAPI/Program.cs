@@ -23,7 +23,7 @@ namespace CategoriesAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CatalogDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

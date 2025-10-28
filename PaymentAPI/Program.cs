@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,8 +17,8 @@ namespace PaymentAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<PaymentDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
@@ -27,6 +27,17 @@ namespace PaymentAPI
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            // --- CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowWebApp", policy =>
+                {
+                    policy.WithOrigins("https://localhost:7223") // webapp URL
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials(); // cho phép gửi cookie JWT
+                });
+            });
 
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
@@ -64,6 +75,7 @@ namespace PaymentAPI
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowWebApp");
             app.UseAuthentication();
             app.UseAuthorization();
 

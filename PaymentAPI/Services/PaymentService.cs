@@ -23,18 +23,26 @@ namespace PaymentAPI.Services
         public async Task<PaymentResponseDTO> CreatePaymentAsync(PaymentRequestDTO request)
         {
             var entity = _mapper.Map<Payment>(request);
-            entity.PaymentStatus = "pending";
-            entity.PaymentDate = DateTime.UtcNow;
+            entity.PaymentStatus = "Pending";
+            entity.PaymentDate = DateTime.UtcNow.AddHours(7);
 
             await _repo.AddAsync(entity);
+
+            // Nếu là VNPay thì có PaymentUrl, còn COD thì để null
+            string? paymentUrl = null;
+            if (request.PaymentMethod?.Equals("VNPAY", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                paymentUrl = $"https://placeholder.local/pay/{entity.PaymentId}";
+            }
 
             return new PaymentResponseDTO
             {
                 PaymentId = entity.PaymentId,
                 PaidAmount = entity.PaidAmount,
-                PaymentUrl = $"https://placeholder.local/pay/{entity.PaymentId}"
+                PaymentUrl = paymentUrl
             };
         }
+
 
         public async Task<IEnumerable<PaymentResultDTO>> GetAllAsync()
         {
@@ -138,7 +146,11 @@ namespace PaymentAPI.Services
                 PaymentUrl = paymentUrl
             };
         }
-
+        public async Task<IEnumerable<PaymentResultDTO>> GetByOrderIdAsync(int orderId)
+        {
+            var payments = await _repo.GetByOrderIdAsync(orderId);
+            return _mapper.Map<IEnumerable<PaymentResultDTO>>(payments);
+        }
     }
 
 }
