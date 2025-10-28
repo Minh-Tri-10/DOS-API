@@ -45,6 +45,7 @@ namespace AccountAPI
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];

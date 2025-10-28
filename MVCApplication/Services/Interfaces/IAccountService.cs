@@ -13,7 +13,7 @@ namespace MVCApplication.Services.Interfaces
         // NEW ↓↓↓
         Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(string token, string newPassword);
-        Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto);
+        Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto, IFormFile? avatarFile);
 
     }
 }

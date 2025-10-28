@@ -84,15 +84,23 @@
             }
             return res.IsSuccessStatusCode; // 204 NoContent => true
         }
-        public async Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto)
+        public async Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto, IFormFile? avatarFile)
         {
-            var res = await _http.PutAsJsonAsync($"api/accounts/{id}/profile", dto);
-            if (!res.IsSuccessStatusCode)
+            using var formData = new MultipartFormDataContent();
+
+            formData.Add(new StringContent(dto.FullName ?? ""), "FullName");
+            formData.Add(new StringContent(dto.Email ?? ""), "Email");
+            formData.Add(new StringContent(dto.Phone ?? ""), "Phone");
+
+            if (avatarFile != null)
             {
-                var payload = await res.Content.ReadAsStringAsync();
-                _logger.LogWarning("PUT api/accounts/{Id}/profile failed with {StatusCode}. Body: {Body}", id, (int)res.StatusCode, payload);
-                return null;
+                var stream = avatarFile.OpenReadStream();
+                formData.Add(new StreamContent(stream), "avatarFile", avatarFile.FileName);
             }
+
+            var res = await _http.PutAsync($"api/accounts/{id}/profile", formData);
+            if (!res.IsSuccessStatusCode) return null;
+
             return await res.Content.ReadFromJsonAsync<UserViewModel>();
         }
 

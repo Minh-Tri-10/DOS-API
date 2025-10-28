@@ -18,7 +18,11 @@ namespace PaymentAPI
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<PaymentDbContext>(options =>
+<<<<<<< HEAD
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
+=======
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+>>>>>>> f56e4b37b49a48dd870c75b24ef39905e5e7485f
 
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
