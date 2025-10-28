@@ -383,7 +383,7 @@
 
             btnEdit.addEventListener('click', ()=> setEditing(true));
             btnCancel.addEventListener('click', ()=>{
-                editable.forEach(i => i.value = i.defaultValue); // restore value ban đầu
+                editable.forEach(i => i.value = i.defaultValue); // restore value  
                 setEditing(false);
             });
             editable.forEach(i=>{
