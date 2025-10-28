@@ -88,5 +88,14 @@ namespace OrderAPI.Controllers
             return NoContent();
         }
 
+        [HttpGet("check-product-usage")]
+        [Authorize(Roles = "Admin")]  // Chỉ Admin được kiểm tra (tùy chỉnh)
+        public async Task<ActionResult<ProductUsageDto>> CheckProductUsage([FromQuery] int productId)
+        {
+            if (productId <= 0) return BadRequest("ProductId không hợp lệ");
+
+            var result = await _service.CheckProductUsageAsync(productId);
+            return Ok(result);
+        }
     }
 }
