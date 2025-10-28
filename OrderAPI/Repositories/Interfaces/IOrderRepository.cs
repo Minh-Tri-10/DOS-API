@@ -16,5 +16,7 @@ namespace OrderAPI.Repositories.Interfaces
         Task MarkOrderAsPaidAsync(int orderId);
         Task<(List<Order> Orders, int TotalCount)> GetPagedAsync(int page, int pageSize);
 
+        Task<int> CountOrdersContainingProductAsync(int productId);
+
     }
 }

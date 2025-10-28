@@ -1,5 +1,7 @@
 ﻿using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
+using OrderAPI.DTOs;
+using System.Net.Http;
 namespace MVCApplication.Services
 {
     public class OrdersService : IOrderService
@@ -60,6 +62,21 @@ namespace MVCApplication.Services
         {
             var res = await _http.PutAsJsonAsync($"api/order/{id}/cancel", reason);
             return res.IsSuccessStatusCode;
+        }
+
+        public async Task<ProductUsageDto> CheckProductUsageAsync(int productId)
+        {
+            try
+            {
+                return await _http.GetFromJsonAsync<ProductUsageDto>($"api/order/check-product-usage?productId={productId}")
+                    ?? new ProductUsageDto { IsUsed = false, OrderCount = 0 };
+
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi
+                return new ProductUsageDto { IsUsed = false, OrderCount = 0 };
+            }
         }
 
     }

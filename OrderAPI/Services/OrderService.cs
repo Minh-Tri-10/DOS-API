@@ -169,6 +169,16 @@ namespace OrderAPI.Services
             return true;
         }
 
+        public async Task<ProductUsageDto> CheckProductUsageAsync(int productId)
+        {
+            var count = await _repo.CountOrdersContainingProductAsync(productId);
+            return new ProductUsageDto
+            {
+                IsUsed = count > 0,
+                OrderCount = count
+            };
+        }
+
     }
 }
 
