@@ -16,15 +16,18 @@ namespace MVCApplication.Controllers
     {
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
+        private readonly IOrderService _orderService;
         private readonly IHttpClientFactory _httpClientFactory;
 
         public AdminProductController(
             IProductService productService,
             ICategoryService categoryService,
+            IOrderService orderService,
             IHttpClientFactory httpClientFactory)
         {
             _productService = productService;
             _categoryService = categoryService;
+            _orderService = orderService;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -163,13 +166,27 @@ namespace MVCApplication.Controllers
         {
             try
             {
+                // Kiểm tra xem Product có trong Order không
+                var usage = await _orderService.CheckProductUsageAsync(id);  // Gọi API Order để kiểm tra
+                if (usage.IsUsed)
+                {
+                    TempData["Error"] = $"Không thể xóa sản phẩm vì đang tồn tại trong {usage.OrderCount} đơn hàng.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Nếu không có, tiến hành xóa
                 await _productService.DeleteAsync(id);
-                TempData["Success"] = "San pham duoc xoa thanh cong.";
+                TempData["Success"] = "Sản phẩm được xóa thành công.";
             }
-            catch
+            catch (HttpRequestException ex)
             {
-                TempData["Error"] = "Khong the xoa san pham.";
+                TempData["Error"] = "Không thể kết nối tới API: " + ex.Message;
             }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể xóa sản phẩm: " + ex.Message;
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

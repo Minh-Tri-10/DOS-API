@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+ï»¿using Microsoft.EntityFrameworkCore;
 using OrderAPI.Models;
 using OrderAPI.Repositories.Interfaces;
 
@@ -58,11 +58,11 @@ namespace OrderAPI.Repositories
 
         public async Task<int> CreateOrderAsync(Order order, List<OrderItem> items)
         {
-            /* Hi?n t?i là test ch? m?i bên api nên có th? không bi?t orderitem
-            có có s?n trong order khi chuy?n t? front end sang hay không, 
-            n?u có s?n r?i thì không c?n s?a n?a */
+            /* Hi?n t?i lÃ  test ch? m?i bÃªn api nÃªn cÃ³ th? khÃ´ng bi?t orderitem
+            cÃ³ cÃ³ s?n trong order khi chuy?n t? front end sang hay khÃ´ng, 
+            n?u cÃ³ s?n r?i thÌ khÃ´ng c?n s?a n?a */
 
-            // Ğ?m b?o OrderItems r?ng khi Add(order) d? tránh EF t? insert
+            // Ä?m b?o OrderItems r?ng khi Add(order) d? trÃ¡nh EF t? insert
             //order.OrderItems = new List<OrderItem>();
             //_context.Orders.Add(order);
             //await _context.SaveChangesAsync();
@@ -73,7 +73,7 @@ namespace OrderAPI.Repositories
             //foreach (var item in items)
             //{
             //    item.OrderId = order.OrderId;
-            //    item.OrderItemId = 0; // d?m b?o EF không insert Id (Id t? tang) // dòng này có th? xem xét xóa di
+            //    item.OrderItemId = 0; // d?m b?o EF khÃ´ng insert Id (Id t? tang) // dÌ£ng nÃ y cÃ³ th? xem xÃ©t xÃ³a di
             //    _context.OrderItems.Add(item);
             //}
             await _context.SaveChangesAsync();
@@ -119,5 +119,15 @@ namespace OrderAPI.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<int> CountOrdersContainingProductAsync(int productId)
+        {
+            return await _context.OrderItems
+                .Where(oi => oi.ProductId == productId)
+                .Select(oi => oi.OrderId)
+                .Distinct()  // Äáº¿m sá»‘ Order unique
+                .CountAsync();
+        }
+
     }
 }

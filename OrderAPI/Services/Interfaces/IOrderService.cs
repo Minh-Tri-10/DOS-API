@@ -15,5 +15,7 @@ namespace OrderAPI.Services.Interfaces
         Task<bool> CancelAsync(int orderId, string cancelReason);
         Task<(List<OrderDto> Orders, int TotalCount)> GetPagedAsync(int page, int pageSize);
 
+        Task<ProductUsageDto> CheckProductUsageAsync(int productId);
+
     }
 }
