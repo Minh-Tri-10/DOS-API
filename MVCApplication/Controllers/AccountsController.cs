@@ -1,47 +1,92 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.IO;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using MVCApplication.Models;
 using MVCApplication.Services.Interfaces;
+using System.Globalization;
 
 namespace MVCApplication.Controllers
 {
     public class AccountsController : Controller
     {
         private readonly IAccountService _service;
-        private readonly IHttpContextAccessor _http;
 
-        public AccountsController(IAccountService service, IHttpContextAccessor http)
+        public AccountsController(IAccountService service)
         {
             _service = service;
-            _http = http;
         }
 
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            if (User.Identity?.IsAuthenticated ?? false)
+            {
+                return RedirectToAction("Index", User.IsInRole("Admin") ? "AdminAccounts" : "Customer");
+            }
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel dto)
         {
             if (!ModelState.IsValid) return View(dto);
 
-            var user = await _service.LoginAsync(dto);
-            if (user == null)
+            var auth = await _service.LoginAsync(dto);
+            if (auth == null)
             {
-                ViewBag.Error = "Sai tài khoản hoặc mật khẩu";
+                ViewBag.Error = "Sai tai khoan hoac mat khau.";
                 return View(dto);
             }
 
-            // Lưu session
-            HttpContext.Session.SetInt32("UserId", user.UserId);
-            HttpContext.Session.SetString("Username", user.Username);
-            HttpContext.Session.SetString("Role", user.Role);
-            HttpContext.Session.SetString("Email", user.Email ?? "");
-            HttpContext.Session.SetString("AvatarUrl", user.AvatarUrl ?? "https://i.pravatar.cc/128?img=47");
+            JwtSecurityToken jwt;
+            try
+            {
+                jwt = new JwtSecurityTokenHandler().ReadJwtToken(auth.AccessToken);
+            }
+            catch
+            {
+                ViewBag.Error = "Token dang nhap khong hop le.";
+                return View(dto);
+            }
 
-            // Điều hướng theo Role
-            if (user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-                return RedirectToAction("Index", "AdminAccounts");
-            else
-                return RedirectToAction("Index", "Customer");
+            var claims = new List<Claim>(jwt.Claims)
+            {
+                new Claim("access_token", auth.AccessToken),
+                new Claim("avatar_url", auth.User.AvatarUrl ?? string.Empty),
+                new Claim("full_name", auth.User.FullName ?? string.Empty),
+                new Claim("username", auth.User.Username)
+            };
+
+            if (!string.IsNullOrWhiteSpace(auth.User.Email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, auth.User.Email));
+            }
+            claims.RemoveAll(c => c.Type == ClaimTypes.Role);
+            var normalizedRole = string.IsNullOrWhiteSpace(auth.User.Role)
+                ? "User"
+                : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(auth.User.Role.Trim().ToLowerInvariant());
+            claims.Add(new Claim(ClaimTypes.Role, normalizedRole));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = false,
+                    ExpiresUtc = auth.ExpiresAtUtc
+                });
+
+            return auth.User.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                ? RedirectToAction("Index", "AdminAccounts")
+                : RedirectToAction("Index", "Customer");
         }
 
         [HttpGet]
@@ -55,22 +100,30 @@ namespace MVCApplication.Controllers
             var user = await _service.RegisterAsync(dto);
             if (user == null)
             {
-                ViewBag.Error = "Đăng ký thất bại";
+                ViewBag.Error = "Dang ky that bai.";
                 return View(dto);
             }
             return RedirectToAction("Login");
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login");
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                await SignOutAsync();
+                return RedirectToAction("Login");
+            }
 
-            var user = await _service.GetByIdAsync(userId.Value);
-            if (user == null) return RedirectToAction("Login");
+            var user = await _service.GetByIdAsync(userId);
+            if (user == null)
+            {
+                await SignOutAsync();
+                return RedirectToAction("Login");
+            }
 
-            // Map UserViewModel -> UpdateProfileViewModel
             var vm = new UpdateProfileViewModel
             {
                 UserId = user.UserId,
@@ -83,20 +136,18 @@ namespace MVCApplication.Controllers
                 AvatarUrl = user.AvatarUrl
             };
 
-            return View(vm); // Trả về đúng model UpdateProfileViewModel
+            return View(vm);
         }
 
-
-        public IActionResult Logout()
+        [Authorize]
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Clear();
+            await SignOutAsync();
             return RedirectToAction("Login");
         }
+
         [HttpGet]
-        public IActionResult ForgotPassword()
-        {
-            return View();
-        }
+        public IActionResult ForgotPassword() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -104,13 +155,12 @@ namespace MVCApplication.Controllers
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                ViewBag.Error = "Vui lòng nhập email.";
+                ViewBag.Error = "Vui long nhap email.";
                 return View();
             }
 
-            // Luôn trả message chung để tránh lộ email tồn tại
             await _service.ForgotPasswordAsync(email);
-            ViewBag.Message = "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.";
+            ViewBag.Message = "Neu email ton tai, chung toi da gui huong dan dat lai mat khau.";
             return View();
         }
 
@@ -127,18 +177,18 @@ namespace MVCApplication.Controllers
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                ViewBag.Error = "Token không hợp lệ.";
+                ViewBag.Error = "Token khong hop le.";
                 return View();
             }
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
             {
-                ViewBag.Error = "Mật khẩu tối thiểu 6 ký tự.";
+                ViewBag.Error = "Mat khau toi thieu 6 ky tu.";
                 ViewBag.Token = token;
                 return View();
             }
             if (newPassword != confirmPassword)
             {
-                ViewBag.Error = "Xác nhận mật khẩu không khớp.";
+                ViewBag.Error = "Xac nhan mat khau khong khop.";
                 ViewBag.Token = token;
                 return View();
             }
@@ -146,26 +196,30 @@ namespace MVCApplication.Controllers
             var ok = await _service.ResetPasswordAsync(token, newPassword);
             if (!ok)
             {
-                ViewBag.Error = "Token không hợp lệ hoặc đã hết hạn.";
+                ViewBag.Error = "Token khong hop le hoac da het han.";
                 ViewBag.Token = token;
                 return View();
             }
 
-            TempData["Message"] = "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+            TempData["Message"] = "Doi mat khau thanh cong. Vui long dang nhap lai.";
             return RedirectToAction("Login");
         }
+
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto, IFormFile? avatarFile)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                await SignOutAsync();
                 return RedirectToAction("Login");
+            }
 
-            // ⚙️ 1. Validation check
             if (!ModelState.IsValid)
             {
-                var user = await _service.GetByIdAsync(userId.Value);
+                var user = await _service.GetByIdAsync(userId);
                 if (user != null)
                 {
                     dto.UserId = user.UserId;
@@ -178,26 +232,9 @@ namespace MVCApplication.Controllers
                 return View("Profile", dto);
             }
 
-            // ⚙️ 2. Upload avatar (nếu có)
-            if (avatarFile != null && avatarFile.Length > 0)
-            {
-                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsDir))
-                    Directory.CreateDirectory(uploadsDir);
+            // ✅ Gửi formdata tới API và Upload lên Cloudinary tại API
+            var updatedUser = await _service.UpdateProfileAsync(userId, dto, avatarFile);
 
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(avatarFile.FileName)}";
-                var savePath = Path.Combine(uploadsDir, fileName);
-
-                using (var stream = new FileStream(savePath, FileMode.Create))
-                {
-                    await avatarFile.CopyToAsync(stream);
-                }
-
-                dto.AvatarUrl = $"/uploads/{fileName}";
-            }
-
-            // ⚙️ 3. Gọi service update
-            var updatedUser = await _service.UpdateProfileAsync(userId.Value, dto);
             if (updatedUser == null)
             {
                 ViewBag.Error = "Cập nhật thất bại.";
@@ -205,7 +242,8 @@ namespace MVCApplication.Controllers
                 return View("Profile", dto);
             }
 
-            // ⚙️ 4. Load lại view mới
+            await RefreshAuthenticatedUserClaimsAsync(updatedUser);
+
             var vm = new UpdateProfileViewModel
             {
                 UserId = updatedUser.UserId,
@@ -218,13 +256,56 @@ namespace MVCApplication.Controllers
                 AvatarUrl = updatedUser.AvatarUrl
             };
 
-            // ⚙️ 5. Reset trạng thái edit
             ViewBag.KeepEditing = false;
-            ViewBag.Success = "Cập nhật thông tin thành công!";
-            HttpContext.Session.SetString("AvatarUrl", vm.AvatarUrl ?? "");
-            HttpContext.Session.SetString("FullName", vm.FullName ?? "");
-            HttpContext.Session.SetString("Email", vm.Email ?? "");
+            ViewBag.Success = "Cập nhật thành công!";
             return View("Profile", vm);
+        }
+
+
+        private async Task RefreshAuthenticatedUserClaimsAsync(UserViewModel updatedUser)
+        {
+            var claims = User.Claims
+                .Where(c => c.Type != "avatar_url" && c.Type != "full_name" && c.Type != ClaimTypes.Email && c.Type != "username")
+                .ToList();
+
+            claims.Add(new Claim("avatar_url", updatedUser.AvatarUrl ?? string.Empty));
+            claims.Add(new Claim("full_name", updatedUser.FullName ?? string.Empty));
+            claims.Add(new Claim("username", updatedUser.Username));
+
+            if (!string.IsNullOrWhiteSpace(updatedUser.Email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, updatedUser.Email));
+            }
+
+            var accessToken = claims.FirstOrDefault(c => c.Type == "access_token")?.Value;
+            DateTimeOffset? expiresUtc = null;
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                try
+                {
+                    var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+                    expiresUtc = jwt.ValidTo;
+                }
+                catch
+                {
+                    expiresUtc = DateTimeOffset.UtcNow.AddMinutes(30);
+                }
+            }
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties
+                {
+                    IsPersistent = false,
+                    ExpiresUtc = expiresUtc ?? DateTimeOffset.UtcNow.AddMinutes(30)
+                });
+        }
+
+        private async Task SignOutAsync()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
     }
 }

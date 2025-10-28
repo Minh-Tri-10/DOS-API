@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using AccountAPI.DTOs;
 using AccountAPI.Models;
@@ -11,6 +14,8 @@ using AccountAPI.Services.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Globalization;
 
 namespace AccountAPI.Services
 {
@@ -36,7 +41,7 @@ namespace AccountAPI.Services
             _cfg = cfg;
         }
 
-        public async Task<UserDTO?> LoginAsync(LoginDTO dto)
+        public async Task<AuthResponseDTO?> LoginAsync(LoginDTO dto)
         {
             var user = await _repo.GetByUsernameAsync(dto.Username);
             if (user == null) return null;
@@ -45,12 +50,74 @@ namespace AccountAPI.Services
             if (!IsBcryptHash(user.PasswordHash)) return null;
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)) return null;
 
-            return _mapper.Map<UserDTO>(user);
+            var mapped = _mapper.Map<UserDTO>(user);
+            var (token, expiresAtUtc) = GenerateJwtToken(user);
+
+            return new AuthResponseDTO
+            {
+                AccessToken = token,
+                ExpiresAtUtc = expiresAtUtc,
+                User = mapped
+            };
         }
 
         private static bool IsBcryptHash(string? hash) =>
             !string.IsNullOrWhiteSpace(hash) &&
             (hash!.StartsWith("$2a$") || hash.StartsWith("$2b$") || hash.StartsWith("$2y$"));
+
+        private (string Token, DateTime ExpiresAtUtc) GenerateJwtToken(User user)
+        {
+            var key = _cfg["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(key))
+                throw new InvalidOperationException("JWT signing key is not configured.");
+
+            var issuer = _cfg["Jwt:Issuer"];
+            var audience = _cfg["Jwt:Audience"];
+            var expiryMinutes = _cfg.GetValue("Jwt:ExpiryMinutes", 120);
+            var expires = DateTime.UtcNow.AddMinutes(expiryMinutes);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username)
+            };
+
+            var normalizedRole = string.IsNullOrWhiteSpace(user.Role)
+                ? "User"
+                : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(user.Role.Trim().ToLowerInvariant());
+            claims.Add(new Claim(ClaimTypes.Role, normalizedRole));
+            claims.Add(new Claim("role", normalizedRole));
+
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.FullName))
+            {
+                claims.Add(new Claim("full_name", user.FullName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
+            {
+                claims.Add(new Claim("avatar_url", user.AvatarUrl));
+            }
+
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: expires,
+                signingCredentials: credentials);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            return (tokenString, expires);
+        }
 
         public async Task<UserDTO> RegisterAsync(RegisterDTO dto)
         {
@@ -73,15 +140,23 @@ namespace AccountAPI.Services
             return user == null ? null : _mapper.Map<UserDTO>(user);
         }
 
-        public async Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto)
+        public async Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto, IFormFile? avatarFile)
         {
             var user = await _repo.GetByIdAsync(userId);
             if (user == null) return null;
 
             _mapper.Map(dto, user);
-            user.UpdatedAt = DateTime.UtcNow;
 
-            await _repo.UpdateProfileAsync(user);
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                var cloudinary = new CloudinaryService(_cfg); // Nếu bạn đang DI, inject vào constructor cho chuẩn hơn
+                var url = await cloudinary.UploadImageAsync(avatarFile);
+                user.AvatarUrl = url;
+            }
+
+            user.UpdatedAt = DateTime.UtcNow;
+            await _repo.UpdateAsync(user);
+
             return _mapper.Map<UserDTO>(user);
         }
 

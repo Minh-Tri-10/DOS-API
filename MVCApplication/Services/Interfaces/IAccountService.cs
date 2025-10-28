@@ -4,7 +4,7 @@ namespace MVCApplication.Services.Interfaces
 {
     public interface IAccountService
     {
-        Task<UserViewModel?> LoginAsync(LoginViewModel dto);
+        Task<AuthResponseViewModel?> LoginAsync(LoginViewModel dto);
         Task<UserViewModel?> RegisterAsync(RegisterViewModel dto);
         Task<UserViewModel?> GetByIdAsync(int id);
         Task<IEnumerable<UserViewModel>> GetAllAsync();
@@ -13,7 +13,7 @@ namespace MVCApplication.Services.Interfaces
         // NEW ↓↓↓
         Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(string token, string newPassword);
-        Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto);
+        Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto, IFormFile? avatarFile);
 
     }
 }

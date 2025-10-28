@@ -3,7 +3,8 @@ using CategoriesAPI.Services.Interfaces;
 using CategoriesAPI.DTOs;
 using CategoriesAPI.Models;
 using CategoriesAPI.Repositories.Interfaces;
-namespace ProductAPI.Services;
+
+namespace CategoriesAPI.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _repo;
@@ -93,3 +94,4 @@ public class ProductService : IProductService
         }
     }
 }
+

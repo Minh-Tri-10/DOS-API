@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OrderAPI.DTOs;
 using OrderAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OrderAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _service;
@@ -16,11 +18,22 @@ namespace OrderAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var orders = await _service.GetAllAsync();
-            return Ok(orders);
+            (List<OrderDto> orders, int totalCount) = await _service.GetPagedAsync(page, pageSize);
+
+            var result = new
+            {
+                data = orders,
+                totalCount,
+                page,
+                pageSize
+            };
+
+            return Ok(result);
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)

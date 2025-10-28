@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OrderAPI.Models;
 using OrderAPI.Repositories.Interfaces;
 
@@ -6,9 +6,9 @@ namespace OrderAPI.Repositories
 {
     public class OrderRepository : IOrderRepository
     {
-        private readonly DrinkOrderDbContext _context;
+        private readonly OrderDbContext _context;
 
-        public OrderRepository(DrinkOrderDbContext context)
+        public OrderRepository(OrderDbContext context)
         {
             _context = context;
         }
@@ -21,7 +21,31 @@ namespace OrderAPI.Repositories
                 //.ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
+        public async Task<(List<Order>, int)> GetPagedAsync(int page, int pageSize)
+        {
+            var query = _context.Orders
+                //.Include(o => o.User)
+                .OrderByDescending(o => o.OrderDate);
 
+            var totalCount = await query.CountAsync();
+
+            var orders = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new Order
+                {
+                    OrderId = o.OrderId,
+                    UserId = o.UserId,
+                    //FullName = o.User.FullName,
+                    OrderStatus = o.OrderStatus,
+                    PaymentStatus = o.PaymentStatus,
+                    TotalAmount = o.TotalAmount,
+                    OrderDate = o.OrderDate
+                })
+                .ToListAsync();
+
+            return (orders, totalCount);
+        }
         public async Task<Order> GetByIdAsync(int id) =>
             await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == id);
 
@@ -34,11 +58,11 @@ namespace OrderAPI.Repositories
 
         public async Task<int> CreateOrderAsync(Order order, List<OrderItem> items)
         {
-            /* Hiện tại là test chỉ mới bên api nên có thể không biết orderitem
-            có có sẵn trong order khi chuyển từ front end sang hay không, 
-            nếu có sẵn rồi thì không cần sửa nữa */
+            /* Hi?n t?i l� test ch? m?i b�n api n�n c� th? kh�ng bi?t orderitem
+            c� c� s?n trong order khi chuy?n t? front end sang hay kh�ng, 
+            n?u c� s?n r?i th� kh�ng c?n s?a n?a */
 
-            // Đảm bảo OrderItems rỗng khi Add(order) để tránh EF tự insert
+            // �?m b?o OrderItems r?ng khi Add(order) d? tr�nh EF t? insert
             //order.OrderItems = new List<OrderItem>();
             //_context.Orders.Add(order);
             //await _context.SaveChangesAsync();
@@ -49,7 +73,7 @@ namespace OrderAPI.Repositories
             //foreach (var item in items)
             //{
             //    item.OrderId = order.OrderId;
-            //    item.OrderItemId = 0; // đảm bảo EF không insert Id (Id tự tăng) // dòng này có thể xem xét xóa đi
+            //    item.OrderItemId = 0; // d?m b?o EF kh�ng insert Id (Id t? tang) // d�ng n�y c� th? xem x�t x�a di
             //    _context.OrderItems.Add(item);
             //}
             await _context.SaveChangesAsync();

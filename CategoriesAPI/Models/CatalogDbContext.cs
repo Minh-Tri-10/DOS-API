@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CategoriesAPI.Models;
 
-public partial class DrinkOrderDbContext : DbContext
+public partial class CatalogDbContext : DbContext
 {
-    public DrinkOrderDbContext()
+    public CatalogDbContext()
     {
     }
 
-    public DrinkOrderDbContext(DbContextOptions<DrinkOrderDbContext> options)
+    public CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         : base(options)
     {
     }

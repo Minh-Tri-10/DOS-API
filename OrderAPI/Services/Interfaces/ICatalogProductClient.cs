@@ -2,7 +2,7 @@
 
 namespace OrderAPI.Services.Interfaces
 {
-    public interface IProductClient
+    public interface ICatalogProductClient
     {
         Task<ProductDto?> GetProductByIdAsync(int productId);
     }

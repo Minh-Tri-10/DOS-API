@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
 namespace OrderAPI.Models;
 
-public partial class DrinkOrderDbContext : DbContext
+public partial class OrderDbContext : DbContext
 {
-    public DrinkOrderDbContext()
+    public OrderDbContext()
     {
     }
 
-    public DrinkOrderDbContext(DbContextOptions<DrinkOrderDbContext> options)
+    public OrderDbContext(DbContextOptions<OrderDbContext> options)
         : base(options)
     {
     }

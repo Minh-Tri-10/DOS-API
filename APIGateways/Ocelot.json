@@ -1,31 +1,258 @@
-{
-  "Routes": [
-    {
-      "DownstreamPathTemplate": "/api/products",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5001
-        }
-      ],
-      "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": [ "GET", "POST" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/orders",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5002
-        }
-      ],
-      "UpstreamPathTemplate": "/gateway/orders",
-      "UpstreamHttpMethod": [ "GET", "POST" ]
-    }
-  ],
-  "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:7000"
-  }
+﻿{
+    "GlobalConfiguration":  {
+                                "BaseUrl":  "https://localhost:7001"
+                            },
+    "Routes":  [
+                   {
+                       "UpstreamPathTemplate":  "/api/product",
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7021
+                                                      }
+                                                  ],
+                       "UpstreamHttpMethod":  [
+                                                  "GET"
+                                              ],
+                       "RouteIsCaseSensitive":  false,
+                       "DownstreamPathTemplate":  "/api/Product",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "DownstreamScheme":  "https"
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7005
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/accounts/login",
+                       "Priority":  1,
+                       "UpstreamHttpMethod":  [
+                                                  "POST"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/accounts/login",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7005
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/accounts/register",
+                       "Priority":  1,
+                       "UpstreamHttpMethod":  [
+                                                  "POST"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/accounts/register",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7005
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/accounts/forgot-password",
+                       "Priority":  1,
+                       "UpstreamHttpMethod":  [
+                                                  "POST"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/accounts/forgot-password",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7005
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/accounts/reset-password",
+                       "Priority":  1,
+                       "UpstreamHttpMethod":  [
+                                                  "POST"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/accounts/reset-password",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7005
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/accounts/{everything}",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "UpstreamHttpMethod":  [
+                                                  "GET",
+                                                  "POST",
+                                                  "PUT",
+                                                  "PATCH",
+                                                  "DELETE"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/accounts/{everything}",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7143
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/Cart/{everything}",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "UpstreamHttpMethod":  [
+                                                  "GET",
+                                                  "POST",
+                                                  "PUT",
+                                                  "DELETE"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/cart/{everything}",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7021
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/ManageCategory/{everything}",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "UpstreamHttpMethod":  [
+                                                  "GET",
+                                                  "POST",
+                                                  "PUT",
+                                                  "DELETE"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/managecategory/{everything}",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7021
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/Product/{everything}",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "UpstreamHttpMethod":  [
+                                                  "GET",
+                                                  "POST",
+                                                  "PUT",
+                                                  "DELETE"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/product/{everything}",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7269
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/Order/{everything}",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "UpstreamHttpMethod":  [
+                                                  "GET",
+                                                  "POST",
+                                                  "PUT",
+                                                  "DELETE"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/order/{everything}",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7269
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/stats/{everything}",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "UpstreamHttpMethod":  [
+                                                  "GET"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/stats/{everything}",
+                       "RouteIsCaseSensitive":  false
+                   },
+                   {
+                       "DownstreamHostAndPorts":  [
+                                                      {
+                                                          "Host":  "localhost",
+                                                          "Port":  7011
+                                                      }
+                                                  ],
+                       "DownstreamScheme":  "https",
+                       "DownstreamPathTemplate":  "/api/Payments/{everything}",
+                       "AuthenticationOptions":  {
+                                                     "AllowedScopes":  [
+
+                                                                       ],
+                                                     "AuthenticationProviderKey":  "Bearer"
+                                                 },
+                       "UpstreamHttpMethod":  [
+                                                  "GET",
+                                                  "POST",
+                                                  "PUT",
+                                                  "DELETE"
+                                              ],
+                       "UpstreamPathTemplate":  "/api/payments/{everything}",
+                       "RouteIsCaseSensitive":  false
+                   }
+               ]
 }
