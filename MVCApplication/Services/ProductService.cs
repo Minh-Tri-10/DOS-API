@@ -13,8 +13,8 @@ namespace MVCApplication.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<ProductService> _logger;
         private readonly JsonSerializerOptions _jsonOptions;
-
-        public ProductService(IHttpClientFactory httpClientFactory, ILogger<ProductService> logger)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public ProductService(IHttpClientFactory httpClientFactory, ILogger<ProductService> logger, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClientFactory.CreateClient("CategoriesAPI");
             _logger = logger;
@@ -22,6 +22,7 @@ namespace MVCApplication.Services
             {
                 PropertyNameCaseInsensitive = true
             };
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IEnumerable<ProductDTO>> GetAllAsync()
@@ -100,6 +101,60 @@ namespace MVCApplication.Services
                 var payload = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("DELETE api/Product/{Id} failed with {StatusCode}. Body: {Body}", id, (int)response.StatusCode, payload);
                 response.EnsureSuccessStatusCode();
+            }
+
+        }
+        public async Task<(IEnumerable<ProductDTO> Items, int TotalCount)> GetODataAsync(int page, int pageSize, string search, string orderBy)
+        {
+            // Lấy token từ HttpContext.User.Claims (key "access_token" như trong controller)
+            var token = _httpContextAccessor.HttpContext?.User.FindFirst("access_token")?.Value;
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new InvalidOperationException("Không tìm thấy access token. Vui lòng đăng nhập lại.");
+            }
+            // Set header Authorization
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            // Build query
+            var skip = (page - 1) * pageSize;
+            var filter = string.IsNullOrWhiteSpace(search) ? "" : $"contains(ProductName,'{Uri.EscapeDataString(search)}')"; // Thêm escape để tránh lỗi special char
+            var queryParts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                queryParts.Add($"$filter={filter}");
+            }
+            queryParts.Add($"$orderby={orderBy.Replace(" ", "%20")}"); // Encode space trong orderBy để tránh lỗi URL
+            queryParts.Add($"$top={pageSize}");
+            queryParts.Add($"$skip={skip}");
+            queryParts.Add("$count=true");
+            var query = $"odata/Products?{string.Join("&", queryParts)}";
+            // Log query để debug
+            Console.WriteLine("OData Query: " + query); // Hoặc dùng ILogger nếu có
+            var response = await _httpClient.GetAsync(query);
+            var content = await response.Content.ReadAsStringAsync();
+            // Log content trước deserialize
+            Console.WriteLine("OData Response Content: " + content);
+            Console.WriteLine("Response Status: " + response.StatusCode);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException($"Lỗi gọi API: {response.StatusCode} - {content}");
+            }
+            // Deserialize với options linh hoạt hơn
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true, // Cho phép dư dấu phẩy
+                ReadCommentHandling = JsonCommentHandling.Skip // Bỏ qua comment nếu có
+            };
+            try
+            {
+                var odataResponse = JsonSerializer.Deserialize<ODataProductRespone>(content, _jsonOptions);
+                return (odataResponse?.Value ?? Enumerable.Empty<ProductDTO>(), odataResponse?.Count ?? 0);
+            }
+            catch
+            {
+                // Fallback: Deserialize trực tiếp thành mảng
+                var items = JsonSerializer.Deserialize<IEnumerable<ProductDTO>>(content, _jsonOptions) ?? Enumerable.Empty<ProductDTO>();
+                return (items, items.Count());
             }
         }
     }

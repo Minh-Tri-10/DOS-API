@@ -1,7 +1,10 @@
-﻿namespace CategoriesAPI.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CategoriesAPI.DTOs
 {
     public class CategoryDTO
     {
+        [Key]
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = null!;
         public string? Description { get; set; }

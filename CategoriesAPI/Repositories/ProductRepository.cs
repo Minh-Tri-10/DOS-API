@@ -16,6 +16,12 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Category) // load thêm Category
             .ToListAsync();
     }
+    public IQueryable<Product> GetAllQueryable()
+    {
+        return _context.Products
+            .Include(p => p.Category);
+    }
+
 
     // L?y theo Id, Include Category
     public async Task<Product?> GetByIdAsync(int id)
