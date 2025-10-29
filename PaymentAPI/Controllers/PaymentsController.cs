@@ -46,8 +46,8 @@ namespace PaymentAPI.Controllers
             if (dto.PaymentMethod?.Equals("VNPay", StringComparison.OrdinalIgnoreCase) == true)
             {
                 var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                var vnpUrl = await _service.CreateVnPayPaymentAsync(dto, ip);
-                return Ok(new { paymentUrl = vnpUrl });
+                var payment = await _service.CreateVnPayPaymentAsync(dto, ip);
+                return Ok(payment);
             }
             else if (dto.PaymentMethod?.Equals("COD", StringComparison.OrdinalIgnoreCase) == true)
             {
@@ -105,16 +105,13 @@ namespace PaymentAPI.Controllers
             if (!int.TryParse(txnRef, out var paymentId))
                 return BadRequest("Invalid txnRef");
 
-            if (vnpResponseCode == "00")
-            {
-                await _service.ConfirmPaymentAsync(paymentId, "Success", vnpTransNo);
-                return Redirect($"https://localhost:7223/Orders/Details/{paymentId}");
-            }
-            else
-            {
-                await _service.ConfirmPaymentAsync(paymentId, "Failed", vnpTransNo);
-                return Redirect($"https://localhost:7223/Orders/Details/{paymentId}");
-            }
+            var status = vnpResponseCode == "00" ? "Success" : "Failed";
+            var paymentResult = await _service.ConfirmPaymentAsync(paymentId, status, vnpTransNo);
+
+            var redirectUrl = $"https://localhost:7223/Payments/VnPayCallback?status={status}" +
+                              $"&paymentId={paymentResult.PaymentId}&orderId={paymentResult.OrderId}";
+
+            return Redirect(redirectUrl);
         }
 
         [HttpPost("vnpay-ipn")]

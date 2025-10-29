@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
 
@@ -41,31 +40,8 @@ namespace MVCApplication.Services
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            var content = await response.Content.ReadAsStringAsync();
-
-            try
-            {
-                // Deserialize thành object tổng quát
-                using var doc = JsonDocument.Parse(content);
-                var root = doc.RootElement;
-
-                // Nếu có key "paymentUrl" là object chứa URL thật
-                if (root.TryGetProperty("paymentUrl", out var paymentObj))
-                {
-                    if (paymentObj.ValueKind == JsonValueKind.Object &&
-                        paymentObj.TryGetProperty("paymentUrl", out var urlProp))
-                    {
-                        return urlProp.GetString(); // Trả về URL thật
-                    }
-                    else if (paymentObj.ValueKind == JsonValueKind.String)
-                    {
-                        return paymentObj.GetString();
-                    }
-                }
-            }
-            catch { }
-
-            return null;
+            var payment = await response.Content.ReadFromJsonAsync<PaymentResponseDTO>();
+            return payment?.PaymentUrl;
         }
 
 

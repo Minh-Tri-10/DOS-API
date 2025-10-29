@@ -6,8 +6,8 @@ namespace PaymentAPI.Repositories
 {
     public class PaymentRepository : IPaymentRepository
     {
-        private readonly DrinkOrderDbContext _context;
-        public PaymentRepository(DrinkOrderDbContext context)
+        private readonly PaymentDbContext _context;
+        public PaymentRepository(PaymentDbContext context)
         {
             _context = context;
         }

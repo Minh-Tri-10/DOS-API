@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MVCApplication.DTOs;
-using MVCApplication.Services;
 using MVCApplication.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace MVCApplication.Controllers
 {
@@ -120,6 +121,50 @@ namespace MVCApplication.Controllers
             ViewBag.TotalAmount = order?.TotalAmount ?? 0;
 
             return View(payments);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> VnPayCallback(string status, int orderId, int paymentId)
+        {
+            if (string.IsNullOrWhiteSpace(status) || orderId <= 0)
+            {
+                TempData["Error"] = "Ket qua thanh toan khong hop le.";
+                return RedirectToAction("Index", "Orders");
+            }
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var currentUserId))
+            {
+                TempData["Error"] = "Phien dang nhap het han. Vui long dang nhap lai.";
+                return RedirectToAction("Login", "Accounts");
+            }
+
+            var order = await _orderService.GetByIdAsync(orderId);
+            if (order == null || order.UserId != currentUserId)
+            {
+                TempData["Error"] = "Khong tim thay don hang hoac khong thuoc quyen cua ban.";
+                return RedirectToAction("Index", "Orders");
+            }
+
+            if (status.Equals("Success", StringComparison.OrdinalIgnoreCase))
+            {
+                var updated = await _orderService.MarkAsPaidAsync(orderId);
+                if (updated)
+                {
+                    TempData["Success"] = "Thanh toan VNPay thanh cong! Don hang da duoc cap nhat.";
+                }
+                else
+                {
+                    TempData["Error"] = "Thanh toan VNPay thanh cong nhung khong the cap nhat trang thai don hang.";
+                }
+            }
+            else
+            {
+                TempData["Error"] = "Thanh toan VNPay khong thanh cong. Vui long thu lai.";
+            }
+
+            return RedirectToAction("Index", "Orders");
         }
 
     }

@@ -62,5 +62,12 @@ namespace MVCApplication.Services
             return res.IsSuccessStatusCode;
         }
 
+        public async Task<bool> MarkAsPaidAsync(int orderId)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/order/{orderId}/pay");
+            var response = await _http.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
     }
 }
