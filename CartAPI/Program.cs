@@ -23,6 +23,10 @@ namespace CartAPI
             builder.Services.AddDbContext<CartDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+<<<<<<< HEAD
+=======
+    options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+>>>>>>> 438bfee (Minor change in code format)
 
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();

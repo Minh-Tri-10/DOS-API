@@ -29,6 +29,14 @@ namespace CategoriesAPI
 
 
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
+<<<<<<< HEAD
+=======
+            builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+
+    options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+
+            // Repositories và Services
+>>>>>>> 438bfee (Minor change in code format)
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();

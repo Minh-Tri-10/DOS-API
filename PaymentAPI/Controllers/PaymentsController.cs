@@ -37,12 +37,14 @@ namespace PaymentAPI.Controllers
             return Ok(payment);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] PaymentRequestDTO dto)
+        //Create payment
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] PaymentRequestDTO req)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+<<<<<<< HEAD
             if (dto.PaymentMethod?.Equals("VNPay", StringComparison.OrdinalIgnoreCase) == true)
             {
                 var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
@@ -57,8 +59,28 @@ namespace PaymentAPI.Controllers
             else
             {
                 return BadRequest("Unsupported payment method. Only 'COD' and 'VNPay' are supported.");
+=======
+            switch (req.PaymentMethod?.ToUpper())
+            {
+                case "COD":
+                    {
+                        var r = await _service.CreatePaymentAsync(req);
+                        return CreatedAtAction(nameof(GetById), new { id = r.PaymentId }, r);
+                    }
+
+                case "VNPAY":
+                    {
+                        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+                        var r = await _service.CreateVnPayPaymentAsync(req, ip);
+                        return Ok(r);
+                    }
+
+                default:
+                    return BadRequest("Unsupported payment method");
+>>>>>>> 438bfee (Minor change in code format)
             }
         }
+
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
@@ -85,8 +107,12 @@ namespace PaymentAPI.Controllers
             return Ok(result);
         }
 
+<<<<<<< HEAD
         // -------------------- VNPay Integration --------------------
 
+=======
+        // VNPAY sẽ redirect user -> GET with query params
+>>>>>>> 438bfee (Minor change in code format)
         [HttpGet("vnpay-return")]
         [AllowAnonymous]
         public async Task<IActionResult> VnPayReturn()

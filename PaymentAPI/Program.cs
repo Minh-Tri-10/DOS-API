@@ -19,6 +19,7 @@ namespace PaymentAPI
 
 <<<<<<< HEAD
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
+<<<<<<< HEAD
                 options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 =======
             builder.Services.AddDbContext<PaymentDbContext>(options =>
@@ -27,6 +28,10 @@ namespace PaymentAPI
 
 >>>>>>> db91c727105a80012fe2a913a89e194140a6a436
 
+=======
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // Add services to the container.
+>>>>>>> 438bfee (Minor change in code format)
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddAutoMapper(typeof(PaymentProfile));
