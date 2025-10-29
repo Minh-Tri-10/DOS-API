@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -13,11 +13,13 @@ namespace MVCApplication.Controllers
     public class OrdersController : Controller
     {
         private readonly IOrderService _service;
+        private readonly IPaymentService _paymentService;
         private const int PageSize = 5;
 
-        public OrdersController(IOrderService service)
+        public OrdersController(IOrderService service, IPaymentService paymentService)
         {
             _service = service;
+            _paymentService = paymentService;
         }
 
         private int? CurrentUserId
@@ -72,7 +74,7 @@ namespace MVCApplication.Controllers
         {
             if (CurrentUserId == null)
             {
-                TempData["Error"] = "Ban can dang nhap.";
+                TempData["Error"] = "Bạn cần đăng nhập.";
                 return RedirectToAction("Login", "Accounts");
             }
 
@@ -80,20 +82,45 @@ namespace MVCApplication.Controllers
 
             if (dto.Items == null || !dto.Items.Any())
             {
-                TempData["Error"] = "Chua co san pham de tao don.";
+                TempData["Error"] = "Chưa có sản phẩm để tạo đơn.";
                 return RedirectToAction("Create");
             }
 
+            var paymentMethod = Request.Form["PaymentMethod"].ToString();
+
+            // 1️⃣ Tạo đơn hàng
             var orderId = await _service.CreateAsync(dto);
             if (orderId == null)
             {
-                TempData["Error"] = "Tao don hang that bai.";
+                TempData["Error"] = "Tạo đơn hàng thất bại.";
                 return RedirectToAction("Create");
             }
 
-            TempData["Success"] = "Dat hang thanh cong!";
+            // 2️⃣ Tạo thanh toán
+            var totalAmount = dto.Items.Sum(i => i.Quantity * i.UnitPrice) + 30000;
+            var paymentDto = new PaymentRequestDTO
+            {
+                OrderID = orderId.Value,
+                PaymentMethod = paymentMethod,
+                PaidAmount = totalAmount,
+                PaymentStatus = "Pending"
+            };
+
+            var paymentUrl = await _paymentService.CreateAsync(paymentDto);
+
+            // 3️⃣ Nếu có URL trả về (VNPay) => redirect sang VNPay
+            if (!string.IsNullOrEmpty(paymentUrl))
+            {
+                Console.WriteLine($"Payment URL: {paymentUrl}");
+                return Redirect(paymentUrl);
+            }
+
+
+            // 4️⃣ COD => về trang chi tiết
+            TempData["Success"] = "Đặt hàng thành công!";
             return RedirectToAction("Details", new { id = orderId });
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Cancel(int id, string reason = "Nguoi dung huy don")
@@ -112,5 +139,7 @@ namespace MVCApplication.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        
     }
 }

@@ -1,4 +1,4 @@
-﻿using CategoriesAPI.DTOs;
+using CategoriesAPI.DTOs;
 using CategoriesAPI.Mapping;
 using CategoriesAPI.Models;
 using CategoriesAPI.Repositories;

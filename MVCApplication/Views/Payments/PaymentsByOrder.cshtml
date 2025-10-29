@@ -1,0 +1,497 @@
+﻿@model IEnumerable<MVCApplication.DTOs.PaymentResponseDTO>
+@Html.AntiForgeryToken()
+
+@{
+    ViewData["Title"] = "Thanh toán theo đơn hàng";
+    Layout = "_Layout.Admin";
+    int orderId = ViewBag.OrderId != null ? (int)ViewBag.OrderId : 0;
+    decimal orderTotal = ViewBag.TotalAmount != null ? (decimal)ViewBag.TotalAmount : 0;
+}
+
+<style>
+    /* ===== WOW PACK v2 – Payments page (dark/light theo biến layout) ===== */
+    .page-block {
+        padding: 16px 0;
+    }
+
+    /* ===== Form thêm thanh toán (ĐÃ CHỈNH SỬA) ===== */
+    .payment-form-horizontal {
+        background: color-mix(in oklab,var(--bg-soft) 95%, transparent);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px color-mix(in oklab,#000 25%, transparent);
+        margin-bottom: 16px;
+        color: var(--text);
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+        padding: 16px;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+        .payment-form-horizontal h4 {
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--accent2);
+        }
+
+        .payment-form-horizontal label {
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .payment-form-horizontal input,
+        .payment-form-horizontal select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid color-mix(in oklab,var(--border) 80%, transparent);
+            background: color-mix(in oklab,var(--bg-soft) 98%, transparent);
+            color: var(--text);
+            font-size: 15px;
+            transition: all .2s ease;
+        }
+
+            .payment-form-horizontal input:focus,
+            .payment-form-horizontal select:focus {
+                outline: none;
+                border-color: var(--accent);
+                box-shadow: 0 0 6px color-mix(in oklab,var(--accent) 50%, transparent);
+            }
+
+        .payment-form-horizontal button {
+            margin-right: 10px;
+            margin-top: 0;
+        }
+
+    .page-heading {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px;
+    }
+
+        .page-heading h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1;
+        }
+
+        .page-heading .under {
+            position: relative;
+            height: 6px;
+            flex: 1;
+            min-width: 120px;
+            border-radius: 999px;
+            background: linear-gradient(90deg,var(--accent),var(--accent2));
+            filter: saturate(1.1) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
+        }
+
+    .card-surface {
+        position: relative;
+        isolation: isolate;
+        background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+        color: var(--text);
+        border: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+        border-radius: 18px;
+        box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+        overflow: hidden;
+    }
+
+        .card-surface::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 40%);
+            filter: blur(10px) saturate(1.2);
+            opacity: .45;
+            mask: linear-gradient(#000 0 0);
+            animation: ringFloat 12s linear infinite;
+        }
+
+    @@keyframes ringFloat {
+        to {
+            transform: rotate(1turn);
+        }
+    }
+
+    .card-surface::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%);
+        opacity: .35;
+    }
+
+    .table-wrap {
+        position: relative;
+        z-index: 1;
+        overflow: auto;
+        border-radius: 16px;
+    }
+
+        .table-wrap::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb {
+            background: color-mix(in oklab,var(--muted) 35%, transparent);
+            border-radius: 30px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+    .user-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 860px;
+        color: var(--text);
+        table-layout: fixed;
+        backdrop-filter: saturate(1.05);
+    }
+
+        .user-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: linear-gradient(180deg, color-mix(in oklab,#fff 6%, transparent), transparent);
+            backdrop-filter: blur(6px);
+            text-align: left;
+            font-weight: 700;
+            letter-spacing: .2px;
+            padding: 16px 12px;
+            font-size: 13.5px;
+            color: var(--muted);
+            border-bottom: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+        }
+
+        .user-table tbody td {
+            padding: 12px 12px;
+            font-size: 15px;
+            vertical-align: middle;
+            border-bottom: 1px dashed color-mix(in oklab,var(--border) 70%, transparent);
+            background: color-mix(in oklab,transparent 100%, transparent);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Thu hẹp cột Mã thanh toán và Mã đơn hàng */
+        .user-table th:nth-child(1), .user-table td:nth-child(1),
+        .user-table th:nth-child(2), .user-table td:nth-child(2) {
+            width: 90px;
+        }
+
+        .user-table tbody tr:nth-child(even) {
+            background: linear-gradient(0deg, color-mix(in oklab,#fff 3%, transparent), transparent);
+        }
+
+        .user-table tbody tr:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(0deg, color-mix(in oklab,#fff 5%, transparent), transparent), linear-gradient(90deg, color-mix(in oklab,var(--accent) 14%, transparent), transparent 40%);
+            box-shadow: 0 8px 22px color-mix(in oklab,#000 22%, transparent);
+        }
+
+    .actions {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        align-items: center;
+    }
+
+    /* Nút đồng đều kích thước */
+    .btn-ban {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 16px;
+        font-size: 13.5px;
+        font-weight: 700;
+        min-width: 70px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .25s ease;
+        box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab,#000 30%, transparent);
+        text-align: center;
+    }
+
+    /* Màu chữ cho theme sáng */
+    :root[data-theme="light"] .btn-detail {
+        color: #065f46;
+    }
+
+    :root[data-theme="light"] .btn-edit {
+        color: #0f172a;
+    }
+
+    :root[data-theme="light"] .btn-delete {
+        color: #7f1d1d;
+    }
+
+    .btn-ban.btn-lg {
+        font-size: 16px;
+        padding: 10px 28px;
+        border-radius: 999px;
+    }
+
+    .btn-gray {
+        background: linear-gradient(180deg, #9ca3af, #6b7280);
+        border-color: rgba(156, 163, 175, 0.35);
+        color: #f9fafb;
+    }
+
+        .btn-gray:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+    .btn-detail {
+        background: linear-gradient(180deg, color-mix(in oklab,#22c55e 20%, transparent), color-mix(in oklab,#16a34a 15%, transparent));
+        border-color: rgba(34,197,94,.35);
+        color: #dcfce7;
+    }
+
+    .btn-edit {
+        background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 12%, transparent), color-mix(in oklab,var(--accent2) 12%, transparent));
+        color: var(--text);
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 180px;
+    }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+    .form-actions {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        padding-bottom: 0;
+    }
+
+    .btn-delete {
+        background: linear-gradient(180deg, color-mix(in oklab,#ef4444 20%, transparent), color-mix(in oklab,#dc2626 15%, transparent));
+        border-color: rgba(239,68,68,.35);
+        color: #fee2e2;
+    }
+
+    .btn-ban:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+    }
+
+    .empty-state {
+        display: grid;
+        place-items: center;
+        padding: 64px 18px;
+        text-align: center;
+        gap: 10px;
+        color: var(--muted);
+    }
+
+        .empty-state .badge {
+            display: inline-grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 18%, transparent), transparent);
+            border: 1px solid color-mix(in oklab,var(--accent) 30%, var(--border) 70%);
+            box-shadow: 0 10px 22px color-mix(in oklab,#000 26%, transparent);
+        }
+</style>
+
+<div class="page-block">
+    <div class="page-heading">
+        <h2>Danh sách Thanh toán cho Order #@orderId</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <button id="btnAddPayment" class="btn-ban btn-detail btn-lg">
+            + Thêm thanh toán
+        </button>
+        <a href="/AdminOrders/Index" class="btn-ban btn-gray btn-lg">Quay lại</a>
+    </div>
+
+    <form id="addPaymentForm" class="payment-form-horizontal" style="display:none;">
+        <input type="hidden" id="OrderID" name="OrderID" value="@orderId" />
+
+        <div class="form-group">
+            <label for="PaidAmount">Số tiền thanh toán (VND):</label>
+            <input type="number" id="PaidAmount" name="PaidAmount" required />
+        </div>
+
+        <div class="form-group">
+            <label for="PaymentMethod">Phương thức thanh toán:</label>
+            <select id="PaymentMethod" name="PaymentMethod" required>
+                <option value="COD">Tiền mặt khi nhận hàng</option>
+                <option value="VNPAY">Chuyển khoản VNPay</option>
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-ban btn-detail">Xác nhận</button>
+            <button type="button" id="btnCancelAdd" class="btn-ban btn-delete">Hủy</button>
+        </div>
+    </form>
+
+    <div class="card-surface">
+        <div class="table-wrap" id="paymentsContainer">
+            @if (Model == null || !Model.Any())
+            {
+                <div class="empty-state">
+                    <div class="badge">!</div>
+                    <h3>Không tìm thấy thanh toán</h3>
+                    <p>Chưa có thanh toán cho đơn hàng này.</p>
+                </div>
+            }
+            else
+            {
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>ID Thanh toán</th>
+                            <th>Số tiền</th>
+                            <th>Phương thức</th>
+                            <th>Ngày thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr data-id="@item.PaymentID">
+                                <td>@item.PaymentID</td>
+                                <td>@item.PaidAmount.ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</td>
+                                <td>@item.PaymentMethod</td>
+                                <td>@(item.PaymentDate.HasValue? item.PaymentDate.Value.ToString("dd/MM/yyyy") : "-")</td>
+                                <td>
+                                    @{
+                                        string statusVN = item.PaymentStatus switch
+                                        {
+                                            "Pending" => "Đang chờ",
+                                            "Success" => "Đã thanh toán",
+                                            "Failed" => "Thất bại",
+                                            "Cancelled" => "Đã hủy",
+                                            _ => item.PaymentStatus
+                                        };
+                                    }
+                                    @statusVN
+                                </td>
+                                <td class="actions">
+                                    <button class="btn-ban btn-edit">Sửa</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // ⭐ HÀM LẤY TOKEN ĐÃ CHỈNH SỬA VÀ CỐ ĐỊNH ⭐
+        function getJwtToken() {
+            // Lấy token từ Local Storage theo khóa "accessToken"
+            return localStorage.getItem('accessToken');
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnAdd = document.getElementById("btnAddPayment");
+            const form = document.getElementById("addPaymentForm");
+            const cancelBtn = document.getElementById("btnCancelAdd");
+
+            const orderId = @orderId;
+            const orderTotal = @orderTotal;
+
+            // Điền sẵn tổng tiền
+            document.getElementById("PaidAmount").value = orderTotal.toFixed(0);
+
+            // Hiện form thêm
+            btnAdd.addEventListener("click", () => {
+                form.style.display = "flex";
+                btnAdd.style.display = "none";
+            });
+
+            // Hủy thêm
+            cancelBtn.addEventListener("click", () => {
+                form.style.display = "none";
+                btnAdd.style.display = "inline-block";
+                form.reset();
+                document.getElementById("PaidAmount").value = orderTotal.toFixed(0);
+            });
+
+            // Gửi form AJAX (ĐÃ THÊM HEADER AUTHORIZATION)
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const paidAmountInput = document.getElementById("PaidAmount");
+                const paidAmount = parseFloat(paidAmountInput.value);
+
+                // Lấy Token
+                const jwtToken = getJwtToken();
+
+                if (!jwtToken) {
+                    alert("Lỗi: Không tìm thấy token xác thực. Vui lòng đăng nhập lại.");
+                    console.error("JWT Token is missing in Local Storage.");
+                    return;
+                }
+
+                const payload = {
+                    orderId: orderId,
+                    paidAmount: paidAmount,
+                    paymentMethod: document.getElementById("PaymentMethod").value
+                };
+
+                const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                const headers = {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": antiForgeryToken,
+                    // THÊM JWT VÀO HEADER ĐỂ XÁC THỰC
+                    "Authorization": `Bearer ${jwtToken}`
+                };
+
+                const res = await fetch("/api/payments", {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert("Thêm thanh toán thành công!");
+                    location.reload();
+                } else if (res.status === 401 || res.status === 403) {
+                    // Xử lý lỗi xác thực (Token sai/hết hạn)
+                    alert("Lỗi xác thực (401/403). Token không hợp lệ hoặc hết hạn. Vui lòng đăng nhập lại.");
+                }
+                else {
+                    const msg = await res.text();
+                    alert("Lỗi khi thêm thanh toán: " + (msg || "Lỗi server không xác định."));
+                }
+            });
+        });
+    </script>
+}

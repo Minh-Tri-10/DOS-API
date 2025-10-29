@@ -650,6 +650,9 @@
                             <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
                             <td class="orders-actions">
                                 <a class="orders-link" asp-action="Details" asp-route-id="@order.OrderId">Chi tiết</a>
+                                <a class="orders-link" asp-controller="Payments" asp-action="PaymentsByOrder" asp-route-orderId="@order.OrderId">
+                                    Thanh toán
+                                </a>
                                 <a class="orders-link" asp-action="Edit" asp-route-id="@order.OrderId">Sửa</a>
                             </td>
                         </tr>

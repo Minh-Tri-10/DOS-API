@@ -1,17 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MVCApplication.DTOs;
-using MVCApplication.Services;
 using MVCApplication.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace MVCApplication.Controllers
 {
     public class PaymentsController : Controller
     {
         private readonly IPaymentService _paymentService;
+        private readonly IOrderService _orderService;
 
-        public PaymentsController(IPaymentService paymentService)
+
+        public PaymentsController(IPaymentService paymentService, IOrderService orderService)
         {
             _paymentService = paymentService;
+            _orderService = orderService;
         }
 
         // GET: /Payments
@@ -93,5 +97,75 @@ namespace MVCApplication.Controllers
             await _paymentService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
+
+        //GET: Paymets/Result
+        public IActionResult Result(string status, int id)
+        {
+            ViewBag.Status = status;
+            ViewBag.PaymentId = id;
+
+            return View();
+        }
+
+
+        // GET: /Payments/PaymentsByOrder?orderId=123
+        [HttpGet]
+        public async Task<IActionResult> PaymentsByOrder(int orderId)
+        {
+            var payments = await _paymentService.GetPaymentsByOrderIdAsync(orderId);
+
+            // Gọi sang service/lớp khác để lấy tổng tiền đơn hàng
+            var order = await _orderService.GetByIdAsync(orderId);
+
+            ViewBag.OrderId = orderId;
+            ViewBag.TotalAmount = order?.TotalAmount ?? 0;
+
+            return View(payments);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> VnPayCallback(string status, int orderId, int paymentId)
+        {
+            if (string.IsNullOrWhiteSpace(status) || orderId <= 0)
+            {
+                TempData["Error"] = "Ket qua thanh toan khong hop le.";
+                return RedirectToAction("Index", "Orders");
+            }
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var currentUserId))
+            {
+                TempData["Error"] = "Phien dang nhap het han. Vui long dang nhap lai.";
+                return RedirectToAction("Login", "Accounts");
+            }
+
+            var order = await _orderService.GetByIdAsync(orderId);
+            if (order == null || order.UserId != currentUserId)
+            {
+                TempData["Error"] = "Khong tim thay don hang hoac khong thuoc quyen cua ban.";
+                return RedirectToAction("Index", "Orders");
+            }
+
+            if (status.Equals("Success", StringComparison.OrdinalIgnoreCase))
+            {
+                var updated = await _orderService.MarkAsPaidAsync(orderId);
+                if (updated)
+                {
+                    TempData["Success"] = "Thanh toan VNPay thanh cong! Don hang da duoc cap nhat.";
+                }
+                else
+                {
+                    TempData["Error"] = "Thanh toan VNPay thanh cong nhung khong the cap nhat trang thai don hang.";
+                }
+            }
+            else
+            {
+                TempData["Error"] = "Thanh toan VNPay khong thanh cong. Vui long thu lai.";
+            }
+
+            return RedirectToAction("Index", "Orders");
+        }
+
     }
 }

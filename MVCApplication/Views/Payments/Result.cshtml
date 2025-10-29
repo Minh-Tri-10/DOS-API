@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Test Payment AJAX";
+}
+
+<h2>Test Payment API Call (OrderId = 25)</h2>
+
+<div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+    Waiting for response...
+</div>
+
+@section Scripts {
+    <!-- Load jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+                $(document).ready(function () {
+            const orderId = 25;
+            const token = localStorage.getItem("accessToken"); // hoặc lấy từ cookie nếu dùng
+
+            $.ajax({
+                url: `https://localhost:7011/api/payments/by-order/${orderId}`,
+                type: "GET",
+                headers: token ? { "Authorization": "Bearer " + token } : {},
+                xhrFields: { withCredentials: true }, // nếu API dùng cookie
+                success: function (res) {
+                    console.log("Response received:", res);
+                    $("#result").html(
+                        `<strong>Success!</strong><br>Response: <pre>${JSON.stringify(res, null, 2)}</pre>`
+                    );
+                },
+                error: function (xhr, status, err) {
+                    console.error("Error:", status, err);
+                    $("#result").html(
+                        `<strong style="color:red;">Error:</strong><br>Status: ${xhr.status}<br>Message: ${xhr.responseText}`
+                    );
+                }
+            });
+        });
+    </script>
+}

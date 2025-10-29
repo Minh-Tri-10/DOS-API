@@ -33,11 +33,19 @@ namespace MVCApplication.Services
             return payment;
         }
 
-        public async Task CreateAsync(PaymentRequestDTO dto)
+        public async Task<string?> CreateAsync(PaymentRequestDTO dto)
         {
             var response = await _httpClient.PostAsJsonAsync(PaymentsEndpoint, dto);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var payment = await response.Content.ReadFromJsonAsync<PaymentResponseDTO>();
+            return payment?.PaymentUrl;
         }
+
+
+
 
         public async Task UpdateAsync(int id, PaymentRequestDTO dto)
         {
@@ -49,6 +57,19 @@ namespace MVCApplication.Services
         {
             var response = await _httpClient.DeleteAsync($"{PaymentsEndpoint}/{id}");
             response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<IEnumerable<PaymentResponseDTO>> GetPaymentsByOrderIdAsync(int orderId)
+        {
+            var response = await _httpClient.GetAsync($"/api/payments/by-order/{orderId}");
+            if (!response.IsSuccessStatusCode)
+            {
+                // Có thể log hoặc throw exception
+                return new List<PaymentResponseDTO>();
+            }
+
+            var payments = await response.Content.ReadFromJsonAsync<IEnumerable<PaymentResponseDTO>>();
+            return payments ?? new List<PaymentResponseDTO>();
         }
     }
 }

@@ -8,5 +8,6 @@
         public string PaymentMethod { get; set; } = string.Empty;
         public DateTime? PaymentDate { get; set; }
         public string PaymentStatus { get; set; } = string.Empty;
+        public string? PaymentUrl { get; set; }
     }
 }

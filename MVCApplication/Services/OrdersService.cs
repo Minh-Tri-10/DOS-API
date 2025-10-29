@@ -64,19 +64,11 @@ namespace MVCApplication.Services
             return res.IsSuccessStatusCode;
         }
 
-        public async Task<ProductUsageDto> CheckProductUsageAsync(int productId)
+        public async Task<bool> MarkAsPaidAsync(int orderId)
         {
-            try
-            {
-                return await _http.GetFromJsonAsync<ProductUsageDto>($"api/order/check-product-usage?productId={productId}")
-                    ?? new ProductUsageDto { IsUsed = false, OrderCount = 0 };
-
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi
-                return new ProductUsageDto { IsUsed = false, OrderCount = 0 };
-            }
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/order/{orderId}/pay");
+            var response = await _http.SendAsync(request);
+            return response.IsSuccessStatusCode;
         }
 
     }

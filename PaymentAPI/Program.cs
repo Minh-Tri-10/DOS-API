@@ -29,6 +29,17 @@ namespace PaymentAPI
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            // --- CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowWebApp", policy =>
+                {
+                    policy.WithOrigins("https://localhost:7223") // webapp URL
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials(); // cho phép gửi cookie JWT
+                });
+            });
 
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
@@ -66,6 +77,7 @@ namespace PaymentAPI
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowWebApp");
             app.UseAuthentication();
             app.UseAuthorization();
 

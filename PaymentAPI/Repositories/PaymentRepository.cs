@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PaymentAPI.Models;
 using PaymentAPI.Repositories.Interfaces;
 
@@ -34,6 +34,13 @@ namespace PaymentAPI.Repositories
         {
             _context.Payments.Remove(payment);
             await _context.SaveChangesAsync();
+        }
+        public async Task<IEnumerable<Payment>> GetByOrderIdAsync(int orderId)
+        {
+            return await _context.Payments
+                .Where(p => p.OrderId == orderId)
+                .OrderByDescending(p => p.PaymentId) // nếu muốn mới nhất trước
+                .ToListAsync();
         }
     }
 

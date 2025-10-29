@@ -9,6 +9,6 @@ namespace PaymentAPI.Repositories.Interfaces
         Task AddAsync(Payment payment);
         Task UpdateAsync(Payment payment);
         Task DeleteAsync(Payment payment);
-
+        Task<IEnumerable<Payment>> GetByOrderIdAsync(int orderId);
     }
 }
