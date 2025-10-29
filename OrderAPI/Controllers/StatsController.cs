@@ -27,4 +27,8 @@ public class StatsController : ControllerBase
     [HttpGet("series")]
     public Task<List<SeriesPointDto>> Series([FromQuery] DateTime start, [FromQuery] DateTime end, [FromQuery] string granularity = "day")
         => _stats.GetSeriesAsync(start, end, granularity);
+
+    [HttpGet("export/by-product")]
+    public Task<List<RevenueByProductDto>> ExportByProduct([FromQuery] DateTime start, [FromQuery] DateTime end)
+        => _stats.GetAllRevenueByProductAsync(start, end);
 }

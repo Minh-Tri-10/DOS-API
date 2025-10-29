@@ -25,5 +25,7 @@ namespace OrderAPI.Services
 
         public Task<List<SeriesPointDto>> GetSeriesAsync(DateTime start, DateTime end, string granularity)
             => _repo.GetSeriesAsync(start, end, granularity);
+        public Task<List<RevenueByProductDto>> GetAllRevenueByProductAsync(DateTime start, DateTime end)
+            => _repo.GetAllRevenueByProductAsync(start, end);
     }
 }

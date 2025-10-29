@@ -11,5 +11,7 @@ namespace OrderAPI.Services.Interfaces
         Task<List<RevenueByCategoryDto>> GetRevenueByCategoryAsync(DateTime start, DateTime end);
         Task<List<RevenueByProductDto>> GetRevenueByProductAsync(DateTime start, DateTime end, int top);
         Task<List<SeriesPointDto>> GetSeriesAsync(DateTime start, DateTime end, string granularity);
+        Task<List<RevenueByProductDto>> GetAllRevenueByProductAsync(DateTime start, DateTime end);
     }
 }
+

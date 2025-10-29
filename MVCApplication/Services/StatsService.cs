@@ -31,5 +31,7 @@ namespace MVCApplication.Services
 
         public Task<List<SeriesPointDto>> GetSeriesAsync(DateTime start, DateTime end, string granularity = "day") =>
             GetJsonAsync<List<SeriesPointDto>>($"/api/stats/series?start={start:O}&end={end:O}&granularity={granularity}");
+        public Task<List<RevenueByProductDto>> GetForExportAsync(DateTime start, DateTime end) =>
+            GetJsonAsync<List<RevenueByProductDto>>($"/api/stats/export/by-product?start={start:O}&end={end:O}");
     }
 }

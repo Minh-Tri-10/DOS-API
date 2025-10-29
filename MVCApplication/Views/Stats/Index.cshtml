@@ -10,17 +10,14 @@
 
 <div class="page">
     <div class="container">
-        <!-- ✅ Glassy lớn duy nhất -->
         <div class="card shell">
 
-            <!-- Header -->
             <div class="header">
                 <div class="header__top">
                     <div class="title">Báo cáo doanh thu</div>
                 </div>
             </div>
 
-            <!-- Toolbar -->
             <div class="panel">
                 <div class="toolbar">
                     <div class="control">
@@ -47,10 +44,13 @@
                         <label>&nbsp;</label>
                         <button id="resetBtn" type="button">7 ngày gần nhất</button>
                     </div>
+                    <div class="control">
+                        <label>&nbsp;</label>
+                        <button id="exportBtn" type="button">Export 📄</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- KPIs -->
             <div class="panel">
                 <div class="section__title">Tổng quan</div>
                 <div class="kpis">
@@ -62,7 +62,6 @@
                 </div>
             </div>
 
-            <!-- Grid -->
             <div class="grid">
                 <div class="panel">
                     <div class="section__title">Doanh thu theo thời gian</div>
@@ -83,7 +82,7 @@
                 </div>
             </div>
 
-        </div> <!-- end shell -->
+        </div>
     </div>
 </div>
 
@@ -275,7 +274,7 @@
 
     @@media (min-width:760px) {
         .toolbar {
-            grid-template-columns: repeat(5,minmax(0,1fr));
+            grid-template-columns: repeat(6,minmax(0,1fr)); /* Thay đổi từ 5 cột sang 6 cột để chứa nút Export */
             align-items: end;
         }
     }
@@ -591,11 +590,24 @@
       }
     }
 
+    // HÀM XUẤT EXCEL (CSV)
+    function doExport(){
+      const start=document.getElementById('start').value;
+      const end=document.getElementById('end').value;
+      const qs=`?start=${toIsoMidnight(start)}&end=${toIsoMidnight(end)}`;
+      // Gọi endpoint export mới đã được thêm vào StatsController của MVCApplication
+      window.location.href=`/api/stats/export${qs}`;
+    }
+
     document.addEventListener('DOMContentLoaded',()=>{
       // nếu layout chưa set sẵn value cho input
       if(!document.getElementById('start').value||!document.getElementById('end').value) setRangeLast7();
       document.getElementById('applyBtn').addEventListener('click',()=>loadAll());
       document.getElementById('resetBtn').addEventListener('click',()=>{setRangeLast7();loadAll();});
+
+      // Gán sự kiện cho nút Export
+      document.getElementById('exportBtn').addEventListener('click',()=>doExport());
+
       loadAll();
     });
 </script>
