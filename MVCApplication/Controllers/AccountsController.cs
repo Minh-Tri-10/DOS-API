@@ -232,27 +232,12 @@ namespace MVCApplication.Controllers
                 return View("Profile", dto);
             }
 
-            if (avatarFile != null && avatarFile.Length > 0)
-            {
-                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsDir))
-                    Directory.CreateDirectory(uploadsDir);
+            // ✅ Gửi formdata tới API và Upload lên Cloudinary tại API
+            var updatedUser = await _service.UpdateProfileAsync(userId, dto, avatarFile);
 
-                var fileName = "{Guid.NewGuid()}{Path.GetExtension(avatarFile.FileName)}";
-                var savePath = Path.Combine(uploadsDir, fileName);
-
-                using (var stream = new FileStream(savePath, FileMode.Create))
-                {
-                    await avatarFile.CopyToAsync(stream);
-                }
-
-                dto.AvatarUrl = "/uploads/{fileName}";
-            }
-
-            var updatedUser = await _service.UpdateProfileAsync(userId, dto);
             if (updatedUser == null)
             {
-                ViewBag.Error = "Cap nhat that bai.";
+                ViewBag.Error = "Cập nhật thất bại.";
                 ViewBag.KeepEditing = true;
                 return View("Profile", dto);
             }
@@ -272,9 +257,10 @@ namespace MVCApplication.Controllers
             };
 
             ViewBag.KeepEditing = false;
-            ViewBag.Success = "Cap nhat thong tin thanh cong!";
+            ViewBag.Success = "Cập nhật thành công!";
             return View("Profile", vm);
         }
+
 
         private async Task RefreshAuthenticatedUserClaimsAsync(UserViewModel updatedUser)
         {

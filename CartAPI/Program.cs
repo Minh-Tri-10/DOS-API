@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using CartAPI.Models;
 using CartAPI.Repositories;
 using CartAPI.Repositories.Interfaces;
@@ -21,7 +21,8 @@ namespace CartAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CartDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();

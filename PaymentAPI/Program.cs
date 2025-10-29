@@ -17,8 +17,15 @@ namespace PaymentAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
+<<<<<<< HEAD
             builder.Services.AddDbContext<DrinkOrderDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+=======
+            builder.Services.AddDbContext<PaymentDbContext>(options =>
+
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+>>>>>>> db91c727105a80012fe2a913a89e194140a6a436
 
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();

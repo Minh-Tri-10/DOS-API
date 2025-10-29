@@ -3,6 +3,7 @@ using CategoriesAPI.Repositories.Interfaces;
 using CategoriesAPI.Services.Interfaces;
 using CategoriesAPI.Models;
 using CategoriesAPI.DTOs;
+using AutoMapper.QueryableExtensions;
 
 namespace CategoriesAPI.Services
 {
@@ -21,6 +22,10 @@ namespace CategoriesAPI.Services
         {
             var categories = await _repository.GetAllAsync();
             return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
+        }
+        public IQueryable<CategoryDTO> GetAllQueryable()
+        {
+            return _repository.GetAllQueryable().ProjectTo<CategoryDTO>(_mapper.ConfigurationProvider);
         }
 
         public async Task<CategoryDTO?> GetByIdAsync(int id)

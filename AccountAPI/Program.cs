@@ -26,7 +26,7 @@ namespace AccountAPI
 
             builder.Services.AddDbContext<AccountDbContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddSingleton(sp =>
             {
@@ -45,6 +45,7 @@ namespace AccountAPI
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
