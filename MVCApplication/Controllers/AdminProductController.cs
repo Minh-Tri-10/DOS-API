@@ -40,13 +40,19 @@ namespace MVCApplication.Controllers
             }
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string search = null, string orderBy = "ProductId asc")
         {
             if (CurrentUserId == null) return RedirectToAction("Login", "Accounts");
 
-            var products = await _productService.GetAllAsync();
+            var (products, totalCount) = await _productService.GetODataAsync(page, pageSize, search, orderBy);
             var categories = await _categoryService.GetAllAsync();
             ViewBag.Categories = categories.ToDictionary(c => c.CategoryId, c => c.CategoryName);
+
+            ViewBag.Page = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            ViewBag.Search = search;
+            ViewBag.OrderBy = orderBy;
 
             return View(products);
         }

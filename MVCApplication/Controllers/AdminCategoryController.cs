@@ -2,23 +2,41 @@
 using Microsoft.AspNetCore.Mvc;
 using MVCApplication.Services.Interfaces;
 using MVCApplication.DTOs; // Assuming models/DTOs are defined here
-
+using Microsoft.Extensions.Logging;
 namespace MVCApplication.Controllers
 {
     public class AdminCategoryController : Controller
     {
         private readonly ICategoryService _categoryService;
-
-        public AdminCategoryController(ICategoryService categoryService)
+        private readonly ILogger<AdminCategoryController> _logger;
+        public AdminCategoryController(ICategoryService categoryService, ILogger<AdminCategoryController> logger)
         {
             _categoryService = categoryService;
+            _logger = logger; // Inject logger
         }
 
-        // GET: /AdminCategory/Index - Displays a list of all categories
-        public async Task<IActionResult> Index()
+        // GET: /AdminCategory/Index - Sử dụng service để gọi OData
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string search = "", string orderBy = "CategoryId asc")
         {
-            var categories = await _categoryService.GetAllAsync();
-            return View(categories);
+            try
+            {
+                var (categories, totalCount) = await _categoryService.GetODataAsync(page, pageSize, search, orderBy);
+
+                ViewBag.Page = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.Search = search;
+                ViewBag.OrderBy = orderBy;
+                ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                return View(categories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh mục OData");
+                TempData["Error"] = "Không thể tải danh sách: " + ex.Message; // Hoặc hiển thị chi tiết hơn
+                ModelState.AddModelError(string.Empty, "Không thể tải danh sách danh mục: " + ex.Message);
+                return View(new List<CategoryDTO>());
+            }
         }
 
         // GET: /AdminCategory/Create - Displays the create form

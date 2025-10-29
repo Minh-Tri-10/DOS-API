@@ -1,3 +1,4 @@
+using CategoriesAPI.DTOs;
 using CategoriesAPI.Models;
 using CategoriesAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -18,6 +19,12 @@ namespace CategoriesAPI.Repositories
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
             return await _context.Categories.ToListAsync();
+        }
+
+        public IQueryable<Category> GetAllQueryable()
+        {
+            return _context.Categories.AsQueryable();
+            //return await _context.Categories.ToListAsync();
         }
 
         public async Task<Category?> GetByIdAsync(int id)
@@ -95,6 +102,5 @@ namespace CategoriesAPI.Repositories
 
             return await query.AnyAsync();
         }
-
     }
 }

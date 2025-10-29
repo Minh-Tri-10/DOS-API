@@ -3,6 +3,7 @@ using CategoriesAPI.Services.Interfaces;
 using CategoriesAPI.DTOs;
 using CategoriesAPI.Models;
 using CategoriesAPI.Repositories.Interfaces;
+using AutoMapper.QueryableExtensions;
 
 namespace CategoriesAPI.Services;
 public class ProductService : IProductService
@@ -21,6 +22,13 @@ public class ProductService : IProductService
     {
         var products = await _repo.GetAllAsync();
         return _mapper.Map<IEnumerable<ProductDTO>>(products);
+    }
+
+    public IQueryable<ProductDTO> GetAllQueryable()
+    {
+        return _repo.GetAllQueryable().ProjectTo<ProductDTO>(_mapper.ConfigurationProvider);
+        //var products = await _repo.GetAllAsync();
+        //return _mapper.Map<IEnumerable<ProductDTO>>(products);
     }
 
     public async Task<ProductDTO?> GetByIdAsync(int id)

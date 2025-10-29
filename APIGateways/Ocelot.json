@@ -230,29 +230,67 @@
                        "UpstreamPathTemplate":  "/api/stats/{everything}",
                        "RouteIsCaseSensitive":  false
                    },
-                   {
-                       "DownstreamHostAndPorts":  [
-                                                      {
-                                                          "Host":  "localhost",
-                                                          "Port":  7011
-                                                      }
-                                                  ],
-                       "DownstreamScheme":  "https",
-                       "DownstreamPathTemplate":  "/api/Payments/{everything}",
-                       "AuthenticationOptions":  {
-                                                     "AllowedScopes":  [
+      {
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 7011
+          }
+        ],
+        "DownstreamScheme": "https",
+        "DownstreamPathTemplate": "/api/Payments/{everything}",
+        "AuthenticationOptions": {
+          "AllowedScopes": [
 
-                                                                       ],
-                                                     "AuthenticationProviderKey":  "Bearer"
-                                                 },
-                       "UpstreamHttpMethod":  [
-                                                  "GET",
-                                                  "POST",
-                                                  "PUT",
-                                                  "DELETE"
-                                              ],
-                       "UpstreamPathTemplate":  "/api/payments/{everything}",
-                       "RouteIsCaseSensitive":  false
-                   }
-               ]
+          ],
+          "AuthenticationProviderKey": "Bearer"
+        },
+        "UpstreamHttpMethod": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
+        "UpstreamPathTemplate": "/api/payments/{everything}",
+        "RouteIsCaseSensitive": false
+      },
+      {
+        "UpstreamPathTemplate": "/odata/Categories",
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 7021
+          }
+        ],
+        "UpstreamHttpMethod": [
+          "GET"
+        ],
+        "RouteIsCaseSensitive": false,
+        "DownstreamPathTemplate": "/odata/Categories",
+        "AuthenticationOptions": {
+          "AllowedScopes": [],
+          "AuthenticationProviderKey": "Bearer"
+        },
+        "DownstreamScheme": "https"
+      },
+      {
+        "UpstreamPathTemplate": "/odata/Products",
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 7021
+          }
+        ],
+        "UpstreamHttpMethod": [
+          "GET"
+        ],
+        "RouteIsCaseSensitive": false,
+        "DownstreamPathTemplate": "/odata/Products",
+        "AuthenticationOptions": {
+          "AllowedScopes": [],
+          "AuthenticationProviderKey": "Bearer"
+        },
+        "DownstreamScheme": "https"
+      }
+    ]
 }

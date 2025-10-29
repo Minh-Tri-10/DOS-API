@@ -21,11 +21,8 @@ namespace CartAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CartDbContext>(options =>
-<<<<<<< HEAD
-                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
-=======
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
->>>>>>> f56e4b37b49a48dd870c75b24ef39905e5e7485f
+
 
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();
