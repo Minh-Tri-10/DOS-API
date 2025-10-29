@@ -23,7 +23,7 @@ namespace OrderAPI
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<OrderDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
             builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
             {

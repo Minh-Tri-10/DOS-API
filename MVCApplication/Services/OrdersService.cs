@@ -1,7 +1,9 @@
 ﻿using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
 using OrderAPI.DTOs;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 namespace MVCApplication.Services
 {
     public class OrdersService : IOrderService
@@ -70,6 +72,32 @@ namespace MVCApplication.Services
             var response = await _http.SendAsync(request);
             return response.IsSuccessStatusCode;
         }
+        public async Task<ProductUsageDto> CheckProductUsageAsync(int productId)
+        {
+            if (productId <= 0)
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(productId), "Product id must be greater than zero.");
+            }
+
+            var response = await _http.GetAsync($"api/order/check-product-usage?productId={productId}");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new ProductUsageDto
+                {
+                    IsUsed = false,
+                    OrderCount = 0
+                };
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var usage = await response.Content.ReadFromJsonAsync<ProductUsageDto>();
+            return usage ?? new ProductUsageDto();
+        }
+
 
     }
 }
+
+
