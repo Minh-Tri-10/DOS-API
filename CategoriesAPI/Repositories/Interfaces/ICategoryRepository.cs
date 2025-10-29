@@ -1,10 +1,12 @@
-﻿using CategoriesAPI.Models;
+﻿using CategoriesAPI.DTOs;
+using CategoriesAPI.Models;
 
 namespace CategoriesAPI.Repositories.Interfaces
 {
     public interface ICategoryRepository
     {
         Task<IEnumerable<Category>> GetAllAsync();
+        IQueryable<Category> GetAllQueryable();
         Task<Category?> GetByIdAsync(int id);
         Task AddAsync(Category category);
         Task UpdateAsync(Category category);

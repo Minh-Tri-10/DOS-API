@@ -394,22 +394,88 @@
             .btn-ban.unban:hover {
                 box-shadow: 0 8px 22px color-mix(in oklab,#22c55e 25%, transparent);
             }
+
+
+    /* ===== PAGINATION STYLES – Đồng bộ với pill & btn-ban ===== */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    .page-item {
+        list-style: none;
+    }
+
+    .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        height: 42px;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+        border-radius: 999px;
+        position: relative;
+        isolation: isolate;
+        color: var(--text);
+        background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent), color-mix(in oklab, var(--bg-soft) 80%, transparent);
+        border: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+        box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 4px 12px color-mix(in oklab,#000 20%, transparent);
+        transition: all .25s ease;
+        text-decoration: none;
+    }
+
+        .page-link::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: -1;
+            background: radial-gradient(80% 140% at 50% 0%, color-mix(in oklab,var(--accent) 25%, transparent), transparent 55%);
+            opacity: 0.35;
+            filter: saturate(1.2) blur(4px);
+        }
+
+        .page-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 1px 0 color-mix(in oklab,#fff 8%, transparent) inset, 0 6px 18px color-mix(in oklab, var(--accent2) 22%, transparent);
+            background: linear-gradient(180deg, color-mix(in oklab,var(--accent2) 12%, transparent), color-mix(in oklab,var(--accent) 10%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+        }
+
+    .page-item.active .page-link {
+        background: linear-gradient(180deg, color-mix(in oklab,var(--accent2) 18%, transparent), color-mix(in oklab,var(--accent) 14%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+        border-color: color-mix(in oklab, var(--accent2) 40%, var(--border) 60%);
+        box-shadow: 0 1px 0 color-mix(in oklab,#fff 8%, transparent) inset, 0 8px 22px color-mix(in oklab, var(--accent2) 26%, transparent);
+        color: var(--text);
+        text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+    }
+
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
     /* Light theme overrides */
-    :root[data-theme="light"] .btn-ban {
+    :root[data-theme="light"] .page-link {
         color: #0f172a;
         text-shadow: none;
         border-color: rgba(0,0,0,.08);
+        background: linear-gradient(180deg, #fff, #f7f8fb);
     }
 
-        :root[data-theme="light"] .btn-ban.ban {
-            background: linear-gradient(180deg,#fee2e2,#fecaca);
-            color: #7f1d1d;
+        :root[data-theme="light"] .page-link:hover {
+            background: linear-gradient(180deg, rgba(59,130,246,.16), rgba(14,165,233,.12), #fff 75%);
+            border-color: rgba(59,130,246,.35);
         }
 
-        :root[data-theme="light"] .btn-ban.unban {
-            background: linear-gradient(180deg,#bbf7d0,#86efac);
-            color: #064e3b;
-        }
+    :root[data-theme="light"] .page-item.active .page-link {
+        background: linear-gradient(180deg, rgba(59,130,246,.18), rgba(14,165,233,.14), #fff 75%);
+        border-color: rgba(59,130,246,.35);
+        color: #0f172a;
+    }
     /* New styles for horizontal buttons */
     .actions {
         display: flex;
@@ -437,6 +503,36 @@
     {
         <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
     }
+
+    <!-- Form tìm kiếm và sắp xếp -->
+    <form asp-action="Index" method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm kiếm theo tên danh mục..." />
+            </div>
+            <div class="col-md-3">
+                <select name="orderBy" class="form-select">
+                    <option value="CategoryId asc" selected="@(ViewBag.OrderBy == "CategoryId asc")">ID tăng dần</option>
+                    <option value="CategoryId desc" selected="@(ViewBag.OrderBy == "CategoryId desc")">ID giảm dần</option>
+                    <option value="CategoryName asc" selected="@(ViewBag.OrderBy == "CategoryName asc")">Tên tăng dần</option>
+                    <option value="CategoryName desc" selected="@(ViewBag.OrderBy == "CategoryName desc")">Tên giảm dần</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="pageSize" class="form-select">
+                    <option value="10" selected="@(ViewBag.PageSize == 10)">10 / trang</option>
+                    <option value="20" selected="@(ViewBag.PageSize == 20)">20 / trang</option>
+                    <option value="50" selected="@(ViewBag.PageSize == 50)">50 / trang</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">Áp dụng</button>
+                <a asp-action="Index" class="btn btn-secondary">Reset</a>
+            </div>
+        </div>
+        <input type="hidden" name="page" value="1" /> <!-- Reset về page 1 khi tìm kiếm -->
+    </form>
+
     <p>
         <a asp-action="Create" class="btn-ban unban">Tạo Danh mục Mới</a>
     </p>
@@ -479,6 +575,30 @@
                         }
                     </tbody>
                 </table>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        @if (ViewBag.Page > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.Page - 1)" asp-route-pageSize="@ViewBag.PageSize" asp-route-search="@ViewBag.Search" asp-route-orderBy="@ViewBag.OrderBy">Trước</a>
+                            </li>
+                        }
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.Page ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@ViewBag.PageSize" asp-route-search="@ViewBag.Search" asp-route-orderBy="@ViewBag.OrderBy">@i</a>
+                            </li>
+                        }
+                        @if (ViewBag.Page < ViewBag.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.Page + 1)" asp-route-pageSize="@ViewBag.PageSize" asp-route-search="@ViewBag.Search" asp-route-orderBy="@ViewBag.OrderBy">Sau</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
             }
         </div>
     </div>

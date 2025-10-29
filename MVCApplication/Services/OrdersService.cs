@@ -1,5 +1,7 @@
 ﻿using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
+using OrderAPI.DTOs;
+using System.Net.Http;
 namespace MVCApplication.Services
 {
     public class OrdersService : IOrderService

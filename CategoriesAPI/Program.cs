@@ -1,5 +1,4 @@
-using Microsoft.Extensions.Logging;
-using System.Text;
+using CategoriesAPI.DTOs;
 using CategoriesAPI.Mapping;
 using CategoriesAPI.Models;
 using CategoriesAPI.Repositories;
@@ -7,8 +6,13 @@ using CategoriesAPI.Repositories.Interfaces;
 using CategoriesAPI.Services;
 using CategoriesAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
+using System.Text;
 
 namespace CategoriesAPI
 {
@@ -17,13 +21,12 @@ namespace CategoriesAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CatalogDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -33,6 +36,16 @@ namespace CategoriesAPI
 
             builder.Services.AddAutoMapper(typeof(CategoryProfile));
             builder.Services.AddAutoMapper(typeof(ProductProfile));
+
+            builder.Services.AddControllers().AddOData(opt =>
+                opt.AddRouteComponents("odata", GetEdmModel())
+                   .Select()
+                   .Filter()
+                   .OrderBy()
+                   .Expand()
+                   .Count()
+                   .SetMaxTop(100)
+            );
 
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
@@ -91,6 +104,14 @@ namespace CategoriesAPI
             app.MapControllers();
 
             app.Run();
+        }
+
+        static IEdmModel GetEdmModel()
+        {
+            var odataBuilder = new ODataConventionModelBuilder();
+            odataBuilder.EntitySet<CategoryDTO>("Categories"); // Plural, phải khớp với route "odata/Categories"
+            odataBuilder.EntitySet<ProductDTO>("Products");
+            return odataBuilder.GetEdmModel();
         }
     }
 }

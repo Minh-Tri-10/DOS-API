@@ -47,9 +47,12 @@ public class AccountsController : ControllerBase
     public async Task<IEnumerable<UserDTO>> GetAll() => await _service.GetAllAsync();
 
     [HttpPut("{id:int}/profile")]
-    public async Task<ActionResult<UserDTO>> UpdateProfile(int id, [FromBody] UpdateProfileDTO dto)
+    public async Task<ActionResult<UserDTO>> UpdateProfile(
+    int id,
+    [FromForm] UpdateProfileDTO dto,
+    IFormFile? avatarFile)
     {
-        var result = await _service.UpdateProfileAsync(id, dto);
+        var result = await _service.UpdateProfileAsync(id, dto, avatarFile);
         return result is null ? NotFound() : Ok(result);
     }
 

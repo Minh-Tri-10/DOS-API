@@ -11,7 +11,7 @@ namespace AccountAPI.Services.Interfaces
         Task<IEnumerable<UserDTO>> GetAllAsync();
         Task<UserDTO?> GetByIdAsync(int id);
 
-        Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto);
+        Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto, IFormFile? avatarFile);
         Task<bool> ChangePasswordAsync(ChangePasswordDTO dto);
         Task<bool> SetBanAsync(int userId, bool isBanned);
 

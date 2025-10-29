@@ -140,15 +140,23 @@ namespace AccountAPI.Services
             return user == null ? null : _mapper.Map<UserDTO>(user);
         }
 
-        public async Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto)
+        public async Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto, IFormFile? avatarFile)
         {
             var user = await _repo.GetByIdAsync(userId);
             if (user == null) return null;
 
             _mapper.Map(dto, user);
-            user.UpdatedAt = DateTime.UtcNow;
 
-            await _repo.UpdateProfileAsync(user);
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                var cloudinary = new CloudinaryService(_cfg); // Nếu bạn đang DI, inject vào constructor cho chuẩn hơn
+                var url = await cloudinary.UploadImageAsync(avatarFile);
+                user.AvatarUrl = url;
+            }
+
+            user.UpdatedAt = DateTime.UtcNow;
+            await _repo.UpdateAsync(user);
+
             return _mapper.Map<UserDTO>(user);
         }
 
