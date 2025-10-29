@@ -23,13 +23,8 @@ namespace OrderAPI
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<OrderDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
-<<<<<<< HEAD
-=======
-                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
-            // Product microservice (nếu có)
->>>>>>> 438bfee (Minor change in code format)
             builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7021/");
