@@ -29,7 +29,7 @@ namespace MVCApplication
                     options.LoginPath = "/Accounts/Login";
                     options.AccessDeniedPath = "/Accounts/Login";
                     options.Cookie.HttpOnly = true;
-                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SameSite = SameSiteMode.Lax;
                     options.ExpireTimeSpan = TimeSpan.FromHours(2);
                 });
 
