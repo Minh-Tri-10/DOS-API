@@ -231,5 +231,41 @@ public sealed class StatsRepository : IStatsRepository
 
         return rows;
     }
+
+    public async Task<List<RevenueByProductDto>> GetAllRevenueByProductAsync(DateTime start, DateTime end)
+    {
+        start = NormalizeStart(start);
+        end = NormalizeEnd(end);
+
+        var items = await _db.OrderItems
+            .Where(oi => oi.Order.PaymentStatus == "paid"
+                      && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
+            .ToListAsync();
+
+        var productIds = items.Select(x => x.ProductId).Distinct();
+        var productTasks = productIds.Select(id => _catalogProductClient.GetProductByIdAsync(id));
+        var products = await Task.WhenAll(productTasks);
+
+        var productDict = products.Where(p => p != null)
+                                  .ToDictionary(p => p!.ProductId, p => p);
+
+        var rows = items
+            .GroupBy(oi => oi.ProductId)
+            .Select(g =>
+            {
+                var product = productDict.ContainsKey(g.Key) ? productDict[g.Key] : null;
+                return new RevenueByProductDto
+                {
+                    ProductId = g.Key,
+                    ProductName = product?.ProductName ?? "Unknown",
+                    Quantity = g.Sum(x => x.Quantity),
+                    Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+                };
+            })
+            .OrderByDescending(x => x.Revenue)
+            .ToList();
+
+        return rows;
+    }
 }
 

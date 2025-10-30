@@ -1,8 +1,10 @@
-﻿@model IEnumerable<MVCApplication.DTOs.PaymentResponseDTO>
+﻿@model IEnumerable<MVCApplication.DTOs.FeedbackResponseDTO>
+
 @{
-    ViewData["Title"] = "Quản lý Thanh toán";
-    Layout = "_Layout.Admin";
+    ViewData["Title"] = "Danh sách Feedback";
+    Layout = "_Layout.Admin"; @* Giả định bạn dùng layout tương tự trang Thanh toán, nếu không thì bỏ dòng này *@
 }
+
 <style>
     /* ===== WOW PACK v2 – Payments page (dark/light theo biến layout) ===== */
     .page-block {
@@ -128,10 +130,26 @@
             text-overflow: ellipsis;
         }
 
-        /* Thu hẹp cột Mã thanh toán và Mã đơn hàng */
+        /* Thu hẹp cột FeedbackId và OrderId */
         .user-table th:nth-child(1), .user-table td:nth-child(1),
         .user-table th:nth-child(2), .user-table td:nth-child(2) {
             width: 90px;
+        }
+
+        /* Độ rộng cho cột Rating */
+        .user-table th:nth-child(3), .user-table td:nth-child(3) {
+            width: 80px;
+        }
+
+        /* TĂNG Độ rộng cho cột FeedbackDate */
+        .user-table th:nth-child(5), .user-table td:nth-child(5) {
+            width: 160px; /* Đã tăng */
+        }
+
+        /* Điều chỉnh Độ rộng cho cột Hành động (chỉ còn nút Chi tiết) */
+        .user-table th:last-child, .user-table td:last-child {
+            width: 120px;
+            text-align: center;
         }
 
         .user-table tbody tr:nth-child(even) {
@@ -175,29 +193,10 @@
         color: #065f46;
     }
 
-    :root[data-theme="light"] .btn-edit {
-        color: #0f172a;
-    }
-
-    :root[data-theme="light"] .btn-delete {
-        color: #7f1d1d;
-    }
-
     .btn-detail {
         background: linear-gradient(180deg, color-mix(in oklab,#22c55e 20%, transparent), color-mix(in oklab,#16a34a 15%, transparent));
         border-color: rgba(34,197,94,.35);
         color: #dcfce7;
-    }
-
-    .btn-edit {
-        background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 12%, transparent), color-mix(in oklab,var(--accent2) 12%, transparent));
-        color: var(--text);
-    }
-
-    .btn-delete {
-        background: linear-gradient(180deg, color-mix(in oklab,#ef4444 20%, transparent), color-mix(in oklab,#dc2626 15%, transparent));
-        border-color: rgba(239,68,68,.35);
-        color: #fee2e2;
     }
 
     .btn-ban:hover {
@@ -228,25 +227,24 @@
 
 <div class="page-block">
     <div class="page-heading">
-        <h2>Danh sách Thanh toán</h2>
+        <h2>Danh sách Feedback</h2>
         <div class="under"></div>
     </div>
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
+
+    @* Đã xóa nút "Thêm Feedback mới" *@@*
+    <p style="margin-bottom: 16px;">
+        <a asp-action="Create" class="btn-ban btn-detail" style="min-width: 120px;">Thêm Feedback mới</a>
+    </p>
+    *@
+
     <div class="card-surface">
         <div class="table-wrap">
             @if (Model == null || !Model.Any())
             {
                 <div class="empty-state">
                     <div class="badge">!</div>
-                    <h3>Không tìm thấy thanh toán</h3>
-                    <p>Tạo thanh toán mới để bắt đầu.</p>
+                    <h3>Không tìm thấy Feedback</h3>
+                    <p>Hiện tại không có đánh giá nào.</p>
                 </div>
             }
             else
@@ -254,12 +252,21 @@
                 <table class="user-table">
                     <thead>
                         <tr>
-                            <th>ID Thanh toán</th>
-                            <th>ID Đơn hàng</th>
-                            <th>Số tiền thanh toán</th>
-                            <th>Phương thức thanh toán</th>
-                            <th>Ngày thanh toán</th>
-                            <th>Trạng thái</th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FeedbackId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.OrderId)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Rating)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Comment)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FeedbackDate)
+                            </th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -267,16 +274,25 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.PaymentID</td>
-                                <td>@item.OrderID</td>
-                                <td>@item.PaidAmount</td>
-                                <td>@item.PaymentMethod</td>
-                                <td>@item.PaymentDate</td>
-                                <td>@item.PaymentStatus</td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.FeedbackId)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.OrderId)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Rating)
+                                </td>
+                                <td>
+                                    @(item.Comment?.Length > 50 ? item.Comment.Substring(0, 50) + "..." : item.Comment)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.FeedbackDate)
+                                </td>
                                 <td>
                                     <div class="actions">
-                                        <a asp-action="Detail" asp-route-id="@item.PaymentID" class="btn-ban btn-detail btn-sm">Chi tiết</a>
-                                        <a asp-action="Edit" asp-route-id="@item.PaymentID" class="btn-ban btn-edit btn-sm">Sửa</a>
+                                        @* Chỉ giữ lại nút Chi tiết *@
+                                        <a asp-action="Detail" asp-route-id="@item.FeedbackId" class="btn-ban btn-detail">Chi tiết</a>
                                     </div>
                                 </td>
                             </tr>
@@ -287,7 +303,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

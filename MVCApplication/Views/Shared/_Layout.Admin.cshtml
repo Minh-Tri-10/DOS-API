@@ -1,4 +1,5 @@
-﻿﻿@{
+﻿@using System.Security.Claims
+@{
     var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
     var isLoggedIn = User.Identity?.IsAuthenticated ?? false;
     var controller = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "");
@@ -12,8 +13,8 @@
     }
 
     var userName = User.FindFirst("full_name")?.Value
-                   ?? User.FindFirst("username")?.Value
-                   ?? (isLoggedIn ? "Admin" : "Khách");
+                     ?? User.FindFirst("username")?.Value
+                     ?? (isLoggedIn ? "Admin" : "Khách");
     var userEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? (isLoggedIn ? "Chưa có email" : "guest@example.com");
     var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? (isLoggedIn ? "admin" : "guest");
     var avatarUrl = User.FindFirst("avatar_url")?.Value ?? "https://i.pravatar.cc/128?img=47";
@@ -23,17 +24,20 @@
         action.Equals(a, StringComparison.OrdinalIgnoreCase) &&
         (string.IsNullOrEmpty(area) || area.Equals("", StringComparison.OrdinalIgnoreCase));
 
+    // --- KHAI BÁO BIẾN KIỂM TRA TRẠNG THÁI ACTIVE ---
     bool isOrders = Is("AdminOrders", "Index");
     bool isCategories = Is("AdminCategory", "Index");
     bool isProducts = Is("AdminProduct", "Index");
     bool isAccounts = Is("AdminAccounts", "Index");
-    bool isRevenue = Is("Revenue", "Index");
-    bool isPayments = Is("Payment", "Index");
+    bool isRevenue = Is("Stats", "Index");
+    bool isPayments = Is("Payments", "Index");
+    bool isFeedback = Is("Feedbacks", "Index") || Is("Feedbacks", "Create") || Is("Feedbacks", "Edit") || Is("Feedbacks", "Detail"); // Thêm kiểm tra cho Feedback
+    // ------------------------------------------------
 }
 
 <!DOCTYPE html>
 <html lang="en">
-     
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -44,15 +48,12 @@
 </head>
 <body class="layout-rail">
 
-    <!-- ===== LEFT RAIL (Sidebar) ===== -->
     <aside class="rail">
-        <!-- Avatar mở User Popup -->
         <button class="avatar-btn" data-bs-toggle="modal" data-bs-target="#userModal" aria-label="User profile">
             <img src="@avatarUrl" alt="Avatar" class="avatar-img" />
             <span class="status-dot"></span>
         </button>
 
-        <!-- NAV: 5 nút quản trị -->
         <nav class="rail-nav" aria-label="Admin navigation">
             <a class="rail-item @(isOrders ? "active" : "")"
                asp-controller="AdminOrders" asp-action="Index"
@@ -112,6 +113,15 @@
                     <path d="M2 12h20" />
                 </svg>
             </a>
+
+            <a class="rail-item @(isFeedback ? "active" : "")"
+               asp-controller="Feedbacks" asp-action="Index"
+               data-bs-toggle="tooltip" data-bs-title="Quản lý Feedback" aria-label="Quản lý Feedback">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            </a>
+
         </nav>
 
         <div class="rail-bottom">
@@ -137,12 +147,10 @@
         </div>
     </aside>
 
-    <!-- ===== CONTENT ===== -->
     <main class="content">
         @RenderBody()
     </main>
 
-    <!-- USER MODAL -->
     <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content modal-surface">
@@ -166,7 +174,6 @@
         </div>
     </div>
 
-    <!-- ===== QUICK SETTINGS (Theme + Language) ===== -->
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-surface">

@@ -514,7 +514,12 @@
         <h2>@ViewData["Title"]</h2>
         <div class="under"></div>
     </div>
-
+    @if (TempData["StatusMessage"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["StatusMessage"]
+        </div>
+    }
     <div class="order-card">
         <div style="overflow-x: auto;">
             <table class="orders-table">
@@ -557,7 +562,11 @@
                                 <td>
                                     <div class="action-buttons">
                                         <a class="btn-view" href="@Url.Action("Details", "Orders", new { id = order.OrderId })">Xem</a>
-
+                                            <a class="btn-view"
+                                               style="background-color: var(--ok); color: var(--bg);"
+                                               href="@Url.Action("UpsertByOrder", "Feedbacks", new { orderId = order.OrderId })">
+                                                Đánh giá
+                                            </a>
                                         @* ẨN NÚT HỦY KHI TRẠNG THÁI LÀ "cancelled" HOẶC "completed" *@
                                         @if (order.OrderStatus.ToLower() != "cancelled" && order.OrderStatus.ToLower() != "completed")
                                         {

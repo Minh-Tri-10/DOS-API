@@ -65,6 +65,11 @@ namespace MVCApplication
                 c.BaseAddress = new Uri("https://localhost:7001/");
             }).AddHttpMessageHandler<AccessTokenHandler>();
 
+            builder.Services.AddHttpClient<IFeedbackService, FeedbackService>(c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7051/");
+            }).AddHttpMessageHandler<AccessTokenHandler>(); 
+
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartService, CartService>();

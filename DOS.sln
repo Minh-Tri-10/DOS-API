@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderAPI", "OrderAPI\OrderA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApplication", "MVCApplication\MVCApplication.csproj", "{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeedbackAPI", "FeedbackAPI\FeedbackAPI.csproj", "{17051024-154D-4259-A245-1899338182A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{973A0EC7-6FAA-4D7E-87D4-F55AB444E873}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17051024-154D-4259-A245-1899338182A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17051024-154D-4259-A245-1899338182A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17051024-154D-4259-A245-1899338182A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17051024-154D-4259-A245-1899338182A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

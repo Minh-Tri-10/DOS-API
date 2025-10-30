@@ -390,15 +390,14 @@
                                         {
                                             "Pending" => "Đang chờ",
                                             "Success" => "Đã thanh toán",
-                                            "Failed" => "Thất bại",
-                                            "Cancelled" => "Đã hủy",
+                                            "Failed" => "Đã hủy",
                                             _ => item.PaymentStatus
                                         };
                                     }
                                     @statusVN
                                 </td>
                                 <td class="actions">
-                                    <button class="btn-ban btn-edit">Sửa</button>
+                                    <a asp-action="Edit" asp-route-id="@item.PaymentID" class="btn-ban btn-edit btn-sm">Cập nhật</a>
                                 </td>
                             </tr>
                         }
