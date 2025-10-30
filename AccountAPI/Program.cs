@@ -26,7 +26,7 @@ namespace AccountAPI
 
             builder.Services.AddDbContext<AccountDbContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 
             builder.Services.AddSingleton(sp =>
             {

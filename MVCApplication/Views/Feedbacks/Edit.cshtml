@@ -1,0 +1,303 @@
+﻿@model MVCApplication.DTOs.FeedbackUpdateDTO
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Feedback";
+    Layout = "_Layout.Admin";
+    var feedbackId = ViewData["FeedbackId"]; // Cần giữ để dùng cho asp-route-id
+    var orderId = ViewData["OrderId"]; // Giả sử OrderId được truyền vào ViewData
+
+    // Đảm bảo Rating không null cho việc hiển thị sao
+    int currentRating = Model.Rating > 0 ? Model.Rating : 0;
+}
+
+<style>
+    /* ===== WOW PACK v2 – Styles cho form (dark/light theo biến layout) ===== */
+    .page-block {
+        padding: 16px 0;
+    }
+
+    .page-heading {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px;
+    }
+
+        .page-heading h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1;
+        }
+
+        .page-heading .under {
+            position: relative;
+            height: 6px;
+            flex: 1;
+            min-width: 120px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            filter: saturate(1.1) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab, var(--accent) 45%, transparent);
+        }
+
+    .card-surface {
+        position: relative;
+        isolation: isolate;
+        background: color-mix(in oklab, var(--bg-soft) 92%, transparent);
+        color: var(--text);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset;
+        overflow: hidden;
+        max-width: 500px; /* Giới hạn chiều rộng cho form */
+        margin: 0 auto;
+    }
+
+        .card-surface::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab, var(--accent) 40%, transparent), color-mix(in oklab, var(--accent2) 40%, transparent), transparent 40%);
+            filter: blur(10px) saturate(1.2);
+            opacity: .45;
+            mask: linear-gradient(#000 0 0);
+            animation: ringFloat 12s linear infinite;
+        }
+
+    @@keyframes ringFloat {
+        to {
+            transform: rotate(1turn);
+        }
+    }
+
+    .card-surface::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab, var(--accent2) 10%, transparent), transparent 60%);
+        opacity: .35;
+    }
+
+    /* Form controls custom style */
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text);
+    }
+
+    .form-control-custom {
+        display: block;
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--text);
+        background-color: color-mix(in oklab, var(--bg-soft) 80%, transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        border-radius: 12px;
+        box-shadow: 0 1px 2px color-mix(in oklab, #000 10%, transparent) inset;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+        .form-control-custom:focus {
+            border-color: var(--accent);
+            outline: 0;
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent);
+        }
+
+    textarea.form-control-custom {
+        resize: vertical;
+    }
+
+    /* Nút */
+    .btn-ban {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 20px;
+        font-size: 15px;
+        font-weight: 700;
+        min-width: 120px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .25s ease;
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab, #000 30%, transparent);
+        text-align: center;
+    }
+
+    /* Nút Lưu */
+    .btn-primary-custom {
+        background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 12%, transparent), color-mix(in oklab, var(--accent2) 12%, transparent));
+        color: var(--text);
+    }
+
+    /* Nút Quay lại */
+    .btn-secondary-custom {
+        background: linear-gradient(180deg, color-mix(in oklab, var(--muted) 12%, transparent), color-mix(in oklab, var(--muted) 8%, transparent));
+        color: var(--text);
+        margin-top: 18px;
+    }
+
+    .btn-ban:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+    }
+
+    .text-danger {
+        font-size: 13px;
+        display: block;
+        margin-top: 4px;
+    }
+
+    /* === Star Rating Styles === */
+    .star-rating-container {
+        display: flex;
+        flex-direction: row-reverse; /* Đảo ngược thứ tự */
+        justify-content: flex-end;
+        margin-top: 5px;
+        width: fit-content;
+        margin-left: 0;
+    }
+
+        .star-rating-container input[type="radio"] {
+            display: none; /* Ẩn radio buttons */
+        }
+
+        .star-rating-container label {
+            font-size: 28px;
+            color: var(--muted); /* Màu xám mặc định */
+            cursor: pointer;
+            transition: color 0.2s ease-in-out, transform 0.1s ease-out;
+            padding: 0 2px;
+        }
+
+            /* Hiệu ứng chọn/hover */
+            .star-rating-container input[type="radio"]:checked ~ label,
+            .star-rating-container label:hover,
+            .star-rating-container label:hover ~ label {
+                color: #ffc107; /* Màu vàng khi chọn hoặc hover */
+            }
+
+            /* Hiệu ứng hover cho label */
+            .star-rating-container label:hover {
+                transform: scale(1.1);
+            }
+
+    .btn-delete-custom {
+        background: linear-gradient(180deg, #dc3545 12%, #c82333 8%); /* Màu đỏ */
+        color: white;
+    }
+</style>
+
+<div class="page-block">
+    <div class="page-heading">
+        <h2>Chỉnh sửa đánh giá</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="card-surface">
+        @* Hiển thị Order ID *@
+        <h4 style="margin-bottom: 16px; font-weight: 600;">Đánh giá cho Đơn hàng: #@orderId</h4>
+
+        <form asp-action="Edit" asp-route-id="@feedbackId">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">Đánh giá (Sao)</label>
+
+                <input type="hidden" asp-for="Rating" id="RatingValueInput" />
+
+                <div class="star-rating-container">
+                    @for (int i = 5; i >= 1; i--)
+                    {
+                        <input type="radio" id="star-@i" name="StarSelect" value="@i" @(Model.Rating == i ? "checked" : "") />
+                        <label for="star-@i" title="@i sao">★</label>
+                    }
+                </div>
+                <span asp-validation-for="Rating" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label asp-for="Comment" class="control-label">Bình luận</label>
+                <textarea asp-for="Comment" class="form-control-custom" rows="3"></textarea>
+                <span asp-validation-for="Comment" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Lưu thay đổi" class="btn-ban btn-primary-custom" style="width: 100%;" />
+            </div>
+        </form>
+        <form asp-action="Delete" asp-route-id="@feedbackId" method="post" id="DeleteForm" style="margin-top: 15px;">
+            <button type="button" id="DeleteButton" class="btn-ban btn-delete-custom" style="width: 100%;">
+                <i class="fas fa-trash-alt"></i> Xóa Đánh giá này
+            </button>
+        </form>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="javascript:history.back()" class="btn-ban btn-secondary-custom">Quay lại trang trước</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... (CODE HIỂN THỊ SAO CỦA BẠN - GIỮ NGUYÊN) ...
+
+            // Lấy input ẩn chịu trách nhiệm gửi giá trị số (asp-for="Rating")
+            const ratingValueInput = document.getElementById('RatingValueInput');
+            // Lấy container chứa các radio button sao
+            const starContainer = document.querySelector('.star-rating-container');
+
+            // Xử lý giá trị ban đầu cho radio button
+            if (ratingValueInput.value) {
+                const initialStar = document.getElementById('star-' + ratingValueInput.value);
+                if (initialStar) {
+                    initialStar.checked = true;
+                }
+            }
+
+            if (starContainer && ratingValueInput) {
+                // Lắng nghe sự kiện click/change trên các radio button
+                starContainer.addEventListener('change', function(e) {
+                    if (e.target.type === 'radio' && e.target.checked) {
+                        // Cập nhật giá trị số (1-5) vào input ẩn để gửi lên server
+                        ratingValueInput.value = e.target.value;
+                    }
+                });
+            }
+
+
+            // === Logic XÓA VÀ XÁC NHẬN ===
+            const deleteButton = document.getElementById('DeleteButton');
+            const deleteForm = document.getElementById('DeleteForm');
+
+            if (deleteButton && deleteForm) {
+                deleteButton.addEventListener('click', function() {
+                    // Hiển thị hộp thoại xác nhận
+                    const isConfirmed = confirm('Bạn có chắc chắn muốn xóa đánh giá này?');
+
+                    if (isConfirmed) {
+                        // Nếu người dùng xác nhận, gửi form xóa
+                        deleteForm.submit();
+                    }
+                });
+            }
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

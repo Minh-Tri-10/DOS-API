@@ -1,0 +1,50 @@
+﻿@model MVCApplication.DTOs.FeedbackResponseDTO
+
+@{
+    ViewData["Title"] = $"Chi tiết đánh giá của Order {Model?.OrderId}";
+}
+
+<h1>Chi tiết đánh giá của Order @Html.DisplayFor(model => model.OrderId)</h1>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Thông tin Đánh giá</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.OrderId)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.OrderId)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Rating)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Rating)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Comment)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Comment)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.FeedbackDate)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.FeedbackDate)
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model?.FeedbackId" class="btn btn-warning">Sửa</a>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+
+    <form asp-action="DeleteConfirmed" asp-route-id="@Model?.FeedbackId" method="post" class="d-inline">
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa Feedback này không?');">Xóa</button>
+    </form>
+</div>

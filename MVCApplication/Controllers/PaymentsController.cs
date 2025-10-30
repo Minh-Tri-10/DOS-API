@@ -84,7 +84,8 @@ namespace MVCApplication.Controllers
             if (ModelState.IsValid)
             {
                 await _paymentService.UpdateAsync(id, dto);
-                return RedirectToAction(nameof(Index));
+                TempData["SuccessMessage"] = "Cập nhật Thanh toán thành công!";
+                return RedirectToAction(nameof(Edit), new { id = id });
             }
             return View(dto);
         }

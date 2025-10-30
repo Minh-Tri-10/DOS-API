@@ -4,117 +4,141 @@
 
 }
 <style>
+
     /* ===== WOW PACK v2 – Payments page (dark/light theo biến layout) ===== */
-    .page-block {
-        padding: 16px 0;
+
+    /* ... (Giữ nguyên phần CSS của bạn) ... */
+        .page-block {
+                padding: 16px 0;
+
     }
 
-    .page-heading {
-        display: flex;
-        align-items: flex-end;
-        gap: 12px;
-        margin: 0 0 18px;
+        .page-heading {
+                display: flex;
+                align-items: flex-end;
+                gap: 12px;
+                margin: 0 0 18px;
+
     }
 
-        .page-heading h2 {
-            margin: 0;
-            font-weight: 800;
-            letter-spacing: .2px;
-            line-height: 1.1;
-        }
+            .page-heading h2 {
+                    margin: 0;
+                    font-weight: 800;
+                    letter-spacing: .2px;
+                    line-height: 1.1;
 
-        .page-heading .under {
-            position: relative;
-            height: 6px;
-            flex: 1;
-            min-width: 120px;
-            border-radius: 999px;
-            background: linear-gradient(90deg,var(--accent),var(--accent2));
-            filter: saturate(1.1) brightness(1.05);
-            box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
-        }
-
-    .card-surface {
-        position: relative;
-        isolation: isolate;
-        background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
-        color: var(--text);
-        border: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
-        border-radius: 18px;
-        box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
-        overflow: hidden;
     }
 
-        .card-surface::before {
-            content: "";
-            position: absolute;
-            inset: -1px;
-            border-radius: inherit;
-            z-index: -1;
-            background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 40%);
-            filter: blur(10px) saturate(1.2);
-            opacity: .45;
-            mask: linear-gradient(#000 0 0);
-            animation: ringFloat 12s linear infinite;
-        }
+            .page-heading .under {
+                    position: relative;
+                    height: 6px;
+                    flex: 1;
+                    min-width: 120px;
+                    border-radius: 999px;
+                    background: linear-gradient(90deg,var(--accent),var(--accent2));
+                    filter: saturate(1.1) brightness(1.05);
+                    box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 45%, transparent);
 
-    @@keyframes ringFloat {
-        to {
-            transform: rotate(1turn);
-        }
     }
 
-    .card-surface::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%);
-        opacity: .35;
+        .card-surface {
+                position: relative;
+                isolation: isolate;
+                background: color-mix(in oklab,var(--bg-soft) 92%, transparent);
+                color: var(--text);
+                border: 1px solid color-mix(in oklab,var(--border) 70%, transparent);
+                border-radius: 18px;
+                box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+                overflow: hidden;
+
     }
 
-    .btn-ban {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 6px 16px;
-        font-size: 13.5px;
-        font-weight: 700;
-        min-width: 90px;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .25s ease;
-        box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab,#000 30%, transparent);
-        text-align: center;
+            .card-surface::before {
+                    content: "";
+                    position: absolute;
+                    inset: -1px;
+                    border-radius: inherit;
+                    z-index: -1;
+                    background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 40%);
+                    filter: blur(10px) saturate(1.2);
+                    opacity: .45;
+                    mask: linear-gradient(#000 0 0);
+                    animation: ringFloat 12s linear infinite;
+
     }
 
-    .btn-edit {
-        background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 12%, transparent), color-mix(in oklab,var(--accent2) 12%, transparent));
-        color: var(--text);
+        @@keyframes ringFloat {
+                to
+
+    {
+                    transform: rotate(1turn);
+
     }
 
-    .btn-gray {
-        background: linear-gradient( 180deg, color-mix(in oklab, #d1d5db 20%, transparent), /* xám nhạt */
-        color-mix(in oklab, #9ca3af 15%, transparent) /* xám trung */
-        );
-        color: var(--text);
+
     }
 
-    .btn-ban:hover {
-        filter: brightness(1.08);
-        transform: translateY(-1px);
+        .card-surface::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                z-index: 0;
+                background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%);
+                opacity: .35;
+
+    }
+
+        .btn-ban {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                padding: 6px 16px;
+                font-size: 13.5px;
+                font-weight: 700;
+                min-width: 90px;
+                border-radius: 999px;
+                border: 1px solid transparent;
+                cursor: pointer;
+                text-decoration: none;
+                transition: all .25s ease;
+                box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab,#000 30%, transparent);
+                text-align: center;
+
+    }
+
+        .btn-edit {
+                background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 12%, transparent), color-mix(in oklab,var(--accent2) 12%, transparent));
+                color: var(--text);
+
+    }
+
+        .btn-gray {
+                background: linear-gradient( 180deg, color-mix(in oklab, #d1d5db 20%, transparent), /* xám nhạt */
+                color-mix(in oklab, #9ca3af 15%, transparent) /* xám trung */
+                );
+                color: var(--text);
+
+    }
+
+        .btn-ban:hover {
+                filter: brightness(1.08);
+                transform: translateY(-1px);
+
     }
 </style>
 
 <div class="page-block">
     <div class="page-heading">
-        <h2>Chỉnh sửa Thanh toán</h2>
+        <h2>Cập nhật Thanh toán</h2>
         <div class="under"></div>
     </div>
+    @* //Thông báo thành công *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
 
     @if (TempData["Error"] != null)
     {
@@ -126,29 +150,31 @@
             <input type="hidden" asp-for="OrderID" />
 
             <div class="mb-3">
-                <label asp-for="PaidAmount" class="form-label fw-bold">Số tiền đã thanh toán</label>
-                <input asp-for="PaidAmount" class="form-control rounded-3" />
+                <label asp-for="PaidAmount" class="form-label fw-bold">Số tiền thanh toán</label>
+                <input asp-for="PaidAmount" class="form-control rounded-3" readonly />
                 <span asp-validation-for="PaidAmount" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="PaymentMethod" class="form-label fw-bold">Phương thức thanh toán</label>
-                <input asp-for="PaymentMethod" class="form-control rounded-3" />
+                <input asp-for="PaymentMethod" class="form-control rounded-3" readonly />
                 <span asp-validation-for="PaymentMethod" class="text-danger"></span>
             </div>
 
             <div class="mb-4">
                 <label asp-for="PaymentStatus" class="form-label fw-bold">Trạng thái thanh toán</label>
                 <select asp-for="PaymentStatus" class="form-control rounded-3">
-                    <option value="Chờ xử lý">Chờ xử lý</option>
-                    <option value="Hoàn tất">Hoàn tất</option>
-                    <option value="Đã hủy">Đã hủy</option>
+                    <option value="Pending">Chờ xử lý</option>
+                    <option value="Success">Hoàn tất</option>
+                    <option value="Failed">Đã hủy</option>
                 </select>
                 <span asp-validation-for="PaymentStatus" class="text-danger"></span>
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a asp-action="Index" class="btn-ban btn-edit btn-gray">Quay về</a>
+                <a asp-action="PaymentsByOrder" asp-controller="Payments"
+                   asp-route-orderId="@Model.OrderID"
+                   class="btn-ban btn-edit btn-gray">Quay về</a>
                 <button type="submit" class="btn-ban btn-edit">Cập nhật</button>
             </div>
         </form>
