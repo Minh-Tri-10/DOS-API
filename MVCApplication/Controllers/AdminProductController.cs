@@ -166,6 +166,7 @@ namespace MVCApplication.Controllers
             return product == null ? NotFound() : View(product);
         }
 
+        // POST: /AdminProduct/Delete/{id} - Sửa để hỗ trợ AJAX (trả JSON thay vì redirect)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -173,28 +174,25 @@ namespace MVCApplication.Controllers
             try
             {
                 // Kiểm tra xem Product có trong Order không
-                var usage = await _orderService.CheckProductUsageAsync(id);  // Gọi API Order để kiểm tra
+                var usage = await _orderService.CheckProductUsageAsync(id); // Gọi API Order để kiểm tra
                 if (usage.IsUsed)
                 {
-                    TempData["Error"] = $"Không thể xóa sản phẩm vì đang tồn tại trong {usage.OrderCount} đơn hàng.";
-                    return RedirectToAction(nameof(Index));
+                    return BadRequest(new { success = false, message = $"Không thể xóa sản phẩm vì đang tồn tại trong {usage.OrderCount} đơn hàng." });
                 }
-
                 // Nếu không có, tiến hành xóa
                 await _productService.DeleteAsync(id);
-                TempData["Success"] = "Sản phẩm được xóa thành công.";
+                return Ok(new { success = true, message = "Sản phẩm được xóa thành công." });
             }
             catch (HttpRequestException ex)
             {
-                TempData["Error"] = "Không thể kết nối tới API: " + ex.Message;
+                return StatusCode(500, new { success = false, message = "Không thể kết nối tới API: " + ex.Message });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Không thể xóa sản phẩm: " + ex.Message;
+                return StatusCode(500, new { success = false, message = "Không thể xóa sản phẩm: " + ex.Message });
             }
-
-            return RedirectToAction(nameof(Index));
         }
+
 
         private MultipartFormDataContent BuildMultipartPayload(CreateProductDTO dto, IFormFile? imageFile)
         {
