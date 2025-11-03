@@ -332,7 +332,6 @@
             .btn-ban.unban:hover {
                 box-shadow: 0 8px 22px color-mix(in oklab,#22c55e 25%, transparent);
             }
-
     /* ===== PAGINATION STYLES – Đồng bộ với pill & btn-ban ===== */
     .pagination {
         display: flex;
@@ -440,7 +439,6 @@
                 <input type="text" name="search" value="@ViewBag.Search"
                        class="form-control" placeholder="Tìm kiếm theo tên sản phẩm..." />
             </div>
-
             <!-- Sort -->
             <div class="col-md-3">
                 <select name="orderBy" class="form-select">
@@ -454,7 +452,6 @@
                     <option value="Stock desc" selected="@(ViewBag.OrderBy == "Stock desc")">Tồn kho giảm dần</option>
                 </select>
             </div>
-
             <!-- PageSize -->
             <div class="col-md-2">
                 <select name="pageSize" class="form-select">
@@ -463,19 +460,15 @@
                     <option value="50" selected="@(ViewBag.PageSize == 50)">50 / trang</option>
                 </select>
             </div>
-
             <!-- Buttons -->
             <div class="col-md-3 d-flex gap-2">
                 <button type="submit" class="btn btn-primary flex-grow-1">Áp dụng</button>
                 <a asp-action="Index" class="btn btn-secondary flex-grow-1">Reset</a>
             </div>
-
         </div>
-
         <!-- Reset page to 1 when searching -->
         <input type="hidden" name="page" value="1" />
     </form>
-
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success" role="alert">@TempData["Success"]</div>
@@ -515,7 +508,7 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
+                            <tr data-id="@item.ProductId">
                                 <td class="cell-id">@item.ProductId</td>
                                 <td class="cell-username">@item.ProductName</td>
                                 <td>
@@ -536,7 +529,7 @@
                                     <div class="actions">
                                         <a asp-action="Details" asp-route-id="@item.ProductId" class="btn-ban unban btn-sm">Chi tiết</a>
                                         <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn-ban btn-sm">Sửa</a>
-                                        <a asp-action="Delete" asp-route-id="@item.ProductId" class="btn-ban ban btn-sm">Xóa</a>
+                                        <button type="button" class="btn-ban ban btn-sm delete-btn">Xóa</button>
                                     </div>
                                 </td>
                             </tr>
@@ -570,6 +563,7 @@
         </div>
     </div>
 </div>
+@Html.AntiForgeryToken() <!-- Thêm token cho AJAX -->
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
@@ -578,6 +572,50 @@
             setTimeout(function() {
                 $('.alert').fadeOut(300);
             }, 5000);
+
+            // Sự kiện xóa sản phẩm bằng AJAX
+            $(document).on('click', '.delete-btn', function() {
+                var row = $(this).closest('tr');
+                var productId = row.data('id');
+
+                if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+                    return;
+                }
+
+                // Lấy AntiForgeryToken
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '/AdminProduct/Delete/' + productId,  // Điều chỉnh nếu controller khác
+                    type: 'POST',
+                    data: {
+                        id: productId,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            row.remove();  // Chỉ xóa row nếu success == true
+                            alert(result.message || 'Xóa sản phẩm thành công!');
+
+                            // Kiểm tra nếu bảng rỗng, hiển thị empty state
+                            if ($('.user-table tbody tr').length === 0) {
+                                $('.table-wrap').html(`
+                                    <div class="empty-state">
+                                        <div class="badge">!</div>
+                                        <h3>Không tìm thấy sản phẩm</h3>
+                                        <p>Tạo sản phẩm mới để bắt đầu.</p>
+                                    </div>
+                                `);
+                            }
+                        } else {
+                            alert(result.message || 'Lỗi khi xóa sản phẩm.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Lỗi khi xóa sản phẩm: ' + (xhr.responseText || error));
+                    }
+                });
+            });
         });
     </script>
 }
