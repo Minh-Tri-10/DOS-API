@@ -273,24 +273,37 @@
         },
         "DownstreamScheme": "https"
       },
-      {
-        "UpstreamPathTemplate": "/odata/Products",
-        "DownstreamHostAndPorts": [
-          {
-            "Host": "localhost",
-            "Port": 7021
-          }
-        ],
-        "UpstreamHttpMethod": [
-          "GET"
-        ],
-        "RouteIsCaseSensitive": false,
-        "DownstreamPathTemplate": "/odata/Products",
-        "AuthenticationOptions": {
-          "AllowedScopes": [],
-          "AuthenticationProviderKey": "Bearer"
+        {
+            "UpstreamPathTemplate": "/odata/Products",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 7021
+                }
+            ],
+            "UpstreamHttpMethod": [
+                "GET"
+            ],
+            "RouteIsCaseSensitive": false,
+            "DownstreamPathTemplate": "/odata/Products",
+            "AuthenticationOptions": {
+                "AllowedScopes": [],
+                "AuthenticationProviderKey": "Bearer"
+            },
+            "DownstreamScheme": "https"
         },
-        "DownstreamScheme": "https"
-      }
+        {
+            "UpstreamPathTemplate": "/odata/Orders",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 7269
+                }
+            ],
+            "DownstreamPathTemplate": "/odata/Orders",
+            "UpstreamHttpMethod": [ "GET" ],
+            "RouteIsCaseSensitive": false,
+            "DownstreamScheme": "https"
+        }
     ]
 }

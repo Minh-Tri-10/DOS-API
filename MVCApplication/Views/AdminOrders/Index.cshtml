@@ -1,12 +1,33 @@
 ﻿@model IEnumerable<MVCApplication.DTOs.OrderDto>
+
+@* @{ *@
+@*     int totalCount = ViewBag.TotalCount; *@
+@*     int page = ViewBag.Page; *@
+@*     int pageSize = ViewBag.PageSize; *@
+@*     int totalPages = (int)Math.Ceiling((double)totalCount / pageSize); *@
+@*     string StatusClass(string s) *@
+@*     { *@
+@*         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral"; *@
+@*         s = s.ToLowerInvariant(); *@
+@*         if (s.Contains("pending") || s.Contains("processing")) return "orders-pill warn"; *@
+@*         if (s.Contains("completed") || s.Contains("shipped") || s.Contains("delivered")) return "orders-pill ok"; *@
+@*         if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "orders-pill bad"; *@
+@*         return "orders-pill neutral"; *@
+@*     } *@
+@*     string PayClass(string s) *@
+@*     { *@
+@*         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral"; *@
+@*         s = s.ToLowerInvariant(); *@
+@*         if (s.Contains("paid") || s.Contains("captured")) return "orders-pill ok"; *@
+@*         if (s.Contains("refunded") || s.Contains("partial")) return "orders-pill warn"; *@
+@*         if (s.Contains("unpaid") || s.Contains("failed")) return "orders-pill bad"; *@
+@*         return "orders-pill neutral"; *@
+@*     } *@
+@* } *@
 @{
     Layout = "_Layout.Admin";
-}
-@{
-    int totalCount = ViewBag.TotalCount;
-    int page = ViewBag.Page;
-    int pageSize = ViewBag.PageSize;
-    int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+    // Hàm xác định class cho trạng thái order
     string StatusClass(string s)
     {
         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
@@ -16,6 +37,8 @@
         if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "orders-pill bad";
         return "orders-pill neutral";
     }
+
+    // Hàm xác định class cho trạng thái thanh toán
     string PayClass(string s)
     {
         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
@@ -25,8 +48,14 @@
         if (s.Contains("unpaid") || s.Contains("failed")) return "orders-pill bad";
         return "orders-pill neutral";
     }
-}
 
+    // Lấy các giá trị từ ViewBag
+    var currentPage = ViewBag.Page ?? 1;
+    var totalPagesCount = ViewBag.TotalPages ?? 1;
+    var search = ViewBag.Search ?? "";
+    var status = ViewBag.Status ?? "";
+    var payment = ViewBag.Payment ?? "";
+}
 <style>
     /* ===== Orders – WOW v3 (dark default; light via :root[data-theme="light"]) ===== */
     /* Fallback var nếu layout chưa khai báo */
@@ -590,7 +619,6 @@
         margin-top: 20px; /* Thêm khoảng cách phía trên */
     }
 </style>
-
 <div class="orders-page">
     <div class="orders-head">
         <h2>Danh sách Orders</h2>
@@ -598,29 +626,33 @@
     </div>
 
     <!-- Controls -->
-    <div class="orders-controls">
+    <form method="get" class="orders-controls">
         <div class="orders-search">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted)">
                 <circle cx="11" cy="11" r="7"></circle>
                 <path d="M21 21l-4.3-4.3"></path>
             </svg>
-            <input id="ordersSearch" placeholder="Tìm theo ID, User, Status, Payment..." />
+            <input name="search" value="@search" placeholder="Tìm kiếm theo tên, ID, ..." />
         </div>
-        <select id="statusFilter" class="orders-select">
+        <select name="status" class="orders-select">
             <option value="">Tất cả trạng thái</option>
-            <option>Pending</option>
-            <option>Processing</option>
-            <option>Completed</option>
-            <option>Cancelled</option>
+            <option value="Pending" selected="@(status == "Pending")">Pending</option>
+            <option value="Processing" selected="@(status == "Processing")">Processing</option>
+            <option value="Completed" selected="@(status == "Completed")">Completed</option>
+            <option value="Cancelled" selected="@(status == "Cancelled")">Cancelled</option>
         </select>
-        <select id="paymentFilter" class="orders-select">
+
+        <select name="payment" class="orders-select">
             <option value="">Tất cả thanh toán</option>
-            <option>Paid</option>
-            <option>Unpaid</option>
-            <option>Refunded</option>
-            <option>Failed</option>
+            <option value="Paid" selected="@(payment == "Paid")">Paid</option>
+            <option value="Unpaid" selected="@(payment == "Unpaid")">Unpaid</option>
+            <option value="Refunded" selected="@(payment == "Refunded")">Refunded</option>
+            <option value="Failed" selected="@(payment == "Failed")">Failed</option>
         </select>
-    </div>
+
+
+        <button type="submit" class="btn btn-primary">Lọc</button>
+    </form>
 
     <div class="orders-card">
         <div class="orders-wrap">
@@ -650,53 +682,46 @@
                             <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
                             <td class="orders-actions">
                                 <a class="orders-link" asp-action="Details" asp-route-id="@order.OrderId">Chi tiết</a>
-                                <a class="orders-link" asp-controller="Payments" asp-action="PaymentsByOrder" asp-route-orderId="@order.OrderId">
-                                    Thanh toán
-                                </a>
+                                <a class="orders-link" asp-controller="Payments" asp-action="PaymentsByOrder" asp-route-orderId="@order.OrderId">Thanh toán</a>
                                 <a class="orders-link" asp-action="Edit" asp-route-id="@order.OrderId">Sửa</a>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-            @if (totalPages > 1)
+
+            <!-- Pagination -->
+            @if (totalPagesCount > 1)
             {
                 <nav class="orders-pagination-center mt-4">
                     <ul class="pagination justify-content-center">
-
-                        <li class="page-item @(page == 1 ? "disabled" : "")">
-                            <a class="page-link" href="?page=1" aria-label="Trang đầu">
-                                <span aria-hidden="true">«</span>
-                            </a>
+                        <!-- First page -->
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?page=1&search=@search&status=@status&payment=@payment" aria-label="Trang đầu">«</a>
                         </li>
-
-                        <li class="page-item @(page == 1 ? "disabled" : "")">
-                            <a class="page-link" href="?page=@(page - 1)" aria-label="Trang trước">
-                                <span aria-hidden="true">‹</span>
-                            </a>
+                        <!-- Previous page -->
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(currentPage-1)&search=@search&status=@status&payment=@payment" aria-label="Trang trước">‹</a>
                         </li>
 
                         @{
-                            int start = Math.Max(1, page - 2);
-                            int end = Math.Min(totalPages, page + 2);
+                            int start = Math.Max(1, currentPage - 2);
+                            int end = Math.Min(totalPagesCount, currentPage + 2);
                         }
                         @for (int i = start; i <= end; i++)
                         {
-                            <li class="page-item @(i == page ? "active" : "")">
-                                <a class="page-link" href="?page=@i">@i</a>
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="?page=@i&search=@search&status=@status&payment=@payment">@i</a>
                             </li>
                         }
 
-                        <li class="page-item @(page == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="?page=@(page + 1)" aria-label="Trang sau">
-                                <span aria-hidden="true">›</span>
-                            </a>
+                        <!-- Next page -->
+                        <li class="page-item @(currentPage == totalPagesCount ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(currentPage+1)&search=@search&status=@status&payment=@payment" aria-label="Trang sau">›</a>
                         </li>
-
-                        <li class="page-item @(page == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="?page=@totalPages" aria-label="Trang cuối">
-                                <span aria-hidden="true">»</span>
-                            </a>
+                        <!-- Last page -->
+                        <li class="page-item @(currentPage == totalPagesCount ? "disabled" : "")">
+                            <a class="page-link" href="?page=@totalPagesCount&search=@search&status=@status&payment=@payment" aria-label="Trang cuối">»</a>
                         </li>
                     </ul>
                 </nav>
@@ -704,44 +729,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Tìm kiếm + lọc client-side (không ảnh hưởng backend)
-        (() => {
-          const q = document.getElementById('ordersSearch');
-          const sf = document.getElementById('statusFilter');
-          const pf = document.getElementById('paymentFilter');
-          const table = document.getElementById('ordersTable');
-
-          const rows = [...table.querySelectorAll('tbody tr')];
-          const norm = s => (s||"").toString().trim().toLowerCase();
-
-          function apply(){
-            const query = norm(q.value);
-            const sVal = norm(sf.value);
-            const pVal = norm(pf.value);
-
-            rows.forEach(r => {
-              const tds = r.querySelectorAll('td');
-              const id = norm(tds[0]?.textContent);
-              const user = norm(tds[1]?.textContent);
-              const status = norm(tds[2]?.textContent);
-              const pay = norm(tds[3]?.textContent);
-              const total = norm(tds[4]?.textContent);
-              const date = norm(tds[5]?.textContent);
-
-              const matchQuery = [id,user,status,pay,total,date].some(x => x.includes(query));
-              const matchStatus = !sVal || status.includes(sVal);
-              const matchPayment = !pVal || pay.includes(pVal);
-
-              r.style.display = (matchQuery && matchStatus && matchPayment) ? "" : "none";
-            });
-          }
-
-          q.addEventListener('input', apply);
-          sf.addEventListener('change', apply);
-          pf.addEventListener('change', apply);
-        })();
-    </script>
-}

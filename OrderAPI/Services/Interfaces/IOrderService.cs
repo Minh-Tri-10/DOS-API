@@ -16,6 +16,8 @@ namespace OrderAPI.Services.Interfaces
         Task<(List<OrderDto> Orders, int TotalCount)> GetPagedAsync(int page, int pageSize);
 
         Task<ProductUsageDto> CheckProductUsageAsync(int productId);
+        //Odata
+        IQueryable<OrderDto> GetAllQueryable();
 
     }
 }

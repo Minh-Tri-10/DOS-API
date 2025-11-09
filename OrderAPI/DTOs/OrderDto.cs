@@ -1,7 +1,10 @@
-﻿namespace OrderAPI.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace OrderAPI.DTOs
 {
     public class OrderDto
     {
+        [Key]
         public int OrderId { get; set; }
         public string? FullName { get; set; } // lấy từ UserService
         public string? OrderStatus { get; set; }

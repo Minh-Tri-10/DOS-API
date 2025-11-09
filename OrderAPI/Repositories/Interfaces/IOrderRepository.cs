@@ -17,6 +17,8 @@ namespace OrderAPI.Repositories.Interfaces
         Task<(List<Order> Orders, int TotalCount)> GetPagedAsync(int page, int pageSize);
 
         Task<int> CountOrdersContainingProductAsync(int productId);
+        //OData
+        IQueryable<Order> GetAllQueryable();
 
     }
 }

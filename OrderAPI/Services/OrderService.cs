@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using OrderAPI.DTOs;
 using OrderAPI.Models;
 using OrderAPI.Repositories.Interfaces;
@@ -178,7 +179,15 @@ namespace OrderAPI.Services
                 OrderCount = count
             };
         }
-
+        /// <summary>
+        /// OData
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<OrderDto> GetAllQueryable()
+        {
+            // Repository cần có hàm trả về IQueryable<Order> (như GetAllQueryable)
+            return _repo.GetAllQueryable().ProjectTo<OrderDto>(_mapper.ConfigurationProvider);
+        }
     }
 }
 

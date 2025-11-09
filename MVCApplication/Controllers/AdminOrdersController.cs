@@ -13,19 +13,34 @@ namespace MVCApplication.Controllers
             _service = service;
         }
 
-        // Danh sách đơn hàng
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
-        {
-            var result = await _service.GetPagedAsync(page, pageSize);
+        //// Danh sách đơn hàng
+        //public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
+        //{
+        //    var result = await _service.GetPagedAsync(page, pageSize);
 
+        //    var orders = result?.Data ?? new List<OrderDto>();
+        //    ViewBag.TotalCount = result?.TotalCount ?? 0;
+        //    ViewBag.Page = page;
+        //    ViewBag.PageSize = pageSize;
+
+        //    return View(orders);
+        //}
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, string? status = null, string? payment = null)
+        {
+            var result = await _service.GetPagedAsync(page, pageSize, search, status, payment);
             var orders = result?.Data ?? new List<OrderDto>();
-            ViewBag.TotalCount = result?.TotalCount ?? 0;
+            int totalCount = result?.TotalCount ?? 0;
+
+            ViewBag.TotalCount = totalCount;
             ViewBag.Page = page;
             ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+            ViewBag.Payment = payment;
 
             return View(orders);
         }
-
 
         // Chi tiết đơn hàng
         public async Task<IActionResult> Details(int id)

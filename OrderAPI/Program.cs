@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +8,10 @@ using OrderAPI.Repositories;
 using OrderAPI.Repositories.Interfaces;
 using OrderAPI.Services;
 using OrderAPI.Services.Interfaces;
+using Microsoft.OData.Edm;
+using Microsoft.AspNetCore.OData;
+using Microsoft.OData.ModelBuilder;
+using OrderAPI.DTOs;
 
 namespace OrderAPI
 {
@@ -23,7 +27,7 @@ namespace OrderAPI
             builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<OrderDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
 
             builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
             {
@@ -85,6 +89,16 @@ namespace OrderAPI
                     };
                 });
 
+            // --- OData setup ---
+            builder.Services.AddControllers().AddOData(opt =>
+                opt.AddRouteComponents("odata", GetEdmModel())
+                   .Select()
+                   .Filter()
+                   .OrderBy()
+                   .Expand()
+                   .Count()
+                   .SetMaxTop(100)
+            );
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
@@ -103,6 +117,14 @@ namespace OrderAPI
             app.MapControllers();
 
             app.Run();
+        }
+        // --- OData EDM Model ---
+        static IEdmModel GetEdmModel()
+        {
+            var builder = new ODataConventionModelBuilder();
+            builder.EntitySet<OrderDto>("Orders"); // /odata/Orders
+            builder.EntitySet<OrderItemDto>("OrderItems"); // optional nếu đại ca muốn expose item
+            return builder.GetEdmModel();
         }
     }
 }
