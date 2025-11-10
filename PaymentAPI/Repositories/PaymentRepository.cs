@@ -13,7 +13,9 @@ namespace PaymentAPI.Repositories
         }
 
         public async Task<IEnumerable<Payment>> GetAllAsync()
-            => await _context.Payments.ToListAsync();
+            => await _context.Payments
+                             .OrderByDescending(p => p.PaymentId)   // hoặc theo cột ngài muốn
+                             .ToListAsync();
 
         public async Task<Payment?> GetByIdAsync(int id)
             => await _context.Payments.FindAsync(id);
