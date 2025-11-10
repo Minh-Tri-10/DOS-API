@@ -568,11 +568,14 @@
                                 <td>
                                     <div class="action-buttons">
                                         <a class="btn-view" href="@Url.Action("Details", "Orders", new { id = order.OrderId })">Xem</a>
-                                        <a class="btn-view"
-                                           style="background-color: var(--ok); color: var(--bg);"
-                                           href="@Url.Action("UpsertByOrder", "Feedbacks", new { orderId = order.OrderId })">
-                                            Đánh giá
-                                        </a>
+                                        @if (order.OrderStatus.ToLower() == "completed")
+                                        {
+                                            <a class="btn-view"
+                                               style="background-color: var(--ok); color: var(--bg);"
+                                               href="@Url.Action("UpsertByOrder", "Feedbacks", new { orderId = order.OrderId })">
+                                                Đánh giá
+                                            </a>
+                                        }
                                         @* ẨN NÚT HỦY KHI TRẠNG THÁI LÀ "cancelled" HOẶC "completed" *@
                                         @if (order.OrderStatus.ToLower() != "cancelled" && order.OrderStatus.ToLower() != "completed")
                                         {
