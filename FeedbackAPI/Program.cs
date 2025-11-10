@@ -52,7 +52,7 @@ namespace FeedbackAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DosfeedbackDbContext>(option =>
-            option.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+            option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             var app = builder.Build();
 
