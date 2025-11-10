@@ -44,9 +44,6 @@ namespace MVCApplication.Services
             return payment?.PaymentUrl;
         }
 
-
-
-
         public async Task UpdateAsync(int id, PaymentRequestDTO dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{PaymentsEndpoint}/{id}", dto);

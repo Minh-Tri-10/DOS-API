@@ -31,27 +31,27 @@ namespace MVCApplication.Controllers
             }
         }
 
-        public async Task<IActionResult> Index(int pageNumber = 1)
-        {
-            if (CurrentUserId == null)
+            public async Task<IActionResult> Index(int pageNumber = 1)
             {
-                TempData["Error"] = "Bạn cần đăng nhập để xem đơn hàng.";
-                return RedirectToAction("Login", "Accounts");
+                if (CurrentUserId == null)
+                {
+                    TempData["Error"] = "Bạn cần đăng nhập để xem đơn hàng.";
+                    return RedirectToAction("Login", "Accounts");
+                }
+
+                var allOrders = await _service.GetOrdersByUserIdAsync(CurrentUserId.Value);
+                int totalOrders = allOrders.Count;
+                int totalPages = (int)Math.Ceiling(totalOrders / (double)PageSize);
+                var orders = allOrders
+                    .Skip((pageNumber - 1) * PageSize)
+                    .Take(PageSize)
+                    .ToList();
+
+                ViewBag.CurrentPage = pageNumber;
+                ViewBag.TotalPages = totalPages;
+
+                return View(orders);
             }
-
-            var allOrders = await _service.GetOrdersByUserIdAsync(CurrentUserId.Value);
-            int totalOrders = allOrders.Count;
-            int totalPages = (int)Math.Ceiling(totalOrders / (double)PageSize);
-            var orders = allOrders
-                .Skip((pageNumber - 1) * PageSize)
-                .Take(PageSize)
-                .ToList();
-
-            ViewBag.CurrentPage = pageNumber;
-            ViewBag.TotalPages = totalPages;
-
-            return View(orders);
-        }
 
         public async Task<IActionResult> Details(int id)
         {

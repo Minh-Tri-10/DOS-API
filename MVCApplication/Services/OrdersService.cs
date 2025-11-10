@@ -108,15 +108,14 @@ namespace MVCApplication.Services
         }
 
         public async Task<PagedResult<OrderDto>> GetPagedAsync(
-        int page = 1, int pageSize = 10,
-        string? search = null, string? status = null, string? payment = null)
+            int page = 1, int pageSize = 10,
+            string? search = null, string? status = null, string? payment = null)
         {
             int skip = (page - 1) * pageSize;
             var sb = new StringBuilder($"odata/Orders?$top={pageSize}&$skip={skip}&$count=true");
 
             var filters = new List<string>();
-            if (!string.IsNullOrWhiteSpace(search))
-                filters.Add($"contains(tolower(FullName),tolower('{Uri.EscapeDataString(search.Trim())}'))");
+            // ❌ Không filter theo FullName nữa, vì FullName null khi API trả
             if (!string.IsNullOrWhiteSpace(status))
                 filters.Add($"OrderStatus eq '{status}'");
             if (!string.IsNullOrWhiteSpace(payment))
@@ -142,9 +141,7 @@ namespace MVCApplication.Services
             var orders = odataResponse?.Value ?? new List<OrderDto>();
             int totalCount = odataResponse?.Count ?? orders.Count;
 
-            // =========================
-            // Map FullName bằng AccountService
-            // =========================
+            // Map FullName từ AccountService
             if (orders.Any())
             {
                 var userIds = orders.Select(o => o.UserId).Distinct().ToList();
@@ -159,12 +156,23 @@ namespace MVCApplication.Services
                 orders.ForEach(o => o.FullName = userMap.GetValueOrDefault(o.UserId, "Unknown"));
             }
 
+            // Filter theo search tên ở đây, sau khi map xong
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var lowerSearch = search.Trim().ToLower();
+                orders = orders
+                    .Where(o => !string.IsNullOrEmpty(o.FullName) && o.FullName.ToLower().Contains(lowerSearch))
+                    .ToList();
+                totalCount = orders.Count; // cập nhật lại tổng số
+            }
+
             return new PagedResult<OrderDto>
             {
                 Data = orders,
                 TotalCount = totalCount
             };
         }
+
 
         // OData response model
         public class ODataResponse<T>

@@ -19,7 +19,7 @@ namespace PaymentAPI
 
             builder.Services.AddDbContext<PaymentDbContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
 
 
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
