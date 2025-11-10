@@ -97,7 +97,7 @@ namespace MVCApplication.Controllers
         // POST: /Feedbacks/Edit/5 (Gửi dữ liệu cập nhật)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, FeedbackUpdateDTO updateDto)
+        public async Task<IActionResult> Edit(int id, int orderId, FeedbackUpdateDTO updateDto)
         {
             if (id <= 0) return NotFound();
 
@@ -107,7 +107,7 @@ namespace MVCApplication.Controllers
                 if (success)
                 {
                     // 🌟 Gửi thông báo thành công qua TempData
-                    TempData["StatusMessage"] = $"Đánh giá #{id} đã được cập nhật thành công!";
+                    TempData["StatusMessage"] = $"Đánh giá của đơn hàng #{orderId} đã được cập nhật thành công!";
                     return RedirectToAction("Index", "Orders");
                 }
                 ModelState.AddModelError("", "Lỗi khi gọi API cập nhật Feedback. Vui lòng kiểm tra ID.");
@@ -119,13 +119,13 @@ namespace MVCApplication.Controllers
         // POST: /Feedbacks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, int orderId)
         {
             var success = await _feedbackService.DeleteFeedbackAsync(id);
             if (success)
             {
                 // 🌟 Gửi thông báo thành công qua TempData
-                TempData["StatusMessage"] = $"Đánh giá #{id} đã được xóa thành công!";
+                TempData["StatusMessage"] = $"Đánh giá của đơn hàng #{orderId} đã được xóa thành công!";
                 return RedirectToAction("Index", "Orders");
             }
 

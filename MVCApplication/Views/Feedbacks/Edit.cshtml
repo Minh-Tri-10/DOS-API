@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Chỉnh sửa Feedback";
-    Layout = "_Layout.Admin";
+    Layout = "_CustomerLayout";
     var feedbackId = ViewData["FeedbackId"]; // Cần giữ để dùng cho asp-route-id
     var orderId = ViewData["OrderId"]; // Giả sử OrderId được truyền vào ViewData
 
@@ -212,7 +212,7 @@
 
         <form asp-action="Edit" asp-route-id="@feedbackId">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
+            
             <div class="form-group mb-3">
                 <label class="control-label">Đánh giá (Sao)</label>
 
@@ -233,12 +233,16 @@
                 <textarea asp-for="Comment" class="form-control-custom" rows="3"></textarea>
                 <span asp-validation-for="Comment" class="text-danger"></span>
             </div>
+            @* Gửi Order Id để hiện thị thông báo thông qua controller *@
+            <input type="hidden" name="orderId" value="@orderId" />
 
             <div class="form-group">
                 <input type="submit" value="Lưu thay đổi" class="btn-ban btn-primary-custom" style="width: 100%;" />
             </div>
         </form>
         <form asp-action="Delete" asp-route-id="@feedbackId" method="post" id="DeleteForm" style="margin-top: 15px;">
+            @* Gửi Order Id để hiện thị thông báo thông qua controller *@
+            <input type="hidden" name="orderId" value="@orderId" />
             <button type="button" id="DeleteButton" class="btn-ban btn-delete-custom" style="width: 100%;">
                 <i class="fas fa-trash-alt"></i> Xóa Đánh giá này
             </button>

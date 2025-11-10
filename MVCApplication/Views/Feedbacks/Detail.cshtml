@@ -1,50 +1,215 @@
 ﻿@model MVCApplication.DTOs.FeedbackResponseDTO
+@using System.Globalization
 
 @{
     ViewData["Title"] = $"Chi tiết đánh giá của Order {Model?.OrderId}";
+    // Layout giữ nguyên như code gốc của trang Detail, giả sử không có Layout trong code gốc
+    Layout = "_Layout.Admin";
+
+    // Đảm bảo Rating không null cho việc hiển thị sao
+    int currentRating = Model?.Rating > 0 ? Model.Rating : 0;
 }
 
-<h1>Chi tiết đánh giá của Order @Html.DisplayFor(model => model.OrderId)</h1>
+<style>
+    /*
+        * COPY TOÀN BỘ STYLE CSS TỪ TRANG EDIT (WOW PACK v2) VÀO ĐÂY
+        * (Để đảm bảo trang Detail có đủ biến và class cần thiết)
+        */
 
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">Thông tin Đánh giá</h4>
+    /* ===== WOW PACK v2 – Styles cho form (dark/light theo biến layout) ===== */
+    .page-block {
+        padding: 16px 0;
+    }
+
+    .page-heading {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin: 0 0 18px;
+    }
+
+        .page-heading h2 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.1;
+        }
+
+        .page-heading .under {
+            position: relative;
+            height: 6px;
+            flex: 1;
+            min-width: 120px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            filter: saturate(1.1) brightness(1.05);
+            box-shadow: 0 0 22px color-mix(in oklab, var(--accent) 45%, transparent);
+        }
+
+    .card-surface {
+        position: relative;
+        isolation: isolate;
+        background: color-mix(in oklab, var(--bg-soft) 92%, transparent);
+        color: var(--text);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset;
+        overflow: hidden;
+        max-width: 500px; /* Giới hạn chiều rộng cho form */
+        margin: 0 auto;
+    }
+
+        .card-surface::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab, var(--accent) 40%, transparent), color-mix(in oklab, var(--accent2) 40%, transparent), transparent 40%);
+            filter: blur(10px) saturate(1.2);
+            opacity: .45;
+            mask: linear-gradient(#000 0 0);
+            animation: ringFloat 12s linear infinite;
+        }
+
+    @@keyframes ringFloat {
+        to {
+            transform: rotate(1turn);
+        }
+    }
+
+    .card-surface::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab, var(--accent2) 10%, transparent), transparent 60%);
+        opacity: .35;
+    }
+
+    /* Form controls custom style */
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text);
+    }
+
+    /* Nút */
+    .btn-ban {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 20px;
+        font-size: 15px;
+        font-weight: 700;
+        min-width: 120px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .25s ease;
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab, #000 30%, transparent);
+        text-align: center;
+    }
+
+    /* Nút Quay lại */
+    .btn-secondary-custom {
+        background: linear-gradient(180deg, color-mix(in oklab, var(--muted) 12%, transparent), color-mix(in oklab, var(--muted) 8%, transparent));
+        color: var(--text);
+        margin-top: 18px;
+    }
+
+    .btn-ban:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+    }
+
+    /* === Star Rating Styles === */
+    .star-rating-container {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        margin-top: 5px;
+        width: fit-content;
+        margin-left: 0;
+    }
+
+        .star-rating-container label {
+            font-size: 28px;
+            color: #ffc107; /* Luôn màu vàng cho trang detail */
+            padding: 0 2px;
+        }
+
+    /* Detail Specific Styles */
+    .detail-item {
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed color-mix(in oklab, var(--border) 70%, transparent);
+    }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+    .detail-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 16px;
+        color: var(--text-strong);
+        word-wrap: break-word;
+    }
+
+</style>
+
+<div class="page-block">
+    <div class="page-heading">
+        <h2>Chi tiết đánh giá</h2>
+        <div class="under"></div>
     </div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.OrderId)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.OrderId)
-            </dd>
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.Rating)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Rating)
-            </dd>
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.Comment)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Comment)
-            </dd>
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.FeedbackDate)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.FeedbackDate)
-            </dd>
-        </dl>
+
+    <div class="card-surface">
+        <h4 style="margin-bottom: 16px; font-weight: 600;">Đánh giá cho Đơn hàng: #@Model.OrderId</h4>
+
+        <div class="detail-item">
+            <span class="detail-label">Đánh giá (Sao)</span>
+            <div class="star-rating-container">
+                @for (int i = 5; i >= 1; i--)
+                {
+                    <label style="@(currentRating >= i ? "" : "color: var(--muted) !important;")">★</label>
+                }
+            </div>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">Bình luận</span>
+            <span class="detail-value">@(string.IsNullOrWhiteSpace(Model.Comment) ? "— Không có bình luận —" : Model.Comment)</span>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">Ngày đánh giá</span>
+            <span class="detail-value">@Model.FeedbackDate.ToString("dd/MM/yyyy HH:mm:ss")</span>
+        </div>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="javascript:history.back()" class="btn-ban btn-secondary-custom">Quay lại trang trước</a>
     </div>
 </div>
 
-<div class="mt-4">
-    <a asp-action="Edit" asp-route-id="@Model?.FeedbackId" class="btn btn-warning">Sửa</a>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
-
-    <form asp-action="DeleteConfirmed" asp-route-id="@Model?.FeedbackId" method="post" class="d-inline">
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa Feedback này không?');">Xóa</button>
-    </form>
-</div>
+@section Scripts {
+    @* Không cần script cho trang Detail *@
+}
