@@ -35,7 +35,7 @@ namespace MVCApplication.Controllers
         {
             if (CurrentUserId == null)
             {
-                TempData["Error"] = "Ban can dang nhap de xem don hang.";
+                TempData["Error"] = "Bạn cần đăng nhập để xem đơn hàng.";
                 return RedirectToAction("Login", "Accounts");
             }
 
@@ -123,18 +123,18 @@ namespace MVCApplication.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Cancel(int id, string reason = "Nguoi dung huy don")
+        public async Task<IActionResult> Cancel(int id, string reason = "Người dùng hủy đơn")
         {
             if (CurrentUserId == null) return Forbid();
 
             var success = await _service.CancelAsync(id, reason);
             if (!success)
             {
-                TempData["Error"] = "Huy don that bai.";
+                TempData["Error"] = "Hủy đơn thất bại.";
             }
             else
             {
-                TempData["Success"] = "Don hang da duoc huy.";
+                TempData["Success"] = "Đơn hàng đã được hủy.";
             }
 
             return RedirectToAction(nameof(Index));
