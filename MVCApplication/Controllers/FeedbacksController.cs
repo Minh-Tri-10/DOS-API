@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MVCApplication.Services.Interfaces;
 using MVCApplication.DTOs;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace MVCApplication.Controllers
         }
 
         // GET: /Feedbacks/Index
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var feedbacks = await _feedbackService.GetAllFeedbacksAsync();
@@ -24,6 +26,7 @@ namespace MVCApplication.Controllers
         }
 
         // GET: /Feedbacks/Detail/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Detail(int id)
         {
             var feedback = await _feedbackService.GetFeedbackByIdAsync(id);

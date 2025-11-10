@@ -19,6 +19,7 @@ namespace MVCApplication.Controllers
         }
 
         // GET: /Payments
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var payments = await _paymentService.GetAllAsync();
@@ -26,6 +27,7 @@ namespace MVCApplication.Controllers
         }
 
         // GET: /Payments/Detail/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Detail(int id)
         {
             var payment = await _paymentService.GetByIdAsync(id);
@@ -56,6 +58,7 @@ namespace MVCApplication.Controllers
         }
 
         // GET: /Payments/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var payment = await _paymentService.GetByIdAsync(id);
@@ -79,6 +82,7 @@ namespace MVCApplication.Controllers
         // POST: /Payments/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, PaymentRequestDTO dto)
         {
             if (ModelState.IsValid)
@@ -93,6 +97,7 @@ namespace MVCApplication.Controllers
         // POST: /Payments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _paymentService.DeleteAsync(id);
@@ -111,6 +116,7 @@ namespace MVCApplication.Controllers
 
         // GET: /Payments/PaymentsByOrder?orderId=123
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PaymentsByOrder(int orderId)
         {
             var payments = await _paymentService.GetPaymentsByOrderIdAsync(orderId);

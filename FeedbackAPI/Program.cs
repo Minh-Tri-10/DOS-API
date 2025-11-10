@@ -5,10 +5,13 @@ using FeedbackAPI.Repositories.Interfaces;
 using FeedbackAPI.Services;
 using FeedbackAPI.Services.Interfaces;
 // 1. THÊM USING CHO ODATA
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using System.Text;
 
 namespace FeedbackAPI
 {
@@ -52,7 +55,33 @@ namespace FeedbackAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DosfeedbackDbContext>(option =>
-            option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            option.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
+
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var signingKey = jwtSection["Key"];
+            if (string.IsNullOrWhiteSpace(signingKey))
+            {
+                throw new InvalidOperationException("JWT:Key configuration is missing for FeedbackAPI.");
+            }
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
+                        ValidIssuer = jwtSection["Issuer"],
+                        ValidAudience = jwtSection["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
+                        ClockSkew = TimeSpan.FromMinutes(1)
+                    };
+                });
+
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -65,6 +94,7 @@ namespace FeedbackAPI
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

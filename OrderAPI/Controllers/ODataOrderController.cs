@@ -10,7 +10,7 @@ namespace OrderAPI.Controllers
 {
     [ApiController]
     [Route("odata/Orders")]
-    //[Authorize]
+    [Authorize(Roles = "Admin")]
     public class ODataOrderController : ODataController
     {
         private readonly IOrderService _service;
