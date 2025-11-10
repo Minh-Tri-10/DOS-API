@@ -128,6 +128,14 @@ namespace OrderAPI.Repositories
                 .Distinct()  // Đếm số Order unique
                 .CountAsync();
         }
+        /// <summary>
+        /// Odata
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Order> GetAllQueryable()
+        {
+            return _context.Orders.AsQueryable();
+        }
 
     }
 }

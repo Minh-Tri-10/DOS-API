@@ -28,6 +28,7 @@ namespace AccountAPI
 
                 options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 
+
             builder.Services.AddSingleton(sp =>
             {
                 var cfg = sp.GetRequiredService<IConfiguration>().GetSection("Email");

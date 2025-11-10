@@ -4,25 +4,36 @@ using OrderAPI.DTOs;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Web;
+using static MVCApplication.Services.OrdersService;
 namespace MVCApplication.Services
 {
     public class OrdersService : IOrderService
     {
+        private readonly IAccountService _accountService;
         private readonly HttpClient _http;
-        public OrdersService(HttpClient http) => _http = http;
+
+        public OrdersService(HttpClient http, IAccountService accountService)
+        {
+            _http = http;
+            _accountService = accountService;
+        }
 
         public async Task<List<OrderDto>?> GetAllAsync()
         {
             return await _http.GetFromJsonAsync<List<OrderDto>>("api/order");
         }
-        public async Task<PagedResult<OrderDto>?> GetPagedAsync(int page = 1, int pageSize = 10)
-        {
-            var response = await _http.GetAsync($"api/order?page={page}&pageSize={pageSize}");
-            if (!response.IsSuccessStatusCode) return null;
+        //public async Task<PagedResult<OrderDto>?> GetPagedAsync(int page = 1, int pageSize = 10)
+        //{
+        //    var response = await _http.GetAsync($"api/order?page={page}&pageSize={pageSize}");
+        //    if (!response.IsSuccessStatusCode) return null;
 
-            var result = await response.Content.ReadFromJsonAsync<PagedResult<OrderDto>>();
-            return result;
-        }
+        //    var result = await response.Content.ReadFromJsonAsync<PagedResult<OrderDto>>();
+        //    return result;
+        //}
 
         public async Task<OrderDto?> GetByIdAsync(int id)
         {
@@ -96,6 +107,74 @@ namespace MVCApplication.Services
             return usage ?? new ProductUsageDto();
         }
 
+        public async Task<PagedResult<OrderDto>> GetPagedAsync(
+        int page = 1, int pageSize = 10,
+        string? search = null, string? status = null, string? payment = null)
+        {
+            int skip = (page - 1) * pageSize;
+            var sb = new StringBuilder($"odata/Orders?$top={pageSize}&$skip={skip}&$count=true");
+
+            var filters = new List<string>();
+            if (!string.IsNullOrWhiteSpace(search))
+                filters.Add($"contains(tolower(FullName),tolower('{Uri.EscapeDataString(search.Trim())}'))");
+            if (!string.IsNullOrWhiteSpace(status))
+                filters.Add($"OrderStatus eq '{status}'");
+            if (!string.IsNullOrWhiteSpace(payment))
+                filters.Add($"PaymentStatus eq '{payment}'");
+
+            if (filters.Any())
+                sb.Append("&$filter=" + string.Join(" and ", filters));
+
+            sb.Append("&$orderby=OrderDate desc");
+
+            var url = sb.ToString();
+            var response = await _http.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new InvalidOperationException($"Lỗi gọi API: {response.StatusCode} - {content}");
+
+            var odataResponse = JsonSerializer.Deserialize<ODataResponse<OrderDto>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            var orders = odataResponse?.Value ?? new List<OrderDto>();
+            int totalCount = odataResponse?.Count ?? orders.Count;
+
+            // =========================
+            // Map FullName bằng AccountService
+            // =========================
+            if (orders.Any())
+            {
+                var userIds = orders.Select(o => o.UserId).Distinct().ToList();
+                var userMap = new Dictionary<int, string>();
+
+                foreach (var id in userIds)
+                {
+                    var user = await _accountService.GetByIdAsync(id);
+                    userMap[id] = user?.FullName ?? "Unknown";
+                }
+
+                orders.ForEach(o => o.FullName = userMap.GetValueOrDefault(o.UserId, "Unknown"));
+            }
+
+            return new PagedResult<OrderDto>
+            {
+                Data = orders,
+                TotalCount = totalCount
+            };
+        }
+
+        // OData response model
+        public class ODataResponse<T>
+        {
+            [JsonPropertyName("@odata.count")]
+            public int? Count { get; set; }
+
+            [JsonPropertyName("value")]
+            public List<T>? Value { get; set; }
+        }
 
     }
 }

@@ -28,6 +28,7 @@ namespace CategoriesAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("WeiConnection")));
 
 
+
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
