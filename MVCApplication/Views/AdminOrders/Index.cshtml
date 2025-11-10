@@ -678,7 +678,7 @@
                             <td><span class="@StatusClass(order.OrderStatus)">@order.OrderStatus</span></td>
                             <td><span class="@PayClass(order.PaymentStatus)">@order.PaymentStatus</span></td>
                             <td class="orders-money">
-                                @order.TotalAmount.ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
+                                @((order.TotalAmount + 30000).ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")))
                             </td>
                             <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
                             <td class="orders-actions">

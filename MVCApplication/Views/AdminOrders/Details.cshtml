@@ -4,6 +4,9 @@
     Layout = "_Layout.Admin";
 }
 @{
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    var shippingFee = 30000m;
+    var totalWithShipping = Model.TotalAmount + shippingFee;
     string StatusClass(string s)
     {
         if (string.IsNullOrWhiteSpace(s)) return "od-pill neutral";
@@ -22,7 +25,7 @@
         if (s.Contains("unpaid") || s.Contains("failed")) return "od-pill bad";
         return "od-pill neutral";
     }
-    var vi = CultureInfo.GetCultureInfo("vi-VN");
+
 }
 
 <style>
@@ -426,6 +429,19 @@
             </div>
         </div>
 
+        <!-- Shipping fee & total -->
+        <div class="od-section">
+            <div class="od-grid">
+                <div class="od-field">
+                    <div class="od-label">Phí ship</div>
+                    <div class="od-value money od-money-warn">@shippingFee.ToString("c0", vi)</div>
+                </div>
+                <div class="od-field">
+                    <div class="od-label">Tổng cộng (đã bao gồm phí ship)</div>
+                    <div class="od-value money od-money-strong">@totalWithShipping.ToString("c0", vi)</div>
+                </div>
+            </div>
+        </div>
         <!-- Actions -->
         <div class="od-actions">
             <a asp-action="Index" class="od-btn">← Quay lại danh sách</a>
