@@ -25,6 +25,6 @@ namespace MVCApplication.Services.Interfaces
         /// <param name="payment"></param>
         /// <returns></returns>
         Task<PagedResult<OrderDto>?> GetPagedAsync(int page = 1, int pageSize = 10, string? search = null, string? status = null, string? payment = null);
-
+        Task<bool> MarkOrderAsCompletedAsync(int orderId);
     }
 }

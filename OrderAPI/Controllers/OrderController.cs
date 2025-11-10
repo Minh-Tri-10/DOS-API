@@ -98,5 +98,16 @@ namespace OrderAPI.Controllers
             var result = await _service.CheckProductUsageAsync(productId);
             return Ok(result);
         }
+
+        [HttpPut("{id}/complete")]
+        public async Task<IActionResult> MarkAsCompleted(int id)
+        {
+            var success = await _service.MarkOrderAsCompletedAsync(id);
+            if (!success)
+                return NotFound("Không tìm thấy đơn hàng hoặc đã ở trạng thái hoàn tất.");
+
+            return NoContent();
+        }
+
     }
 }

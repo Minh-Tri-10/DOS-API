@@ -563,7 +563,7 @@
                                     </span>
                                 </td>
 
-                                <td class="total-amount-cell">@order.TotalAmount.ToString("N0")₫</td>
+                                <td class="total-amount-cell">@((order.TotalAmount + 30000).ToString("N0"))₫</td>
                                 <td class="date-cell">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
                                     <div class="action-buttons">

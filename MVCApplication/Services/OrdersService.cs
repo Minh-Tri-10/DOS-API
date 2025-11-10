@@ -183,6 +183,11 @@ namespace MVCApplication.Services
             [JsonPropertyName("value")]
             public List<T>? Value { get; set; }
         }
+        public async Task<bool> MarkOrderAsCompletedAsync(int orderId)
+        {
+            var response = await _http.PutAsync($"api/order/{orderId}/complete", null);
+            return response.IsSuccessStatusCode;
+        }
 
     }
 }
