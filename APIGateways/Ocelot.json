@@ -255,6 +255,52 @@
         "RouteIsCaseSensitive": false
       },
       {
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 7051
+          }
+        ],
+        "DownstreamScheme": "https",
+        "DownstreamPathTemplate": "/api/Feedbacks",
+        "AuthenticationOptions": {
+          "AllowedScopes": [
+
+          ],
+          "AuthenticationProviderKey": "Bearer"
+        },
+        "UpstreamHttpMethod": [
+          "GET",
+          "POST"
+        ],
+        "UpstreamPathTemplate": "/api/feedbacks",
+        "RouteIsCaseSensitive": false
+      },
+      {
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 7051
+          }
+        ],
+        "DownstreamScheme": "https",
+        "DownstreamPathTemplate": "/api/Feedbacks/{everything}",
+        "AuthenticationOptions": {
+          "AllowedScopes": [
+
+          ],
+          "AuthenticationProviderKey": "Bearer"
+        },
+        "UpstreamHttpMethod": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
+        "UpstreamPathTemplate": "/api/feedbacks/{everything}",
+        "RouteIsCaseSensitive": false
+      },
+      {
         "UpstreamPathTemplate": "/odata/Categories",
         "DownstreamHostAndPorts": [
           {

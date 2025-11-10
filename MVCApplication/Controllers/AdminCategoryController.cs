@@ -1,10 +1,12 @@
 ﻿// AdminCategoryController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MVCApplication.Services.Interfaces;
 using MVCApplication.DTOs; // Assuming models/DTOs are defined here
 using Microsoft.Extensions.Logging;
 namespace MVCApplication.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminCategoryController : Controller
     {
         private readonly ICategoryService _categoryService;

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MVCApplication.Services.Interfaces;
 
 namespace MVCApplication.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class StatsController : Controller
     {
         private readonly IStatsService _stats;

@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
 
 namespace MVCApplication.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminOrdersController : Controller
     {
         private readonly IOrderService _service;

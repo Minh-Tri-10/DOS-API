@@ -2,6 +2,7 @@
 using FeedbackAPI.DTOs;
 using FeedbackAPI.Models;
 using FeedbackAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace FeedbackAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FeedbacksController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
