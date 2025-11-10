@@ -24,6 +24,7 @@ namespace CartAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
+
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
