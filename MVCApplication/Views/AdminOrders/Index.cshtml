@@ -32,7 +32,7 @@
     {
         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
         s = s.ToLowerInvariant();
-        if (s.Contains("pending") || s.Contains("processing")) return "orders-pill warn";
+        if (s.Contains("pending")) return "orders-pill warn";
         if (s.Contains("completed") || s.Contains("shipped") || s.Contains("delivered")) return "orders-pill ok";
         if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "orders-pill bad";
         return "orders-pill neutral";
@@ -43,11 +43,13 @@
     {
         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
         s = s.ToLowerInvariant();
-        if (s.Contains("paid") || s.Contains("captured")) return "orders-pill ok";
-        if (s.Contains("refunded") || s.Contains("partial")) return "orders-pill warn";
-        if (s.Contains("unpaid") || s.Contains("failed")) return "orders-pill bad";
+
+        if (s.Contains("unpaid") || s.Contains("failed")) return "orders-pill bad";       // ❌ đỏ trước
+        if (s.Contains("refunded") || s.Contains("partial")) return "orders-pill warn";   // ⚠️ vàng
+        if (s.Contains("paid") || s.Contains("captured")) return "orders-pill ok";        // ✅ xanh lá
         return "orders-pill neutral";
     }
+
 
     // Lấy các giá trị từ ViewBag
     var currentPage = ViewBag.Page ?? 1;
@@ -637,7 +639,6 @@
         <select name="status" class="orders-select">
             <option value="">Tất cả trạng thái</option>
             <option value="Pending" selected="@(status == "Pending")">Pending</option>
-            <option value="Processing" selected="@(status == "Processing")">Processing</option>
             <option value="Completed" selected="@(status == "Completed")">Completed</option>
             <option value="Cancelled" selected="@(status == "Cancelled")">Cancelled</option>
         </select>
@@ -709,7 +710,7 @@
                             int start = Math.Max(1, currentPage - 2);
                             int end = Math.Min(totalPagesCount, currentPage + 2);
                         }
-                        @for (int i = start; i <= end; i++)
+                        @for (int i = start; i <= end; i++) 
                         {
                             <li class="page-item @(i == currentPage ? "active" : "")">
                                 <a class="page-link" href="?page=@i&search=@search&status=@status&payment=@payment">@i</a>

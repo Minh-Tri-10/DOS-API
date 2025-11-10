@@ -31,27 +31,27 @@ namespace MVCApplication.Controllers
             }
         }
 
-        public async Task<IActionResult> Index(int pageNumber = 1)
-        {
-            if (CurrentUserId == null)
+            public async Task<IActionResult> Index(int pageNumber = 1)
             {
-                TempData["Error"] = "Ban can dang nhap de xem don hang.";
-                return RedirectToAction("Login", "Accounts");
+                if (CurrentUserId == null)
+                {
+                    TempData["Error"] = "Bạn cần đăng nhập để xem đơn hàng.";
+                    return RedirectToAction("Login", "Accounts");
+                }
+
+                var allOrders = await _service.GetOrdersByUserIdAsync(CurrentUserId.Value);
+                int totalOrders = allOrders.Count;
+                int totalPages = (int)Math.Ceiling(totalOrders / (double)PageSize);
+                var orders = allOrders
+                    .Skip((pageNumber - 1) * PageSize)
+                    .Take(PageSize)
+                    .ToList();
+
+                ViewBag.CurrentPage = pageNumber;
+                ViewBag.TotalPages = totalPages;
+
+                return View(orders);
             }
-
-            var allOrders = await _service.GetOrdersByUserIdAsync(CurrentUserId.Value);
-            int totalOrders = allOrders.Count;
-            int totalPages = (int)Math.Ceiling(totalOrders / (double)PageSize);
-            var orders = allOrders
-                .Skip((pageNumber - 1) * PageSize)
-                .Take(PageSize)
-                .ToList();
-
-            ViewBag.CurrentPage = pageNumber;
-            ViewBag.TotalPages = totalPages;
-
-            return View(orders);
-        }
 
         public async Task<IActionResult> Details(int id)
         {
@@ -123,18 +123,18 @@ namespace MVCApplication.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Cancel(int id, string reason = "Nguoi dung huy don")
+        public async Task<IActionResult> Cancel(int id, string reason = "Người dùng hủy đơn")
         {
             if (CurrentUserId == null) return Forbid();
 
             var success = await _service.CancelAsync(id, reason);
             if (!success)
             {
-                TempData["Error"] = "Huy don that bai.";
+                TempData["Error"] = "Hủy đơn thất bại.";
             }
             else
             {
-                TempData["Success"] = "Don hang da duoc huy.";
+                TempData["Success"] = "Đơn hàng đã được hủy.";
             }
 
             return RedirectToAction(nameof(Index));
