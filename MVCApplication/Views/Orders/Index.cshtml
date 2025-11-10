@@ -290,6 +290,11 @@
         transition: background-color var(--duration) ease, color var(--duration) ease;
     }
 
+        .status-pill.cancelled {
+            background: color-mix(in oklab, var(--danger) 15%, transparent);
+            color: var(--danger);
+        }
+
     .status-ok {
         background: color-mix(in oklab, var(--ok) 15%, transparent);
         color: var(--ok);
@@ -539,12 +544,13 @@
                     {
                         @foreach (var order in Model)
                         {
-                            <tr>
+
+                            <tr data-order-id="@order.OrderId">
                                 <td class="order-id-cell">#@order.OrderId</td>
                                 <td>@order.FullName</td>
 
                                 @* HIỂN THỊ TRẠNG THÁI ĐƠN HÀNG (Dịch sang tiếng Việt) *@
-                                <td>
+                                <td class="status-cell">
                                     <span class="status-pill @GetStatusClass(order.OrderStatus)">
                                         @TranslateStatus(order.OrderStatus)
                                     </span>
@@ -641,72 +647,95 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Elements ---
             const modalOverlay = document.getElementById('cancelOrderModal');
             const btnClose = document.getElementById('btnCloseModal');
-            // Lấy tất cả các nút Hủy có class 'btn-open-modal'
             const btnOpenList = document.querySelectorAll('.btn-open-modal');
             const modalOrderIdSpan = document.getElementById('modalOrderId');
             const modalOrderIdInput = document.getElementById('modalOrderIdInput');
             const cancelReasonInput = document.getElementById('cancelReasonInput');
+            const cancelForm = document.getElementById('cancelForm');
 
             // --- Hàm Đóng Modal ---
             const closeModal = () => {
                 modalOverlay.classList.remove('active');
-                // Đảm bảo không còn focus vào input khi modal đóng
                 cancelReasonInput.blur();
             };
 
-            // --- Xử lý Mở Modal ---
+            // --- Mở Modal ---
             btnOpenList.forEach(button => {
                 button.addEventListener('click', (e) => {
-                    // Lấy Order ID từ data attribute của nút được click
                     const orderId = e.target.dataset.orderId;
-
-                    // Cập nhật Order ID vào các phần tử hiển thị và input ẩn
                     modalOrderIdSpan.textContent = orderId;
                     modalOrderIdInput.value = orderId;
-
-                    // Reset textarea và focus vào đó
                     cancelReasonInput.value = '';
-
-                    // Hiển thị modal
                     modalOverlay.classList.add('active');
-                    // Đợi animation mở modal hoàn thành rồi focus
-                    setTimeout(() => {
-                        cancelReasonInput.focus();
-                    }, 300);
+                    setTimeout(() => cancelReasonInput.focus(), 300);
                 });
             });
 
-            // --- Xử lý Đóng Modal ---
-            // 1. Đóng modal khi click nút "Đóng"
+            // --- Đóng Modal ---
             btnClose.addEventListener('click', closeModal);
-
-            // 2. Đóng modal khi click ra ngoài overlay
             modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) {
-                    closeModal();
-                }
+                if (e.target === modalOverlay) closeModal();
             });
-
-            // 3. Đóng modal khi nhấn ESC
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
-                    closeModal();
-                }
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal();
             });
 
-            // --- Xử lý Form Submit (Ngăn submit nếu lý do rỗng, dù đã có required) ---
-            const cancelForm = document.getElementById('cancelForm');
+            // --- Submit AJAX ---
             cancelForm.addEventListener('submit', (e) => {
-                if (!cancelReasonInput.value.trim()) {
-                    e.preventDefault();
-                    // Thông báo đơn giản cho người dùng
+                e.preventDefault();
+
+                const id = modalOrderIdInput.value;
+                const reason = cancelReasonInput.value.trim();
+
+                if (!reason) {
                     alert("Vui lòng nhập lý do hủy đơn hàng.");
                     cancelReasonInput.focus();
+                    return;
                 }
+
+                // Lấy AntiForgeryToken (nếu có)
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                // Gửi AJAX POST đến action Cancel
+                $.ajax({
+                    url: '/Orders/Cancel',       // ✅ Action trong controller
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        reason: reason,
+                        __RequestVerificationToken: token
+                    },
+                    success: function (result) {
+                        // Ẩn modal
+                        $('#cancelOrderModal').hide();
+                        $('#cancelReasonInput').val('');
+
+                        alert('Đơn hàng đã được hủy thành công!');
+
+                        // --- Cập nhật trực tiếp trong bảng ---
+                        var row = $('tr[data-order-id="' + id + '"]');
+                        if (row.length) {
+                            var statusCell = row.find('.status-cell');
+                            var statusSpan = statusCell.find('.status-pill');
+                            if (statusSpan.length) {
+                                statusSpan.text('Đã hủy');
+                                statusSpan.removeClass().addClass('status-pill cancelled');
+                            }
+
+                            // Ẩn nút hủy
+                            row.find('.btn-open-modal').remove();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Lỗi khi hủy đơn hàng: ' + (xhr.responseText || error));
+                    }
+                });
             });
         });
     </script>
 }
+
+
+
