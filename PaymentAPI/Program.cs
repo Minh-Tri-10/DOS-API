@@ -18,7 +18,7 @@ namespace PaymentAPI
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<PaymentDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
 
 

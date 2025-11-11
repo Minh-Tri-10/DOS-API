@@ -27,7 +27,7 @@ namespace AccountAPI
 
             // DbContext kết nối tới database chứa bảng Users.
             builder.Services.AddDbContext<AccountDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
 
                
 
