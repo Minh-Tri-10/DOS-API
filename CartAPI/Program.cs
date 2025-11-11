@@ -1,4 +1,4 @@
-using System.Text;
+using CartAPI.Helpers;
 using CartAPI.Models;
 using CartAPI.Repositories;
 using CartAPI.Repositories.Interfaces;
@@ -7,6 +7,7 @@ using CartAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace CartAPI
 {
@@ -21,14 +22,18 @@ namespace CartAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CartDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
 
 
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddHttpClient("ProductAPI", c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:7021/"); //  URL ProductAPI 
+            });
 
+            builder.Services.AddScoped<ProductApiClient>();
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
             if (string.IsNullOrWhiteSpace(signingKey))

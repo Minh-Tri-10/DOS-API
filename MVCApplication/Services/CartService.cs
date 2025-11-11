@@ -35,7 +35,8 @@ namespace MVCApplication.Services
                     Quantity = item.Quantity,
                     ProductName = product?.ProductName ?? "N/A",
                     ImageUrl = product?.ImageUrl ?? "",
-                    Price = product?.Price ?? 0
+                    Price = product?.Price ?? 0,
+                    Stock = product?.Stock ?? 0
                 });
             }
             return vm;

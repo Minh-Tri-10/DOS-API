@@ -1,12 +1,13 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MVCApplication.Models;
 using MVCApplication.Services.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace MVCApplication.Controllers
 {
@@ -98,40 +99,114 @@ namespace MVCApplication.Controllers
         {
             if (!TryGetAuthenticatedUserId(out var adminId))
             {
+                await SignOutAsync();
                 return RedirectToAction("Login", "Accounts");
             }
 
+            dto.UserId = adminId; // ✅ gửi ID để API biết người đang sửa
+
+            // ✅ Kiểm tra model trước khi gọi API
             if (!ModelState.IsValid)
             {
+                await PrepareHeaderAndKeepEditing(dto, adminId);
                 return View("Profile", dto);
             }
 
-            // ✅ Gửi FormData đến API để upload lên Cloudinary
-            var updated = await _service.UpdateProfileAsync(adminId, dto, avatarFile);
-            if (updated == null)
+            try
             {
-                ViewBag.Error = "Cập nhật thất bại!";
+                var updatedUser = await _service.UpdateProfileAsync(adminId, dto, avatarFile);
+                if (updatedUser == null)
+                {
+                    ViewBag.Error = "Cập nhật thất bại!";
+                    await PrepareHeaderAndKeepEditing(dto, adminId);
+                    return View("Profile", dto);
+                }
+
+                // ✅ Làm mới claims (avatar, tên, email mới)
+                await RefreshClaimsAsync(updatedUser);
+
+                // ✅ Hiển thị thông báo thành công
+                ViewBag.Success = "Cập nhật thông tin thành công!";
+                return View("Profile", new UpdateProfileViewModel
+                {
+                    UserId = updatedUser.UserId,
+                    Username = updatedUser.Username,
+                    FullName = updatedUser.FullName,
+                    Email = updatedUser.Email,
+                    Phone = updatedUser.Phone,
+                    Role = updatedUser.Role,
+                    IsBanned = updatedUser.IsBanned,
+                    AvatarUrl = updatedUser.AvatarUrl
+                });
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine("⚠️ ValidationException: " + ex.Message);
+
+                // ✅ Nếu service truyền raw JSON lỗi qua ex.Data["ApiErrors"]
+                if (ex.Data["ApiErrors"] is string rawJson)
+                {
+                    try
+                    {
+                        var root = System.Text.Json.JsonDocument.Parse(rawJson).RootElement;
+                        if (root.TryGetProperty("errors", out var errorsProp))
+                        {
+                            foreach (var kv in errorsProp.EnumerateObject())
+                            {
+                                foreach (var msg in kv.Value.EnumerateArray())
+                                {
+                                    ModelState.AddModelError(kv.Name, msg.GetString() ?? "Dữ liệu không hợp lệ.");
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        ModelState.AddModelError(string.Empty, "Dữ liệu không hợp lệ.");
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+
+                // ✅ Giữ lại form + header khi có lỗi
+                await PrepareHeaderAndKeepEditing(dto, adminId);
                 return View("Profile", dto);
             }
-
-            // ✅ Cập nhật lại Claims (AvatarUrl, Name...)
-            await RefreshClaimsAsync(updated);
-
-            var vm = new UpdateProfileViewModel
+            catch (HttpRequestException)
             {
-                UserId = updated.UserId,
-                Username = updated.Username,
-                FullName = updated.FullName,
-                Email = updated.Email,
-                Phone = updated.Phone,
-                Role = updated.Role,
-                IsBanned = updated.IsBanned,
-                AvatarUrl = updated.AvatarUrl
-            };
-
-            TempData["Success"] = "Cập nhật thông tin thành công!";
-            return View("Profile", vm);
+                ViewBag.Error = "Không thể kết nối tới máy chủ. Vui lòng thử lại.";
+                await PrepareHeaderAndKeepEditing(dto, adminId);
+                return View("Profile", dto);
+            }
         }
+        private async Task PrepareHeaderAndKeepEditing(UpdateProfileViewModel dto, int userId)
+        {
+            var user = await _service.GetByIdAsync(userId);
+            if (user != null)
+            {
+                // Giữ phần header trên cùng
+                ViewBag.Header = new
+                {
+                    user.FullName,
+                    user.Email,
+                    user.Role,
+                    user.AvatarUrl
+                };
+
+                // Giữ các field bị disable
+                dto.Username = user.Username;
+                dto.Role = user.Role;
+                dto.IsBanned = user.IsBanned;
+            }
+
+            ViewBag.KeepEditing = true;
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                ViewBag.IsAjax = true;
+        }
+
+
 
 
         private bool TryGetAuthenticatedUserId(out int userId)

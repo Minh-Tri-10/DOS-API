@@ -1,6 +1,5 @@
 ﻿using MVCApplication.DTOs;
 using MVCApplication.Services.Interfaces;
-using OrderAPI.DTOs;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;

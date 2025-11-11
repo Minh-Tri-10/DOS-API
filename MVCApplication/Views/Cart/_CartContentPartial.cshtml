@@ -1,0 +1,70 @@
+﻿<!-- 🔹 GIAO DIỆN GIỎ HÀNG CÓ SẢN PHẨM -->
+<div class="cart-page">
+    <div class="cart-title">
+        <h2>Giỏ hàng</h2>
+        <div class="under"></div>
+    </div>
+
+    <div class="cart-card" id="cartCard">
+        <!-- head -->
+        <div class="cart-head">
+            <label class="cart-check">
+                <input type="checkbox" class="cart-checkbox" id="checkAll">
+                <span>Chọn tất cả</span>
+            </label>
+            <button type="button" class="cart-btn cart-btn-ghost" id="removeSelected">Xóa các mục đã chọn</button>
+        </div>
+
+        <!-- list -->
+        <div class="cart-list" id="cartList">
+            @foreach (var item in Model.CartItems)
+            {
+                <div class="cart-row" data-id="@item.CartItemId" data-price="@item.Price" data-product-id="@item.ProductId">
+                    <div class="cell-check">
+                        <input type="checkbox" class="cart-checkbox cart-item-check">
+                    </div>
+                    <img class="cart-img cell-img" src="@item.ImageUrl" alt="@item.ProductName">
+                    <div class="cell-name">
+                        <div class="cart-name">@item.ProductName</div>
+                        <div class="cart-meta">Số lượng hiện có: @item.Stock</div>
+
+                    </div>
+                    <div class="cell-price">
+                        <span class="cart-price">@item.Price.ToString("N0") ₫</span>
+                    </div>
+                    <div class="cell-qty">
+                        <div class="cart-qty" data-id="@item.CartItemId">
+                            <button class="cart-btn cart-btn-ghost cart-dec">–</button>
+                            <input type="text" class="cart-qty-input" value="@item.Quantity" />
+                            <button class="cart-btn cart-btn-ghost cart-inc">+</button>
+                        </div>
+                    </div>
+                    <div class="cell-line">
+                        <span class="cart-line" data-id="@item.CartItemId">
+                            @((item.Price * item.Quantity).ToString("N0")) ₫
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- footer -->
+        <div class="cart-foot">
+            <div class="cart-summary">
+                <div class="cart-summary-row">
+                    <span>Số mục đã chọn</span>
+                    <span class="val" id="sumCount">0</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>Tạm tính</span>
+                    <span class="val" id="sumSubtotal">0₫</span>
+                </div>
+                <div class="cart-total">
+                    <span>Tổng tiền</span>
+                    <span class="val" id="sumTotal">0₫</span>
+                </div>
+                <button type="button" class="cart-btn cart-btn-primary" id="checkoutBtn" disabled>Đặt hàng</button>
+            </div>
+        </div>
+    </div>
+</div>

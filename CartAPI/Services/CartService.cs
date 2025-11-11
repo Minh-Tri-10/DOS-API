@@ -1,4 +1,5 @@
-﻿using CartAPI.Models;
+﻿using CartAPI.Helpers;
+using CartAPI.Models;
 using CartAPI.Repositories.Interfaces;
 using CartAPI.Services.Interfaces;
 
@@ -7,7 +8,13 @@ namespace CartAPI.Services
     public class CartService : ICartService
     {
         private readonly ICartRepository _repo;
-        public CartService(ICartRepository repo) => _repo = repo;
+        private readonly ProductApiClient _productApi;
+
+        public CartService(ICartRepository repo, ProductApiClient productApi)
+        {
+            _repo = repo;
+            _productApi = productApi;
+        }
 
         public Task<Cart?> GetUserCartAsync(int userId) => _repo.GetCartByUserIdAsync(userId);
         public Task<Cart?> GetCartByIdAsync(int cartId) => _repo.GetCartByIdAsync(cartId);
@@ -22,41 +29,41 @@ namespace CartAPI.Services
         {
             if (quantity <= 0) quantity = 1;
 
-            // ✅ nếu đã có -> tăng số lượng
-            var exist = await _repo.GetCartItemAsync(cartId, productId);
-            if (exist != null)
+            // ✅ Gọi sang ProductAPI để kiểm tra thông tin
+            var product = await _productApi.GetProductByIdAsync(productId);
+            if (product == null)
+                throw new Exception("Không thể lấy thông tin sản phẩm từ ProductAPI.");
+            if (product.Stock <= 0)
+                throw new Exception("Sản phẩm đã hết hàng!");
+
+            var existing = await _repo.GetCartItemAsync(cartId, productId);
+            if (existing != null)
             {
-                exist.Quantity += quantity;
-                exist.UpdatedAt = DateTime.UtcNow;
-                await _repo.UpdateCartItemAsync(exist);
+                existing.Quantity = Math.Min(existing.Quantity + quantity, product.Stock);
+                existing.UpdatedAt = DateTime.UtcNow;
+                await _repo.UpdateCartItemAsync(existing);
                 return;
             }
 
-            // chưa có -> thêm mới
-            var item = new CartItem
+            var newItem = new CartItem
             {
                 CartId = cartId,
-                ProductId = productId,
-                Quantity = quantity,
+                ProductId = product.ProductId,
+                Quantity = Math.Min(quantity, product.Stock),
                 CreatedAt = DateTime.UtcNow
             };
-            await _repo.AddCartItemAsync(item);
+            await _repo.AddCartItemAsync(newItem);
         }
 
         public async Task UpdateItemQuantityAsync(int cartItemId, int quantity)
         {
-            if (quantity <= 0)
-            {
-                // cho phép xoá khi về 0
-                await _repo.RemoveCartItemAsync(cartItemId);
-                return;
-            }
-
-            // ✅ lấy đúng CartItem theo Id rồi cập nhật
             var item = await _repo.GetCartItemByIdAsync(cartItemId);
             if (item == null) return;
 
-            item.Quantity = quantity;
+            var product = await _productApi.GetProductByIdAsync(item.ProductId);
+            if (product == null) return;
+
+            item.Quantity = Math.Min(quantity, product.Stock);
             item.UpdatedAt = DateTime.UtcNow;
             await _repo.UpdateCartItemAsync(item);
         }

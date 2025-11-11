@@ -1,4 +1,4 @@
-﻿namespace OrderAPI.DTOs
+﻿namespace MVCApplication.DTOs
 {
     public class ProductUsageDto
     {
