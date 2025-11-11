@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AccountAPI.DTOs;
 using AccountAPI.Services.Interfaces;
@@ -21,8 +22,15 @@ public class AccountsController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<UserDTO>> Register(RegisterDTO dto)
     {
-        var user = await _service.RegisterAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = user.UserId }, user);
+        try
+        {
+            var user = await _service.RegisterAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = user.UserId }, user);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     [HttpPost("login")]

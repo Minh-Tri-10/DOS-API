@@ -121,8 +121,20 @@ namespace AccountAPI.Services
 
         public async Task<UserDTO> RegisterAsync(RegisterDTO dto)
         {
+            dto.Username = dto.Username?.Trim() ?? string.Empty;
+            dto.FullName = dto.FullName?.Trim();
+            dto.Email = dto.Email?.Trim();
+            dto.Phone = dto.Phone?.Trim();
+
+            if (string.IsNullOrWhiteSpace(dto.Username))
+                throw new InvalidOperationException("Tên đăng nhập là bắt buộc.");
+
             if (await _repo.GetByUsernameAsync(dto.Username) != null)
-                throw new Exception("Username already exists");
+                throw new InvalidOperationException("Tên đăng nhập đã được sử dụng.");
+
+            if (!string.IsNullOrWhiteSpace(dto.Email) &&
+                await _repo.GetByEmailAsync(dto.Email) != null)
+                throw new InvalidOperationException("Email đã được sử dụng.");
 
             var user = _mapper.Map<User>(dto);
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);

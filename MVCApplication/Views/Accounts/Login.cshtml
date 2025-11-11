@@ -1,12 +1,12 @@
-﻿@{
+@{
     Layout = null;
 }
 @model MVCApplication.Models.LoginViewModel
 
 <style>
-    /* ====== Login 2025 – Dark/Light theme in-page only ====== */
+    /* ====== Login 2025 � Dark/Light theme in-page only ====== */
     :root {
-        /* Dark (mặc định) */
+        /* Dark (m?c d?nh) */
         --bg: #0b1020;
         --panel: #101626b8;
         --panel-border: rgba(148,163,184,.25);
@@ -28,12 +28,12 @@
 
     /* Light theme overrides */
     [data-theme="light"] {
-        --bg: #f6f8fc; /* nhã, sáng */
+        --bg: #f6f8fc; /* nh�, s�ng */
         --panel: rgba(255,255,255,.92);
         --panel-border: rgba(15,23,42,.08);
         --text: #0b1220;
         --muted: #4b5563;
-        --grad1: #2563eb; /* xanh business hơn */
+        --grad1: #2563eb; /* xanh business hon */
         --grad2: #06b6d4;
         --danger: #dc2626;
         --sweep-alpha: .035;
@@ -41,10 +41,10 @@
         --field-bg: rgba(15,23,42,.035);
         --field-bg-focus: rgba(15,23,42,.06);
         --ring: rgba(37,99,235,.20);
-        /* nền sáng: vệt gradient tinh tế hơn */
+        /* n?n s�ng: v?t gradient tinh t? hon */
         --bg-grad-a: rgba(37,99,235,.12);
         --bg-grad-b: rgba(6,182,212,.10);
-        /* ẩn sao/aurora để không “đêm” quá */
+        /* ?n sao/aurora d? kh�ng �d�m� qu� */
         --stars-visibility: 0;
         --aurora-opacity: .3;
     }
@@ -53,7 +53,7 @@
 
     html, body {
         height: 100%;
-        overflow-y: hidden; /* ẩn cuộn dọc */
+        overflow-y: hidden; /* ?n cu?n d?c */
     }
 
     body {
@@ -74,15 +74,18 @@
         pointer-events: none;
     }
 
-    canvas#stars {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
+    
+    .form-errors {
+        color: var(--danger);
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .text-danger {
+        color: var(--danger);
+        font-size: 0.85rem;
         display: block;
-        filter: drop-shadow(0 0 2px #fff);
-        opacity: calc(.9 * var(--stars-visibility));
-        transition: opacity .35s ease;
+        margin-top: 4px;
     }
 
     .aurora {
@@ -338,27 +341,27 @@
             top: 12px;
         }
     }
-    /* ===== Focus accent bên trái trong input (Dark/Light) ===== */
+    /* ===== Focus accent b�n tr�i trong input (Dark/Light) ===== */
 
-    /* màu/độ sáng accent theo theme */
+    /* m�u/d? s�ng accent theo theme */
     :root {
         --accent-glow: rgba(34,211,238,.35); /* Dark: cyan glow */
     }
 
     [data-theme="light"] {
-        --accent-glow: rgba(37,99,235,.22); /* Light: xanh business, mềm hơn */
+        --accent-glow: rgba(37,99,235,.22); /* Light: xanh business, m?m hon */
     }
 
-    /* chừa chỗ cho accent nếu bạn từng bỏ icon */
+    /* ch?a ch? cho accent n?u b?n t?ng b? icon */
     .input-wrap input {
-        padding-left: 44px; /* trước là 38px; tăng nhẹ để không đè lên accent */
+        padding-left: 44px; /* tru?c l� 38px; tang nh? d? kh�ng d� l�n accent */
     }
 
-    /* chấm tròn phát sáng (ở đúng khoảng trống trước dữ liệu) */
+    /* ch?m tr�n ph�t s�ng (? d�ng kho?ng tr?ng tru?c d? li?u) */
     .input-wrap::before {
         content: "";
         position: absolute;
-        left: 14px; /* nằm trong vùng padding-left của input */
+        left: 14px; /* n?m trong v�ng padding-left c?a input */
         top: 50%;
         width: 10px;
         height: 10px;
@@ -370,11 +373,11 @@
         transition: opacity .18s ease, transform .18s ease;
     }
 
-    /* thanh dọc mảnh chạy sát bên trái chữ */
+    /* thanh d?c m?nh ch?y s�t b�n tr�i ch? */
     .input-wrap::after {
         content: "";
         position: absolute;
-        left: 30px; /* cách chấm tròn 16px để cân */
+        left: 30px; /* c�ch ch?m tr�n 16px d? c�n */
         top: 8px;
         bottom: 8px;
         width: 3px;
@@ -386,7 +389,7 @@
         transition: opacity .18s ease;
     }
 
-    /* chỉ hiển thị khi field đang được nhập (focus) */
+    /* ch? hi?n th? khi field dang du?c nh?p (focus) */
     .input-wrap:focus-within::before {
         opacity: 1;
         transform: translateY(-50%) scale(1);
@@ -411,14 +414,14 @@
     }
 
     }
-    /* ===== Hiệu ứng xuất hiện hộp (fade + slide) ===== */
+    /* ===== Hi?u ?ng xu?t hi?n h?p (fade + slide) ===== */
     .login-box {
         opacity: 0;
         transform: translateY(40px) scale(0.97);
         animation: boxEnter .8s cubic-bezier(.25,.8,.25,1) forwards;
     }
 
-    /* nếu muốn delay nhẹ để chờ nền load */
+    /* n?u mu?n delay nh? d? ch? n?n load */
     @@keyframes boxEnter {
         0%
 
@@ -442,19 +445,19 @@
     }
 
     :root {
-        --label-focus: #38bdf8; /* Dark: cyan sáng */
+        --label-focus: #38bdf8; /* Dark: cyan s�ng */
     }
 
     [data-theme="light"] {
         --label-focus: #2563eb; /* Light: xanh business */
     }
-    /* Khi input trong field đang focus, label đổi màu và có hiệu ứng */
+    /* Khi input trong field dang focus, label d?i m�u v� c� hi?u ?ng */
     .field:focus-within label {
         color: var(--label-focus);
         animation: labelGlow 1.6s ease-in-out infinite;
     }
 
-    /* Nhấp nháy nhẹ */
+    /* Nh?p nh�y nh? */
     @@keyframes labelGlow {
         0%,100%
 
@@ -475,18 +478,18 @@
     .field:focus-within label {
         transform: translateY(-4px);
     }
-    /* ===== Light theme: label glow nhẹ hơn ===== */
+    /* ===== Light theme: label glow nh? hon ===== */
     [data-theme="light"] .field:focus-within label {
-        color: #1d4ed8; /* xanh business sáng hơn một chút */
+        color: #1d4ed8; /* xanh business s�ng hon m?t ch�t */
         animation: labelGlowLight 2s ease-in-out infinite;
     }
 
-    /* Glow dịu, spread rộng để mượt */
+    /* Glow d?u, spread r?ng d? mu?t */
     @@keyframes labelGlowLight {
         0%,100%
 
     {
-        text-shadow: 0 0 1px rgba(29,78,216,.45), /* viền xanh nhạt */
+        text-shadow: 0 0 1px rgba(29,78,216,.45), /* vi?n xanh nh?t */
         0 0 6px rgba(29,78,216,.35), 0 0 12px rgba(29,78,216,.25);
     }
 
@@ -504,28 +507,31 @@
 </div>
 
 <!-- Theme toggle -->
-<button type="button" class="theme-toggle" id="themeBtn" aria-label="Chuyển đổi giao diện">
+<button type="button" class="theme-toggle" id="themeBtn" aria-label="Chuy?n d?i giao di?n">
     <span class="dot"></span>
     <span id="themeText">Dark</span>
 </button>
 
 <div class="login-box">
-    <h2>Đăng nhập</h2>
+    <h2>�ang nh?p</h2>
     <form asp-action="Login" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
         <div class="field">
-            <label for="Username">Tên đăng nhập</label>
+            <label for="Username">T�n dang nh?p</label>
             <div class="input-wrap">
                 <input id="Username" asp-for="Username" type="text" autocomplete="username" />
             </div>
+            <span asp-validation-for="Username" class="text-danger"></span>
         </div>
         <div class="field">
-            <label for="Password">Mật khẩu</label>
+            <label for="Password">M?t kh?u</label>
             <div class="input-wrap">
                 <input id="Password" asp-for="Password" type="password" autocomplete="current-password" />
             </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
-        <button type="submit">Đăng nhập</button>
-        <p class="mt-3"><a asp-action="ForgotPassword">Quên mật khẩu?</a></p>
+        <button type="submit">�ang nh?p</button>
+        <p class="mt-3"><a asp-action="ForgotPassword">Qu�n m?t kh?u?</a></p>
 
     </form>
 
@@ -535,7 +541,7 @@
     }
 
     <p class="meta">
-        Chưa có tài khoản? <a asp-action="Register">Đăng ký</a>
+        Chua c� t�i kho?n? <a asp-action="Register">�ang k�</a>
     </p>
 </div>
 
@@ -602,3 +608,5 @@
       resize(); requestAnimationFrame(tick);
     })();
 </script>
+
+@await Html.PartialAsync("_ValidationScriptsPartial")
