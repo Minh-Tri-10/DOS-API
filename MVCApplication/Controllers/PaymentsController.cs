@@ -154,22 +154,22 @@ namespace MVCApplication.Controllers
                 return RedirectToAction("Index", "Orders");
             }
 
-            if (status.Equals("Success", StringComparison.OrdinalIgnoreCase))
-            {
-                var updated = await _orderService.MarkAsPaidAsync(orderId);
-                if (updated)
-                {
-                    TempData["Success"] = "Thanh toan VNPay thanh cong! Don hang da duoc cap nhat.";
-                }
-                else
-                {
-                    TempData["Error"] = "Thanh toan VNPay thanh cong nhung khong the cap nhat trang thai don hang.";
-                }
-            }
-            else
-            {
-                TempData["Error"] = "Thanh toan VNPay khong thanh cong. Vui long thu lai.";
-            }
+            //if (status.Equals("Success", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    var updated = await _orderService.MarkAsPaidAsync(orderId);
+            //    if (updated)
+            //    {
+            //        TempData["Success"] = "Thanh toan VNPay thanh cong! Don hang da duoc cap nhat.";
+            //    }
+            //    else
+            //    {
+            //        TempData["Error"] = "Thanh toan VNPay thanh cong nhung khong the cap nhat trang thai don hang.";
+            //    }
+            //}
+            //else
+            //{
+            //    TempData["Error"] = "Thanh toan VNPay khong thanh cong. Vui long thu lai.";
+            //}
 
             return RedirectToAction("Index", "Orders");
         }

@@ -11,79 +11,40 @@
 
 
     // Helper function để lấy class màu dựa trên trạng thái (sử dụng trạng thái DB - tiếng Anh)
-
     string GetStatusClass(string status)
-
     {
-
-        // Chuyển về chữ thường để so sánh không phân biệt hoa/thường
-
+        if (string.IsNullOrEmpty(status)) return "status-muted"; // tránh null
         status = status.ToLower();
 
-
-
-        // Cập nhật logic với trạng thái tiếng Anh của DB (completed, paid, cancelled, pending, v.v.)
-
-        if (status.Contains("completed") || status.Contains("paid")) return "status-ok";
-
+        if (status.Contains("paid") || status.Contains("success")) return "status-ok"; // màu xanh lá
+        if (status.Contains("completed")) return "status-accent"; // màu nhấn khác nếu muốn
         if (status.Contains("delivering") || status.Contains("confirmed") || status.Contains("shipped")) return "status-accent";
-
         if (status.Contains("pending") || status.Contains("unpaid")) return "status-muted";
-
-        if (status.Contains("cancelled")) return "status-danger";
+        if (status.Contains("cancelled") || (status.Contains("failed"))) return "status-danger";
 
         return "status-muted";
-
     }
-
 
 
     // Helper function để dịch trạng thái (status: tiếng Anh) sang tiếng Việt
 
     string TranslateStatus(string status)
-
     {
-
+        if (string.IsNullOrEmpty(status)) return "Chưa xác định"; // trường hợp null
         switch (status.ToLower())
-
         {
-
-            case "pending":
-
-                return "Đang chờ xử lý";
-
-            case "confirmed":
-
-                return "Đã xác nhận";
-
+            case "pending": return "Đang chờ xử lý";
+            case "confirmed": return "Đã xác nhận";
             case "shipped":
-
-            case "delivering":
-
-                return "Đang giao hàng";
-
-            case "completed":
-
-                return "Hoàn thành";
-
-            case "cancelled":
-
-                return "Đã hủy";
-
-            case "paid":
-
-                return "Đã thanh toán";
-
-            case "unpaid":
-
-                return "Chưa thanh toán";
-
-            default:
-
-                return status; // Giữ nguyên nếu không tìm thấy
-
+            case "delivering": return "Đang giao hàng";
+            case "completed": return "Hoàn thành";
+            case "cancelled": return "Đã hủy";
+            case "success": return "Đã thanh toán";
+            case "paid": return "Đã thanh toán";
+            case "unpaid": return "Chưa thanh toán";
+            case "failed": return "Chưa thanh toán";
+            default: return status;
         }
-
     }
 
 }
@@ -1067,6 +1028,7 @@
                         <th>Người đặt</th>
 
                         <th>Trạng thái</th>
+                        <th>Thanh toán</th>
 
                         <th class="total-amount-cell" style="text-align: right;">Tổng tiền</th>
 
@@ -1110,7 +1072,12 @@
 
                                 </td>
 
-
+                                @* Trạng thái thanh toán *@
+                                <td class="status-cell">
+                                    <span class="status-pill @GetStatusClass(order.PaymentStatus)">
+                                        @TranslateStatus(order.PaymentStatus)
+                                    </span>
+                                </td>
 
                                 @* HIỂN THỊ TRẠNG THÁI THANH TOÁN (Dịch sang tiếng Việt) *@
 

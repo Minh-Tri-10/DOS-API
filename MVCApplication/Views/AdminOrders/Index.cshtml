@@ -2,44 +2,68 @@
 
 
 
-@{
 
+@{
     Layout = "_Layout.Admin";
 
-
-
-    // Helper to style order status
-
+    // Helper để tô màu theo trạng thái đơn hàng
     string StatusClass(string s)
-
     {
-
         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
-
         s = s.ToLowerInvariant();
-
         if (s.Contains("pending")) return "orders-pill warn";
-
         if (s.Contains("completed") || s.Contains("shipped") || s.Contains("delivered")) return "orders-pill ok";
-
-        if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "orders-pill bad";
-
+        if (s.Contains("cancelled") || s.Contains("failed") || s.Contains("rejected")) return "orders-pill bad";
         return "orders-pill neutral";
-
     }
 
+    // Helper để tô màu theo trạng thái thanh toán
+    string PaymentClass(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
+        s = s.ToLowerInvariant();
+        if (s.Contains("paid") || s.Contains("success") || s.Contains("completed"))
+            return "orders-pill ok"; // => màu xanh lá
+        if (s.Contains("pending") || s.Contains("processing"))
+            return "orders-pill warn";
+        if (s.Contains("failed") || s.Contains("unpaid") || s.Contains("cancel"))
+            return "orders-pill bad";
+        return "orders-pill neutral";
+    }
 
+    string PaymentLabel(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return "Không xác định";
+        s = s.ToLowerInvariant();
+
+        if (s.Contains("success") || s.Contains("paid") || s.Contains("completed"))
+            return "Đã thanh toán";
+        if (s.Contains("pending") || s.Contains("processing"))
+            return "Đang chờ";
+        if (s.Contains("failed") || s.Contains("unpaid") || s.Contains("cancel"))
+            return "Thất bại";
+
+        return s; // fallback: giữ nguyên nếu không khớp
+    }
+    // Helper để chuyển trạng thái đơn hàng sang tiếng Việt
+    string OrderStatusLabel(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return "Không xác định";
+
+        status = status.ToLowerInvariant();
+
+        if (status.Contains("pending")) return "Đang chờ xử lý";
+        if (status.Contains("completed") || status.Contains("shipped") || status.Contains("delivered")) return "Hoàn tất";
+        if (status.Contains("cancelled") || status.Contains("failed") || status.Contains("rejected")) return "Đã hủy";
+
+        return status; // fallback: giữ nguyên nếu không khớp
+    }
 
     var currentPage = ViewBag.Page ?? 1;
-
     var totalPagesCount = ViewBag.TotalPages ?? 1;
-
     var search = ViewBag.Search ?? "";
-
     var status = ViewBag.Status ?? "";
-
 }
-
 
 
 <style>
@@ -2293,400 +2317,101 @@
 </style>
 
 
-
 <div class="orders-page">
-
-
-
     <div class="orders-head">
-
-
-
         <h2>Danh sách Orders</h2>
-
-
-
         <div class="under"></div>
-
-
-
     </div>
-
-
-
-
-
-
 
     <!-- Controls -->
-
-
-
     <form method="get" class="orders-controls">
-
-
-
         <div class="orders-search">
-
-
-
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted)">
-
-
-
                 <circle cx="11" cy="11" r="7"></circle>
-
-
-
                 <path d="M21 21l-4.3-4.3"></path>
-
-
-
             </svg>
-
-
-
             <input name="search" value="@search" placeholder="Tìm kiếm theo tên, ID, ..." />
-
-
-
         </div>
-
-
 
         <select name="status" class="orders-select">
-
-
-
             <option value="">Tất cả trạng thái</option>
-
-
-
             <option value="Pending" selected="@(status == "Pending")">Pending</option>
-
-
-
             <option value="Completed" selected="@(status == "Completed")">Completed</option>
-
-
-
             <option value="Cancelled" selected="@(status == "Cancelled")">Cancelled</option>
-
-
-
         </select>
 
-
-
-
-
-
-
         <button type="submit" class="btn btn-primary">Lọc</button>
-
-
-
     </form>
 
-
-
-
-
-
-
     <div class="orders-card">
-
-
-
         <div class="orders-wrap">
-
-
-
             <table class="orders-table" id="ordersTable">
-
-
-
                 <thead>
-
-
-
                     <tr>
-
-
-
                         <th>ID</th>
-
-
-
                         <th>User</th>
-
-
-
-                        <th>Status</th>
-
-
-
-                        <th>Total</th>
-
-
-
+                        <th>Trạng thái đơn</th>
+                        <th>Thanh toán</th>
+                        <th>Tổng tiền</th>
                         <th>Ngày tạo</th>
-
-
-
                         <th></th>
-
-
-
                     </tr>
-
-
-
                 </thead>
-
-
-
                 <tbody>
-
-
-
                     @foreach (var order in Model)
-
-
-
                     {
-
-
-
                         <tr>
-
-
-
                             <td class="orders-id">#@order.OrderId</td>
-
-
-
                             <td class="orders-user">@order.FullName</td>
-
-
-
-                            <td><span class="@StatusClass(order.OrderStatus)">@order.OrderStatus</span></td>
-
-
-
+                            <td><span class="@StatusClass(order.OrderStatus)">@OrderStatusLabel(order.OrderStatus)</span></td>
+                            <td><span class="@PaymentClass(order.PaymentStatus)">@PaymentLabel(order.PaymentStatus)</span></td>
                             <td class="orders-money">
-
-
-
                                 @order.TotalAmount.ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
-
-
-
                             </td>
-
-
-
                             <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
-
-
-
                             <td class="orders-actions">
-
-
-
                                 <a class="orders-link" asp-action="Details" asp-route-id="@order.OrderId">Chi tiết</a>
-
-
-
-
-
-
-
                                 <a class="orders-link" asp-controller="Payments" asp-action="PaymentsByOrder" asp-route-orderId="@order.OrderId">Thanh toán</a>
-
-
-
                                 <a class="orders-link" asp-action="Edit" asp-route-id="@order.OrderId">Sửa</a>
-
-
-
                             </td>
-
-
-
                         </tr>
-
-
-
                     }
-
-
-
                 </tbody>
-
-
-
             </table>
 
-
-
-
-
-
-
             <!-- Pagination -->
-
-
-
             @if (totalPagesCount > 1)
-
-
-
             {
-
-
-
                 <nav class="orders-pagination-center mt-4">
-
-
-
                     <ul class="pagination justify-content-center">
-
-
-
-                        <!-- First page -->
-
-
-
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-
-
-
                             <a class="page-link" href="?page=1&search=@search&status=@status" aria-label="Trang đầu">«</a>
-
-
-
                         </li>
-
-
-
-                        <!-- Previous page -->
-
-
-
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-
-
-
                             <a class="page-link" href="?page=@(currentPage-1)&search=@search&status=@status" aria-label="Trang trước">‹</a>
-
-
-
                         </li>
-
-
-
-
-
-
 
                         @{
-
-
-
                             int start = Math.Max(1, currentPage - 2);
-
-
-
                             int end = Math.Min(totalPagesCount, currentPage + 2);
-
-
-
                         }
 
-
-
-                        @for (int i = start; i <= end; i++) 
-
-
-
+                        @for (int i = start; i <= end; i++)
                         {
-
-
-
                             <li class="page-item @(i == currentPage ? "active" : "")">
-
-
-
                                 <a class="page-link" href="?page=@i&search=@search&status=@status">@i</a>
-
-
-
                             </li>
-
-
-
                         }
 
-
-
-
-
-
-
-                        <!-- Next page -->
-
-
-
                         <li class="page-item @(currentPage == totalPagesCount ? "disabled" : "")">
-
-
-
                             <a class="page-link" href="?page=@(currentPage+1)&search=@search&status=@status" aria-label="Trang sau">›</a>
-
-
-
                         </li>
-
-
-
-                        <!-- Last page -->
-
-
-
                         <li class="page-item @(currentPage == totalPagesCount ? "disabled" : "")">
-
-
-
                             <a class="page-link" href="?page=@totalPagesCount&search=@search&status=@status" aria-label="Trang cuối">»</a>
-
-
-
                         </li>
-
-
-
                     </ul>
-
-
-
                 </nav>
-
-
-
             }
-
-
-
         </div>
-
-
-
     </div>
-
-
-
 </div>
-
-
-

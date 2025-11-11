@@ -14,14 +14,17 @@ namespace OrderAPI.Services
         private readonly IUserClient _userClient;
         private readonly ICatalogProductClient _catalogProductClient;
         private readonly ICategoryClient _categoryClient;
+        private readonly IPaymentClient _paymentClient;
+
         public OrderService(IOrderRepository repo, IMapper mapper, IUserClient userClient, ICatalogProductClient productClient
-            , ICategoryClient categoryClient)
+            , ICategoryClient categoryClient, IPaymentClient paymentClient)
         {
             _repo = repo;
             _mapper = mapper;
             _userClient = userClient;
             _catalogProductClient = productClient;
             _categoryClient = categoryClient;
+            _paymentClient = paymentClient;
         }
 
         //public async Task<IEnumerable<OrderDto>> GetAllAsync()
@@ -43,6 +46,9 @@ namespace OrderAPI.Services
             foreach (var dto in orderDtos)
             {
                 dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
+
+                // Lấy trạng thái thanh toán
+                dto.PaymentStatus = await _paymentClient.GetPaymentStatusByOrderIdAsync(dto.OrderId);
 
                 // Enrich with product and category data from CategoriesAPI
                 foreach (var item in dto.Items)
@@ -74,6 +80,9 @@ namespace OrderAPI.Services
             {
                 // Fetch user name
                 dto.FullName = await _userClient.GetFullNameByIdAsync(dto.UserId);
+
+                // Lấy trạng thái thanh toán
+                dto.PaymentStatus = await _paymentClient.GetPaymentStatusByOrderIdAsync(dto.OrderId);
 
                 // Fetch product and category details
                 foreach (var item in dto.Items)
@@ -142,16 +151,35 @@ namespace OrderAPI.Services
             var orders = await _repo.GetOrdersByUserIdAsync(userId);
             var orderDtos = _mapper.Map<List<OrderDto>>(orders);
 
-            // Fetch user full name from Account service
+            // Lấy tên đầy đủ của user
             var fullName = await _userClient.GetFullNameByIdAsync(userId);
 
-            // Apply full name to each order
             foreach (var dto in orderDtos)
             {
                 dto.FullName = fullName;
+
+                // Lấy trạng thái thanh toán
+                dto.PaymentStatus = await _paymentClient.GetPaymentStatusByOrderIdAsync(dto.OrderId);
+
+                // Nếu muốn enrich Items với product + category
+                foreach (var item in dto.Items)
+                {
+                    var product = await _catalogProductClient.GetProductByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        item.ProductName = product.ProductName;
+                        if (product.CategoryId > 0)
+                        {
+                            var category = await _categoryClient.GetCategoryByIdAsync(product.CategoryId);
+                            item.CategoryName = category?.CategoryName;
+                        }
+                    }
+                }
             }
+
             return orderDtos;
         }
+
 
         public async Task MarkAsPaidAsync(int orderId) =>
             await _repo.MarkOrderAsPaidAsync(orderId);
@@ -185,9 +213,20 @@ namespace OrderAPI.Services
         /// <returns></returns>
         public IQueryable<OrderDto> GetAllQueryable()
         {
-            // Repository cần có hàm trả về IQueryable<Order> (như GetAllQueryable)
-            return _repo.GetAllQueryable().ProjectTo<OrderDto>(_mapper.ConfigurationProvider);
+            var query = _repo.GetAllQueryable()
+                             .ProjectTo<OrderDto>(_mapper.ConfigurationProvider)
+                             .AsEnumerable(); // chuyển sang memory để có thể gọi async
+
+            // enrich dữ liệu
+            var result = query.Select(dto =>
+            {
+                dto.PaymentStatus = _paymentClient.GetPaymentStatusByOrderIdAsync(dto.OrderId).Result;
+                return dto;
+            });
+
+            return result.AsQueryable();
         }
+
 
         public async Task<bool> MarkOrderAsCompletedAsync(int orderId)
         {

@@ -73,12 +73,12 @@ namespace OrderAPI.Controllers
             return Ok(orders);
         }
 
-        [HttpPut("{id}/pay")]
-        public async Task<IActionResult> MarkAsPaid(int id)
-        {
-            await _service.MarkAsPaidAsync(id);
-            return NoContent();
-        }
+        //[HttpPut("{id}/pay")]
+        //public async Task<IActionResult> MarkAsPaid(int id)
+        //{
+        //    await _service.MarkAsPaidAsync(id);
+        //    return NoContent();
+        //}
 
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> CancelOrder(int id, [FromBody] string cancelReason)

@@ -13,6 +13,7 @@ namespace OrderAPI.DTOs
         public int UserId { get; set; }
         // Thêm cancel reason
         public string? CancelReason { get; set; }
+        public string? PaymentStatus { get; set; }
         // Danh sách items
         public List<OrderItemDto>? Items { get; set; }
     }

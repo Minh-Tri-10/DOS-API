@@ -9,6 +9,7 @@
         public decimal TotalAmount { get; set; }
         public int UserId { get; set; }
         public string? CancelReason { get; set; }
+        public string? PaymentStatus { get; set; }
         // Danh sách items
         public List<OrderItemDto>? Items { get; set; }
     }
