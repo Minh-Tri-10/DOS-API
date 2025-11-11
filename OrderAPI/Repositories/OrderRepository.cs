@@ -137,6 +137,21 @@ namespace OrderAPI.Repositories
         {
             return _context.Orders.AsQueryable();
         }
+        public async Task<bool> MarkOrderAsCompletedAsync(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) return false;
+
+            if (string.Equals(order.OrderStatus, "completed", StringComparison.OrdinalIgnoreCase))
+                return false; // hoặc return true nếu muốn idempotent
+
+            order.OrderStatus = "completed";
+            order.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
 
     }
 }
