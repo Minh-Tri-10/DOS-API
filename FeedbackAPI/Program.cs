@@ -57,7 +57,6 @@ namespace FeedbackAPI
             builder.Services.AddDbContext<DosfeedbackDbContext>(option =>
             option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
             if (string.IsNullOrWhiteSpace(signingKey))

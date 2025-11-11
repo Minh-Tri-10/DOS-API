@@ -25,7 +25,6 @@ namespace CartAPI
 
 
 
-
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
