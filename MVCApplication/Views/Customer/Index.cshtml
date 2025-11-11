@@ -10,6 +10,7 @@
     {
         currentUserId = parsedId;
     }
+    var categories = ViewBag.Categories as IEnumerable<MVCApplication.DTOs.CategoryDTO> ?? Enumerable.Empty<MVCApplication.DTOs.CategoryDTO>();
 }
 
 <style>
@@ -288,112 +289,123 @@
 
     } /* 1/row */
 </style>
-
-<div class="drink-page">
-    <div class="drink-header">
-        <h2>Menu đồ uống</h2>
-        <div class="under"></div>
-    </div>
-    <!-- Controls -->
-    <div class="drink-controls">
-        <div class="drink-search">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted)">
-                <circle cx="11" cy="11" r="7"></circle>
-                <path d="M21 21l-4.3-4.3"></path>
-            </svg>
-            <input id="drinkSearch" placeholder="Tìm đồ uống theo tên..." />
+    <div class="drink-page">
+        <div class="drink-header">
+            <h2>Menu đồ uống</h2>
+            <div class="under"></div>
         </div>
-        <div class="drink-chips" id="drinkChips">
-            <button type="button" class="drink-chip active" data-filter="all">Tất cả</button>
-            <button type="button" class="drink-chip" data-filter="cà phê">Cà phê</button>
-            <button type="button" class="drink-chip" data-filter="Trà">Trà</button>
-            <button type="button" class="drink-chip" data-filter="Trà sữa">Trà sữa</button>
-            <button type="button" class="drink-chip" data-filter="soda">Soda</button>
-            <button type="button" class="drink-chip" data-filter="Nước ép">Nước ép</button>
-        </div>
-    </div>
-    <!-- Grid items – Dữ liệu động từ model -->
-    <div class="drink-grid" id="drinkGrid">
-        @foreach (var item in Model)
-        {
-            <div class="drink-card" data-cat="@(item.CategoryName?.ToLower() ?? "")" data-name="@(item.ProductName.ToLower())">
-                <img class="drink-cover" src="@item.ImageUrl" alt="@item.ProductName">
-                <div class="drink-info">
-                    <div class="drink-title"><span>@item.ProductName</span><span class="drink-price">@item.Price.ToString("C", new CultureInfo("vi-VN"))</span></div>
-                    <div class="drink-meta"><span class="drink-tag">@(item.CategoryName ?? "Không xác định")</span><button class="drink-btn" type="button" data-id="@item.ProductId">Chọn</button></div>
-                </div>
+        <!-- Controls -->
+        <div class="drink-controls">
+            <div class="drink-search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted)">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <path d="M21 21l-4.3-4.3"></path>
+                </svg>
+                <input id="drinkSearch" placeholder="Tìm đồ uống theo tên..." value="@ViewBag.Search" />  <!-- Giữ giá trị search nếu có -->
             </div>
-        }
+            <div class="drink-chips" id="drinkChips">
+                <button type="button" class="drink-chip @(ViewBag.CurrentCategoryId == null ? "active" : "")" data-filter="all">Tất cả</button>
+                @foreach (var cat in ViewBag.Categories)
+                {
+                    <button type="button" class="drink-chip @(ViewBag.CurrentCategoryId == cat.CategoryId ? "active" : "")" data-filter="@cat.CategoryName.ToLower()" data-cat-id="@cat.CategoryId">
+                        @cat.CategoryName
+                    </button>
+                }
+            </div>
+        </div>
+        <!-- Grid items – Dữ liệu động từ model -->
+        <div class="drink-grid" id="drinkGrid">
+            @foreach (var item in Model)
+            {
+                <div class="drink-card" data-cat="@(item.CategoryName?.ToLower() ?? "")" data-name="@(item.ProductName.ToLower())">
+                    <img class="drink-cover" src="@item.ImageUrl" alt="@item.ProductName">
+                    <div class="drink-info">
+                        <div class="drink-title"><span>@item.ProductName</span><span class="drink-price">@item.Price.ToString("C", new CultureInfo("vi-VN"))</span></div>
+                        <div class="drink-meta"><span class="drink-tag">@(item.CategoryName ?? "Không xác định")</span><button class="drink-btn" type="button" data-id="@item.ProductId">Chọn</button></div>
+                    </div>
+                </div>
+            }
+        </div>
     </div>
-</div>
 
 @section Scripts {
-    <script>
-        (() => {
-          const chips  = document.getElementById('drinkChips');
-          const grid   = document.getElementById('drinkGrid');
-          const search = document.getElementById('drinkSearch');
-          const CURRENT_USER_ID = @currentUserId;
+        <script>
+            (() => {
+              const chips = document.getElementById('drinkChips');
+              const grid = document.getElementById('drinkGrid');
+              const search = document.getElementById('drinkSearch');
+              const CURRENT_USER_ID = @ViewBag.CurrentUserId;  // Sử dụng ViewBag.CurrentUserId từ controller
 
-          function applyFilter() {
-            const active = chips.querySelector('.drink-chip.active');
-            const cat = active ? active.dataset.filter : 'all';
-            const q = (search.value || '').trim().toLowerCase();
+              // Hàm để redirect với params
+              function redirectWithParams(categoryId = null, searchQuery = '') {
+                let url = '/Customer/Index';
+                if (categoryId || searchQuery) {
+                  url += '?';
+                  if (categoryId) url += `categoryId=${categoryId}`;
+                  if (searchQuery) url += `${categoryId ? '&' : ''}search=${encodeURIComponent(searchQuery)}`;
+                }
+                window.location.href = url;
+              }
 
-            for (const card of grid.children) {
-              const matchCat  = (cat === 'all') || card.dataset.cat === cat;
-              const matchText = card.dataset.name.toLowerCase().includes(q);
-              card.style.display = (matchCat && matchText) ? '' : 'none';
-            }
-          }
+              // Xử lý click chip để filter server-side
+              chips.addEventListener('click', (e) => {
+                const btn = e.target.closest('.drink-chip'); if (!btn) return;
+                chips.querySelectorAll('.drink-chip').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
 
-          chips.addEventListener('click', (e) => {
-            const btn = e.target.closest('.drink-chip'); if (!btn) return;
-            chips.querySelectorAll('.drink-chip').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            applyFilter();
-          });
+                const cat = btn.dataset.filter;
+                const catId = btn.dataset.catId;  // Lấy CategoryId nếu có
+                const q = search.value.trim();
 
-          search.addEventListener('input', applyFilter);
-
-          // --- Thêm vào giỏ ---
-          grid.addEventListener('click', async (e) => {
-            const btn = e.target.closest('.drink-btn');
-            if (!btn) return;
-
-            if (!CURRENT_USER_ID) {
-              window.location.href = '/Accounts/Login';
-              return;
-            }
-
-            const card = btn.closest('.drink-card');
-            const pid = parseInt(btn.dataset.id, 10);
-            if (!pid) { alert('❌ Không xác định được sản phẩm'); return; }
-
-            try {
-              const res = await fetch('/api/cart/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: CURRENT_USER_ID, productId: pid, quantity: 1 })
+                if (cat === 'all') {
+                  redirectWithParams(null, q);
+                } else {
+                  redirectWithParams(catId, q);
+                }
               });
 
-              if (res.status === 401) { window.location.href = '/Accounts/Login'; return; }
+              // Xử lý search input với debounce để tránh redirect liên tục
+              let debounceTimer;
+              search.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                  const activeChip = chips.querySelector('.drink-chip.active');
+                  const catId = activeChip.dataset.catId || null;
+                  const q = search.value.trim();
+                  redirectWithParams(catId, q);
+                }, 500);  // Debounce 500ms
+              });
 
-              const data = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
-              if (res.ok) {
-                alert('✅ ' + (data.message || 'Đã thêm/cộng dồn sản phẩm vào giỏ!'));
-                if (window.updateCartBadge) window.updateCartBadge(); // 🔹 cập nhật badge ngay
-              } else {
-                alert('❌ ' + (data.message || 'Không thể thêm sản phẩm'));
-              }
-            } catch (err) {
-              console.error(err);
-              alert('⚠️ Không thể kết nối server!');
-            }
-          });
-
-          applyFilter();
-        })();
-    </script>
+              // --- Thêm vào giỏ --- (giữ nguyên)
+              grid.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.drink-btn');
+                if (!btn) return;
+                if (!CURRENT_USER_ID) {
+                  window.location.href = '/Accounts/Login';
+                  return;
+                }
+                const card = btn.closest('.drink-card');
+                const pid = parseInt(btn.dataset.id, 10);
+                if (!pid) { alert('❌ Không xác định được sản phẩm'); return; }
+                try {
+                  const res = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: CURRENT_USER_ID, productId: pid, quantity: 1 })
+                  });
+                  if (res.status === 401) { window.location.href = '/Accounts/Login'; return; }
+                  const data = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
+                  if (res.ok) {
+                    alert('✅ ' + (data.message || 'Đã thêm/cộng dồn sản phẩm vào giỏ!'));
+                    if (window.updateCartBadge) window.updateCartBadge(); // 🔹 cập nhật badge ngay
+                  } else {
+                    alert('❌ ' + (data.message || 'Không thể thêm sản phẩm'));
+                  }
+                } catch (err) {
+                  console.error(err);
+                  alert('⚠️ Không thể kết nối server!');
+                }
+              });
+            })();
+        </script>
 }
-

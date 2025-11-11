@@ -1,10 +1,10 @@
-@{
+Ôªø@{
     Layout = null;
 }
 @model MVCApplication.Models.LoginViewModel
 
 <style>
-    /* ====== Login 2025 ñ Dark/Light theme in-page only ====== */
+    /* ====== Login 2025 ‚Äì Dark/Light theme in-page only ====== */
     :root {
         /* Dark (m?c d?nh) */
         --bg: #0b1020;
@@ -28,7 +28,7 @@
 
     /* Light theme overrides */
     [data-theme="light"] {
-        --bg: #f6f8fc; /* nh„, s·ng */
+        --bg: #f6f8fc; /* nh√£, s√°ng */
         --panel: rgba(255,255,255,.92);
         --panel-border: rgba(15,23,42,.08);
         --text: #0b1220;
@@ -41,10 +41,10 @@
         --field-bg: rgba(15,23,42,.035);
         --field-bg-focus: rgba(15,23,42,.06);
         --ring: rgba(37,99,235,.20);
-        /* n?n s·ng: v?t gradient tinh t? hon */
+        /* n?n s√°ng: v?t gradient tinh t? hon */
         --bg-grad-a: rgba(37,99,235,.12);
         --bg-grad-b: rgba(6,182,212,.10);
-        /* ?n sao/aurora d? khÙng ìdÍmî qu· */
+        /* ?n sao/aurora d? kh√¥ng ‚Äúd√™m‚Äù qu√° */
         --stars-visibility: 0;
         --aurora-opacity: .3;
     }
@@ -341,9 +341,9 @@
             top: 12px;
         }
     }
-    /* ===== Focus accent bÍn tr·i trong input (Dark/Light) ===== */
+    /* ===== Focus accent b√™n tr√°i trong input (Dark/Light) ===== */
 
-    /* m‡u/d? s·ng accent theo theme */
+    /* m√†u/d? s√°ng accent theo theme */
     :root {
         --accent-glow: rgba(34,211,238,.35); /* Dark: cyan glow */
     }
@@ -354,14 +354,14 @@
 
     /* ch?a ch? cho accent n?u b?n t?ng b? icon */
     .input-wrap input {
-        padding-left: 44px; /* tru?c l‡ 38px; tang nh? d? khÙng dË lÍn accent */
+        padding-left: 44px; /* tru?c l√† 38px; tang nh? d? kh√¥ng d√® l√™n accent */
     }
 
-    /* ch?m trÚn ph·t s·ng (? d˙ng kho?ng tr?ng tru?c d? li?u) */
+    /* ch?m tr√≤n ph√°t s√°ng (? d√∫ng kho?ng tr?ng tru?c d? li?u) */
     .input-wrap::before {
         content: "";
         position: absolute;
-        left: 14px; /* n?m trong v˘ng padding-left c?a input */
+        left: 14px; /* n?m trong v√πng padding-left c?a input */
         top: 50%;
         width: 10px;
         height: 10px;
@@ -373,11 +373,11 @@
         transition: opacity .18s ease, transform .18s ease;
     }
 
-    /* thanh d?c m?nh ch?y s·t bÍn tr·i ch? */
+    /* thanh d?c m?nh ch?y s√°t b√™n tr√°i ch? */
     .input-wrap::after {
         content: "";
         position: absolute;
-        left: 30px; /* c·ch ch?m trÚn 16px d? c‚n */
+        left: 30px; /* c√°ch ch?m tr√≤n 16px d? c√¢n */
         top: 8px;
         bottom: 8px;
         width: 3px;
@@ -445,19 +445,19 @@
     }
 
     :root {
-        --label-focus: #38bdf8; /* Dark: cyan s·ng */
+        --label-focus: #38bdf8; /* Dark: cyan s√°ng */
     }
 
     [data-theme="light"] {
         --label-focus: #2563eb; /* Light: xanh business */
     }
-    /* Khi input trong field dang focus, label d?i m‡u v‡ cÛ hi?u ?ng */
+    /* Khi input trong field dang focus, label d?i m√†u v√† c√≥ hi?u ?ng */
     .field:focus-within label {
         color: var(--label-focus);
         animation: labelGlow 1.6s ease-in-out infinite;
     }
 
-    /* Nh?p nh·y nh? */
+    /* Nh?p nh√°y nh? */
     @@keyframes labelGlow {
         0%,100%
 
@@ -480,7 +480,7 @@
     }
     /* ===== Light theme: label glow nh? hon ===== */
     [data-theme="light"] .field:focus-within label {
-        color: #1d4ed8; /* xanh business s·ng hon m?t ch˙t */
+        color: #1d4ed8; /* xanh business s√°ng hon m?t ch√∫t */
         animation: labelGlowLight 2s ease-in-out infinite;
     }
 
@@ -513,25 +513,25 @@
 </button>
 
 <div class="login-box">
-    <h2>–ang nh?p</h2>
+    <h2>√êƒÉng nh·∫≠p</h2>
     <form asp-action="Login" method="post" novalidate>
         <div asp-validation-summary="ModelOnly" class="form-errors"></div>
         <div class="field">
-            <label for="Username">TÍn dang nh?p</label>
+            <label for="Username">T√™n ƒëƒÉng nh·∫≠p</label>
             <div class="input-wrap">
                 <input id="Username" asp-for="Username" type="text" autocomplete="username" />
             </div>
             <span asp-validation-for="Username" class="text-danger"></span>
         </div>
         <div class="field">
-            <label for="Password">M?t kh?u</label>
+            <label for="Password">M·∫≠t kh·∫©u</label>
             <div class="input-wrap">
                 <input id="Password" asp-for="Password" type="password" autocomplete="current-password" />
             </div>
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
-        <button type="submit">–ang nh?p</button>
-        <p class="mt-3"><a asp-action="ForgotPassword">QuÍn m?t kh?u?</a></p>
+        <button type="submit">√êƒÉng nh·∫≠p</button>
+        <p class="mt-3"><a asp-action="ForgotPassword">Qu√™n m·∫≠t kh·∫©u?</a></p>
 
     </form>
 
@@ -541,7 +541,7 @@
     }
 
     <p class="meta">
-        Chua cÛ t‡i kho?n? <a asp-action="Register">–ang k˝</a>
+        Ch∆∞a c√≥ t√†i kho·∫£n? <a asp-action="Register">√êƒÉng k√Ω</a>
     </p>
 </div>
 

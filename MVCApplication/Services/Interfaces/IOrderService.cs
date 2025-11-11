@@ -23,7 +23,9 @@ namespace MVCApplication.Services.Interfaces
         /// <param name="search"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        Task<PagedResult<OrderDto>?> GetPagedAsync(int page = 1, int pageSize = 10, string? search = null, string? status = null);
-
+          Task<PagedResult<OrderDto>> GetPagedAsync(
+    int page = 1, int pageSize = 10,
+    string? search = null, string? status = null,
+    string? paymentStatus = null);
     }
 }

@@ -137,39 +137,27 @@ namespace MVCApplication.Controllers
             return View(category);
         }
 
-        // GET: /AdminCategory/Delete/{id} - Displays the delete confirmation page
-        public async Task<IActionResult> Delete(int id)
-        {
-            var category = await _categoryService.GetByIdAsync(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            return View(category);
-        }
 
         // POST: /AdminCategory/Delete/{id} - Handles deletion of a category
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteAjax(int id)
         {
             try
             {
                 await _categoryService.DeleteAsync(id);
-                TempData["Success"] = "Category deleted successfully.";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = true });
             }
             catch (InvalidOperationException ex)
             {
-                TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(Delete), new { id });
+                // Ví dụ: “Không thể xóa vì danh mục có sản phẩm liên quan”
+                return Json(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An error occurred: " + ex.Message;
-                return RedirectToAction(nameof(Delete), new { id });
+                return Json(new { success = false, message = "Lỗi khi xóa: " + ex.Message });
             }
         }
+
     }
 }
