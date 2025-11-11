@@ -8,7 +8,7 @@ namespace CategoriesAPI.Controllers
 {
     [ApiController]
     [Route("odata/Categories")]  // Endpoint mới: api/odata/categories
-    [Authorize(Roles = "Admin")]  // Giữ quyền Admin
+    [Authorize]  // Giữ quyền Admin
     public class ODataCategoryController : ControllerBase
     {
         private readonly ICategoryService _service;  // Giả sử service của bạn là ICategoryService

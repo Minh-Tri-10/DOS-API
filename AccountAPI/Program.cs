@@ -25,7 +25,6 @@ namespace AccountAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<AccountDbContext>(options =>
-
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
