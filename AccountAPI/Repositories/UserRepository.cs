@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountAPI.Repositories
 {
+    // Repository EF Core cho cac thao tac voi bang Users.
     public class UserRepository : IUserRepository
     {
         private readonly AccountDbContext _ctx;

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MVCApplication.Infrastructure
 {
+    // DelegatingHandler chạy trước mỗi HttpClient call để tự động gắn JWT lấy từ cookie đăng nhập.
     public class AccessTokenHandler : DelegatingHandler
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -21,6 +22,7 @@ namespace MVCApplication.Infrastructure
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var httpContext = _httpContextAccessor.HttpContext;
+            // JWT được lưu trong claim "access_token" lúc người dùng đăng nhập.
             var token = httpContext?.User?.FindFirst("access_token")?.Value;
 
             if (string.IsNullOrWhiteSpace(token))
@@ -29,6 +31,7 @@ namespace MVCApplication.Infrastructure
             }
             else if (request.Headers.Authorization == null)
             {
+                // Đính token vào header Authorization nếu caller chưa set.
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 _logger.LogDebug("Attached bearer token to outbound request {Method} {Uri}", request.Method, request.RequestUri);
             }

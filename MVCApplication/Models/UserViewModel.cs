@@ -1,5 +1,6 @@
 ﻿namespace MVCApplication.Models
 {
+    // ViewModel chung cho dữ liệu người dùng mà MVC sử dụng ở nhiều trang.
     public class UserViewModel
     {
         public int UserId { get; set; }
