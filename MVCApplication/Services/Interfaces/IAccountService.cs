@@ -2,6 +2,7 @@
 
 namespace MVCApplication.Services.Interfaces
 {
+    // Định nghĩa các call mà MVC cần từ AccountAPI thông qua gateway.
     public interface IAccountService
     {
         Task<AuthResponseViewModel?> LoginAsync(LoginViewModel dto);

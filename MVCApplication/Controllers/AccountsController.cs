@@ -14,6 +14,7 @@ using System.Globalization;
 
 namespace MVCApplication.Controllers
 {
+    // Controller giao tiep AccountAPI thong qua IAccountService.
     public class AccountsController : Controller
     {
         private readonly IAccountService _service;
@@ -24,6 +25,7 @@ namespace MVCApplication.Controllers
         }
 
         [HttpGet]
+        // Hien thi form dang nhap neu nguoi dung chua dang nhap.
         public IActionResult Login()
         {
             if (User.Identity?.IsAuthenticated ?? false)
@@ -34,6 +36,7 @@ namespace MVCApplication.Controllers
         }
 
         [HttpPost]
+        // Xu ly form dang nhap, goi API va luu JWT vao cookie neu thanh cong.
         public async Task<IActionResult> Login(LoginViewModel dto)
         {
             if (!ModelState.IsValid) return View(dto);
@@ -92,9 +95,11 @@ namespace MVCApplication.Controllers
         }
 
         [HttpGet]
+        // Render form dang ky nguoi dung moi.
         public IActionResult Register() => View();
 
         [HttpPost]
+        // Validate va goi API AccountAPI de tao tai khoan moi.
         public async Task<IActionResult> Register(RegisterViewModel dto)
         {
             if (!ModelState.IsValid) return View(dto);
@@ -125,6 +130,7 @@ namespace MVCApplication.Controllers
 
         [Authorize]
         [HttpGet]
+        // Tai thong tin chi tiet nguoi dung tu API de hien thi trang Profile.
         public async Task<IActionResult> Profile()
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -157,6 +163,7 @@ namespace MVCApplication.Controllers
         }
 
         [Authorize]
+        // Huy cookie hien tai va quay ve trang dang nhap.
         public async Task<IActionResult> Logout()
         {
             await SignOutAsync();
@@ -164,6 +171,7 @@ namespace MVCApplication.Controllers
         }
 
         [HttpGet]
+        // Render form de nguoi dung yeu cau token reset mat khau.
         public IActionResult ForgotPassword() => View();
 
         [HttpPost]
@@ -182,6 +190,7 @@ namespace MVCApplication.Controllers
         }
 
         [HttpGet]
+        // Hien thi form nhap mat khau moi bang token reset.
         public IActionResult ResetPassword(string token)
         {
             ViewBag.Token = token;
@@ -225,6 +234,7 @@ namespace MVCApplication.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
+        // Cap nhat ho so thong qua AccountAPI, dong bo lai claims sau khi thanh cong.
         public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel dto, IFormFile? avatarFile)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -279,6 +289,7 @@ namespace MVCApplication.Controllers
         }
 
 
+        // Sau khi user cap nhat profile, cap nhat lai cookie claims cho dong bo UI.
         private async Task RefreshAuthenticatedUserClaimsAsync(UserViewModel updatedUser)
         {
             var claims = User.Claims
@@ -320,6 +331,7 @@ namespace MVCApplication.Controllers
                 });
         }
 
+        // Dong bo viec sign-out cookie (su dung khi token/claims khong hop le).
         private async Task SignOutAsync()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

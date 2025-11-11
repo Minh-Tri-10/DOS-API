@@ -19,6 +19,7 @@ using System.Globalization;
 
 namespace AccountAPI.Services
 {
+    // Chứa toàn bộ logic nghiệp vụ liên quan đến tài khoản (register/login/ban/reset password).
     public class AccountService : IAccountService
     {
         private readonly IUserRepository _repo;
@@ -41,6 +42,7 @@ namespace AccountAPI.Services
             _cfg = cfg;
         }
 
+        // Kiểm tra thông tin đăng nhập, trả về JWT + thông tin user nếu hợp lệ.
         public async Task<AuthResponseDTO?> LoginAsync(LoginDTO dto)
         {
             var user = await _repo.GetByUsernameAsync(dto.Username);
@@ -65,6 +67,7 @@ namespace AccountAPI.Services
             !string.IsNullOrWhiteSpace(hash) &&
             (hash!.StartsWith("$2a$") || hash.StartsWith("$2b$") || hash.StartsWith("$2y$"));
 
+        // Tạo JWT với đầy đủ claims để gateway và MVC tái dùng.
         private (string Token, DateTime ExpiresAtUtc) GenerateJwtToken(User user)
         {
             var key = _cfg["Jwt:Key"];
@@ -119,6 +122,7 @@ namespace AccountAPI.Services
             return (tokenString, expires);
         }
 
+        // Đăng ký người dùng mới, bảo đảm uniqueness và hash mật khẩu.
         public async Task<UserDTO> RegisterAsync(RegisterDTO dto)
         {
             dto.Username = dto.Username?.Trim() ?? string.Empty;
@@ -152,6 +156,7 @@ namespace AccountAPI.Services
             return user == null ? null : _mapper.Map<UserDTO>(user);
         }
 
+        // Cập nhật thông tin hồ sơ, đồng bộ avatar nếu người dùng upload ảnh mới.
         public async Task<UserDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto, IFormFile? avatarFile)
         {
             var user = await _repo.GetByIdAsync(userId);
@@ -172,6 +177,7 @@ namespace AccountAPI.Services
             return _mapper.Map<UserDTO>(user);
         }
 
+        // Đổi mật khẩu bằng cách xác thực mật khẩu hiện tại trước khi ghi hash mới.
         public async Task<bool> ChangePasswordAsync(ChangePasswordDTO dto)
         {
             var user = await _repo.GetByIdAsync(dto.UserId);
@@ -186,6 +192,7 @@ namespace AccountAPI.Services
             return true;
         }
 
+        // Đặt/huỷ trạng thái ban; các lần đăng nhập sau sẽ kiểm tra cờ này.
         public async Task<bool> SetBanAsync(int userId, bool isBanned)
         {
             var user = await _repo.GetByIdAsync(userId);
@@ -200,6 +207,7 @@ namespace AccountAPI.Services
         private static string ToBase64Url(byte[] bytes) =>
             Convert.ToBase64String(bytes).Replace("+", "-").Replace("/", "_").TrimEnd('=');
 
+        // Sinh token reset mật khẩu và gửi qua email bằng EmailJS.
         public async Task<string?> ForgotPasswordAsync(ForgotPasswordDTO dto)
         {
             var user = await _repo.GetByEmailAsync(dto.Email);
@@ -280,6 +288,7 @@ namespace AccountAPI.Services
             return token;
         }
 
+        // Hoàn tất reset mật khẩu khi có token hợp lệ vẫn còn hiệu lực trong cache.
         public async Task<bool> ResetPasswordAsync(ResetPasswordDTO dto)
         {
             var cacheKey = $"pwdreset:{dto.Token}";

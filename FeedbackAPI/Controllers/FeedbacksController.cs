@@ -26,6 +26,7 @@ namespace FeedbackAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<FeedbackResponseDTO>>> GetFeedbacks()
         {
             var feedbacks = await _feedbackService.GetAllFeedbacksAsync();
@@ -106,6 +107,7 @@ namespace FeedbackAPI.Controllers
 
         [HttpGet("odata")]
         [EnableQuery]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetFeedbacksOData()
         {
             var feedbacks = await _feedbackService.GetAllFeedbacksAsync();
