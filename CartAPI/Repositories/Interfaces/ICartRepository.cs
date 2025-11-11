@@ -20,5 +20,6 @@ namespace CartAPI.Repositories.Interfaces
         Task RemoveCartItemAsync(int cartItemId);
 
         Task<Cart> CreateCartForUserAsync(int userId);
+        Task SaveChangesAsync();
     }
 }

@@ -18,5 +18,6 @@ namespace CartAPI.Services.Interfaces
 
         Task RemoveItemFromCartAsync(int cartItemId);
         Task DeleteCartAsync(int cartId);
+        Task SaveChangesAsync();
     }
 }

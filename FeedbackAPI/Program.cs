@@ -55,7 +55,7 @@ namespace FeedbackAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DosfeedbackDbContext>(option =>
-            option.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+            option.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
 
 
             var jwtSection = builder.Configuration.GetSection("Jwt");

@@ -49,7 +49,7 @@ namespace MVCApplication.Controllers
 
             return ok
                 ? Ok(new { message = " Da them san pham vao gio hang" })
-                : StatusCode(500, new { message = "Khong the them san pham." });
+                : StatusCode(500, new { message = "San pham nay hien khong con trong kho." });
         }
 
         [HttpPut("update/{cartItemId}")]

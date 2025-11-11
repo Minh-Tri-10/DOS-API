@@ -18,7 +18,7 @@ namespace PaymentAPI
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<PaymentDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
 
 
 

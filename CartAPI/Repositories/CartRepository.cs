@@ -80,5 +80,9 @@ namespace CartAPI.Repositories
             await _context.SaveChangesAsync();
             return cart;
         }
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }
