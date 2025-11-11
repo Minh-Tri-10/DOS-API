@@ -5,7 +5,6 @@
     Layout = "_Layout.Admin";
 }
 @Html.AntiForgeryToken()
-
 <style>
     /* ===== WOW PACK v2 – Users page (dark/light theo biến layout) ===== */
     /* ---------- khối trang & tiêu đề có underline phát sáng ---------- */
@@ -62,13 +61,11 @@
             mask: linear-gradient(#000 0 0);
             animation: ringFloat 12s linear infinite;
         }
+
     @@keyframes ringFloat {
-        to
-
-    {
-        transform: rotate(1turn)
-    }
-
+        to {
+            transform: rotate(1turn)
+        }
     }
     /* ---------- nền pattern siêu nhẹ bên trong bảng ---------- */
     .card-surface::after {
@@ -343,12 +340,9 @@
         }
     /* ---------- responsive ---------- */
     @@media (max-width: 992px) {
-        .user-table
-
-    {
-        min-width: 680px
-    }
-
+        .user-table {
+            min-width: 680px
+        }
     }
     /* ===== ACTION BUTTON ===== */
     .btn-ban {
@@ -395,8 +389,6 @@
             .btn-ban.unban:hover {
                 box-shadow: 0 8px 22px color-mix(in oklab,#22c55e 25%, transparent);
             }
-
-
     /* ===== PAGINATION STYLES – Đồng bộ với pill & btn-ban ===== */
     .pagination {
         display: flex;
@@ -489,8 +481,102 @@
         padding: 6px 12px;
         font-size: 12px;
     }
-</style>
+    /* Thêm style cho form tìm kiếm để đồng bộ glassy và gradient */
+    .search-form {
+        padding: 16px;
+        margin-bottom: 18px;
+        border-radius: 18px;
+        background: color-mix(in oklab, var(--bg-soft) 92%, transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
 
+        .search-form::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab, var(--accent) 40%, transparent), color-mix(in oklab, var(--accent2) 40%, transparent), transparent 40%);
+            filter: blur(10px) saturate(1.2);
+            opacity: .45;
+            mask: linear-gradient(#000 0 0);
+            animation: ringFloat 12s linear infinite;
+        }
+
+        .search-form::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab, var(--accent2) 10%, transparent), transparent 60%);
+            opacity: .25;
+        }
+    /* Style cho input và select để trông glassy pill-like */
+    .form-control {
+        border-radius: 999px;
+        padding: 10px 18px;
+        background: linear-gradient(180deg, color-mix(in oklab, #fff 6%, transparent), transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 4%, transparent) inset;
+        transition: box-shadow .25s ease;
+        color: #fff; /* Màu chữ trắng cho input text */
+    }
+
+    .form-select {
+        border-radius: 999px;
+        padding: 10px 18px;
+        background: linear-gradient(180deg, color-mix(in oklab, #fff 6%, transparent), transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 4%, transparent) inset;
+        transition: box-shadow .25s ease;
+        color: #fff; /* Màu chữ trắng cho giá trị hiển thị của select */
+    }
+
+        .form-select option {
+            color: #000; /* Màu chữ đen cho các option trong dropdown để dễ đọc trên nền trắng */
+            background: #fff; /* Nền trắng cho dropdown options */
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent);
+            border-color: var(--accent);
+        }
+    /* Điều chỉnh cho light theme */
+    :root[data-theme="light"] .form-control,
+    :root[data-theme="light"] .form-select {
+        color: #000; /* Màu chữ đen ở light mode */
+    }
+
+        :root[data-theme="light"] .form-select option {
+            color: #000;
+            background: #fff;
+        }
+    /* Đồng bộ button trong form */
+    .btn-apply {
+        background: linear-gradient(180deg, color-mix(in oklab, #22c55e 20%, transparent), color-mix(in oklab, #16a34a 15%, transparent));
+        border-color: rgba(34,197,94,.35);
+        color: #dcfce7;
+    }
+
+    .btn-reset {
+        background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 12%, transparent), color-mix(in oklab, var(--accent2) 12%, transparent));
+        color: var(--text);
+    }
+    /* Light theme cho form */
+    :root[data-theme="light"] .search-form {
+        background: #fff;
+        box-shadow: 0 10px 28px rgba(2,8,23,.08);
+    }
+
+    :root[data-theme="light"] .form-control, :root[data-theme="light"] .form-select {
+        background: linear-gradient(180deg, rgba(0,0,0,.02), transparent);
+    }
+</style>
 <div class="page-block">
     <div class="page-heading">
         <h2>Danh sách Danh mục</h2>
@@ -504,34 +590,36 @@
     {
         <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
     }
-    <!-- Form tìm kiếm và sắp xếp -->
-    <form asp-action="Index" method="get" class="mb-3">
-        <div class="row">
-            <div class="col-md-4">
-                <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm kiếm theo tên danh mục..." />
+    <!-- Form tìm kiếm và sắp xếp - wrap vào glassy card -->
+    <div class="search-form card-surface">
+        <form asp-action="Index" method="get">
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm kiếm theo tên danh mục..." />
+                </div>
+                <div class="col-md-3 mb-2">
+                    <select name="orderBy" class="form-select">
+                        <option value="CategoryId asc" selected="@(ViewBag.OrderBy == "CategoryId asc")">ID tăng dần</option>
+                        <option value="CategoryId desc" selected="@(ViewBag.OrderBy == "CategoryId desc")">ID giảm dần</option>
+                        <option value="CategoryName asc" selected="@(ViewBag.OrderBy == "CategoryName asc")">Tên tăng dần</option>
+                        <option value="CategoryName desc" selected="@(ViewBag.OrderBy == "CategoryName desc")">Tên giảm dần</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <select name="pageSize" class="form-select">
+                        <option value="10" selected="@(ViewBag.PageSize == 10)">10 / trang</option>
+                        <option value="20" selected="@(ViewBag.PageSize == 20)">20 / trang</option>
+                        <option value="50" selected="@(ViewBag.PageSize == 50)">50 / trang</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <button type="submit" class="btn-ban unban btn-apply">Áp dụng</button>
+                    <a asp-action="Index" class="btn-ban btn-reset">Reset</a>
+                </div>
             </div>
-            <div class="col-md-3">
-                <select name="orderBy" class="form-select">
-                    <option value="CategoryId asc" selected="@(ViewBag.OrderBy == "CategoryId asc")">ID tăng dần</option>
-                    <option value="CategoryId desc" selected="@(ViewBag.OrderBy == "CategoryId desc")">ID giảm dần</option>
-                    <option value="CategoryName asc" selected="@(ViewBag.OrderBy == "CategoryName asc")">Tên tăng dần</option>
-                    <option value="CategoryName desc" selected="@(ViewBag.OrderBy == "CategoryName desc")">Tên giảm dần</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="pageSize" class="form-select">
-                    <option value="10" selected="@(ViewBag.PageSize == 10)">10 / trang</option>
-                    <option value="20" selected="@(ViewBag.PageSize == 20)">20 / trang</option>
-                    <option value="50" selected="@(ViewBag.PageSize == 50)">50 / trang</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary">Áp dụng</button>
-                <a asp-action="Index" class="btn btn-secondary">Reset</a>
-            </div>
-        </div>
-        <input type="hidden" name="page" value="1" /> <!-- Reset về page 1 khi tìm kiếm -->
-    </form>
+            <input type="hidden" name="page" value="1" /> <!-- Reset về page 1 khi tìm kiếm -->
+        </form>
+    </div>
     <p>
         <a asp-action="Create" class="btn-ban unban">Tạo Danh mục Mới</a>
     </p>
@@ -574,7 +662,7 @@
                         }
                     </tbody>
                 </table>
-                <!-- Pagination -->
+                <!-- Pagination - đã đồng bộ style -->
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
                         @if (ViewBag.Page > 1)
@@ -608,19 +696,15 @@
             setTimeout(function() {
                 $('.alert').fadeOut(300);
             }, 5000);
-
             // Sự kiện xóa danh mục bằng AJAX
             $(document).on('click', '.delete-btn', function() {
                 var row = $(this).closest('tr');
                 var categoryId = row.data('id');
-
                 if (!confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
                     return;
                 }
-
                 // Lấy giá trị token từ input hidden
                 var token = $('input[name="__RequestVerificationToken"]').val();
-
                         $.ajax({
             url: '/AdminCategory/DeleteAjax/' + categoryId,
             type: 'POST',
@@ -639,7 +723,6 @@
                 alert('Lỗi máy chủ: ' + (xhr.responseText || error));
             }
         });
-
             });
         });
     </script>
