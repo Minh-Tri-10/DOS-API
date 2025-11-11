@@ -201,6 +201,19 @@
         pointer-events: none;
     }
 
+    .form-errors {
+        color: var(--danger);
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .text-danger {
+        color: var(--danger);
+        font-size: 0.85rem;
+        display: block;
+        margin-top: 4px;
+    }
+
     [data-theme="light"] .login-box::after {
         background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,var(--sweep-alpha)) 50%, transparent 70%);
     }
@@ -513,11 +526,13 @@
 <div class="login-box">
     <h2>Đăng ký</h2>
     <form asp-action="Register" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
         <div class="field">
             <label for="Username">Tên đăng nhập</label>
             <div class="input-wrap">
                 <input id="Username" asp-for="Username" type="text" autocomplete="username" />
             </div>
+            <span asp-validation-for="Username" class="text-danger"></span>
         </div>
 
         <div class="field">
@@ -525,6 +540,15 @@
             <div class="input-wrap">
                 <input id="Password" asp-for="Password" type="password" autocomplete="new-password" />
             </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="field">
+            <label for="ConfirmPassword">Xác nhận mật khẩu</label>
+            <div class="input-wrap">
+                <input id="ConfirmPassword" asp-for="ConfirmPassword" type="password" autocomplete="new-password" />
+            </div>
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
 
         <div class="field">
@@ -532,6 +556,7 @@
             <div class="input-wrap">
                 <input id="FullName" asp-for="FullName" type="text" autocomplete="name" />
             </div>
+            <span asp-validation-for="FullName" class="text-danger"></span>
         </div>
 
         <div class="field">
@@ -539,9 +564,10 @@
             <div class="input-wrap">
                 <input id="Email" asp-for="Email" type="email" autocomplete="email" />
             </div>
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
-        <button type="submit">Đăng ký</button>
+        <button type="submit">Dang ky</button>
     </form>
 
     @if (ViewBag.Error != null)
@@ -617,3 +643,4 @@
       resize(); requestAnimationFrame(tick);
     })();
 </script>
+@await Html.PartialAsync("_ValidationScriptsPartial")

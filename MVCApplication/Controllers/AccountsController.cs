@@ -1,4 +1,6 @@
-ï»¿using System.IdentityModel.Tokens.Jwt;
+using System;
+using System.Net.Http;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
@@ -97,13 +99,28 @@ namespace MVCApplication.Controllers
         {
             if (!ModelState.IsValid) return View(dto);
 
-            var user = await _service.RegisterAsync(dto);
-            if (user == null)
+            try
             {
-                ViewBag.Error = "Dang ky that bai.";
+                var user = await _service.RegisterAsync(dto);
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Ðang ký th?t b?i.");
+                    return View(dto);
+                }
+
+                TempData["RegisterSuccess"] = "Ðang ký thành công! Vui lòng dang nh?p.";
+                return RedirectToAction("Login");
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
                 return View(dto);
             }
-            return RedirectToAction("Login");
+            catch (HttpRequestException)
+            {
+                ModelState.AddModelError(string.Empty, "Không th? k?t n?i t?i máy ch?. Vui lòng th? l?i.");
+                return View(dto);
+            }
         }
 
         [Authorize]
@@ -232,12 +249,12 @@ namespace MVCApplication.Controllers
                 return View("Profile", dto);
             }
 
-            // âœ… Gá»­i formdata tá»›i API vÃ  Upload lÃªn Cloudinary táº¡i API
+            // ? G?i formdata t?i API và Upload lên Cloudinary t?i API
             var updatedUser = await _service.UpdateProfileAsync(userId, dto, avatarFile);
 
             if (updatedUser == null)
             {
-                ViewBag.Error = "Cáº­p nháº­t tháº¥t báº¡i.";
+                ViewBag.Error = "C?p nh?t th?t b?i.";
                 ViewBag.KeepEditing = true;
                 return View("Profile", dto);
             }
@@ -257,7 +274,7 @@ namespace MVCApplication.Controllers
             };
 
             ViewBag.KeepEditing = false;
-            ViewBag.Success = "Cáº­p nháº­t thÃ nh cÃ´ng!";
+            ViewBag.Success = "C?p nh?t thành công!";
             return View("Profile", vm);
         }
 
