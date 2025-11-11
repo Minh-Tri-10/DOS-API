@@ -12,13 +12,15 @@ namespace APIGateways
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Gateway đọc cấu hình tuyến từ Ocelot.json (reload khi file thay đổi).
             builder.Configuration.AddJsonFile("Ocelot.json", optional: false, reloadOnChange: true);
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddOcelot();
+            builder.Services.AddOcelot(); // Đăng ký pipeline của Ocelot.
 
+            // Tái sử dụng cùng cấu hình JWT như các service phía sau để kiểm tra token ngay tại cửa ngõ.
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
             if (string.IsNullOrWhiteSpace(signingKey))
@@ -45,6 +47,7 @@ namespace APIGateways
 
             builder.Services.AddAuthorization();
 
+            // CORS mặc định để các FE clients (MVC/SPA) có thể gọi Gateway trong DEV.
             builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(policy =>
@@ -67,7 +70,7 @@ namespace APIGateways
 
             app.MapControllers();
 
-            await app.UseOcelot();
+            await app.UseOcelot(); // Bắt đầu pipeline reverse-proxy để forward request tới các microservice.
 
             app.Run();
         }

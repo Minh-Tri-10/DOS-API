@@ -8,6 +8,7 @@
     using MVCApplication.Models;
     using MVCApplication.Services.Interfaces;
 
+    // Bao dong wrapper HttpClient de giao tiep voi Gateway/AccountAPI tu MVC.
     public class AccountService : IAccountService
     {
         private readonly HttpClient _http;
@@ -18,6 +19,7 @@
             _logger = logger;
         }
 
+        // Gửi request đăng nhập và parse AuthResponse; trả null nếu API từ chối.
         public async Task<AuthResponseViewModel?> LoginAsync(LoginViewModel dto)
         {
             var res = await _http.PostAsJsonAsync("api/accounts/login", dto);
@@ -30,6 +32,7 @@
             return await res.Content.ReadFromJsonAsync<AuthResponseViewModel>();
         }
 
+        // Đăng ký tài khoản qua gateway; ném InvalidOperationException khi API trả lỗi nghiệp vụ.
         public async Task<UserViewModel?> RegisterAsync(RegisterViewModel dto)
         {
             var res = await _http.PostAsJsonAsync("api/accounts/register", dto);
@@ -51,6 +54,7 @@
             return null;
         }
 
+        // Lấy thông tin người dùng theo id phục vụ trang profile.
         public async Task<UserViewModel?> GetByIdAsync(int id)
         {
             var response = await _http.GetAsync($"api/accounts/{id}");
@@ -69,6 +73,7 @@
 
             return await response.Content.ReadFromJsonAsync<UserViewModel>();
         }
+        // Admin UI dùng để liệt kê toàn bộ user.
         public async Task<IEnumerable<UserViewModel>> GetAllAsync()
         {
             var response = await _http.GetAsync("api/accounts");
@@ -81,6 +86,7 @@
             var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserViewModel>>();
             return users ?? Enumerable.Empty<UserViewModel>();
         }
+        // Kích hoạt/huỷ trạng thái ban trên AccountAPI.
         public async Task<bool> SetBanAsync(int id, bool isBanned)
         {
             var res = await _http.PatchAsJsonAsync($"api/accounts/{id}/ban", new { IsBanned = isBanned });
@@ -91,6 +97,7 @@
             }
             return res.IsSuccessStatusCode;
         }
+        // Gửi yêu cầu quên mật khẩu.
         public async Task<bool> ForgotPasswordAsync(string email)
         {
             var res = await _http.PostAsJsonAsync("api/accounts/forgot-password", new { Email = email });
@@ -102,6 +109,7 @@
             return res.IsSuccessStatusCode; // 204 NoContent => true
         }
 
+        // Hoàn tất đặt lại mật khẩu bằng token đã nhận qua email.
         public async Task<bool> ResetPasswordAsync(string token, string newPassword)
         {
             var res = await _http.PostAsJsonAsync("api/accounts/reset-password", new { Token = token, NewPassword = newPassword });
@@ -112,6 +120,7 @@
             }
             return res.IsSuccessStatusCode; // 204 NoContent => true
         }
+        // Upload form-data (text + ảnh) tới AccountAPI để cập nhật hồ sơ người dùng.
         public async Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto, IFormFile? avatarFile)
         {
             using var formData = new MultipartFormDataContent();
@@ -132,6 +141,7 @@
             return await res.Content.ReadFromJsonAsync<UserViewModel>();
         }
 
+        // Cố gắng rút ra thông báo cụ thể từ response JSON (ModelState/ProblemDetails).
         private static string? ExtractErrorMessage(string? payload)
         {
             if (string.IsNullOrWhiteSpace(payload))

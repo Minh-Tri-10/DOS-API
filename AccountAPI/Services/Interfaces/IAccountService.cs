@@ -4,6 +4,7 @@ using AccountAPI.DTOs;
 
 namespace AccountAPI.Services.Interfaces
 {
+    // Khai báo toàn bộ tác vụ nghiệp vụ mà tầng controller cần.
     public interface IAccountService
     {
         Task<AuthResponseDTO?> LoginAsync(LoginDTO dto);

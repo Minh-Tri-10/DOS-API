@@ -18,16 +18,19 @@ namespace AccountAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // ---- Đăng ký các dịch vụ nền tảng mà AccountAPI cần.
             builder.Services.AddMemoryCache();
             builder.Services.AddControllers();
             builder.Services.AddAutoMapper(typeof(AccountAPI.Mapping.MappingProfile));
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // DbContext kết nối tới database chứa bảng Users.
             builder.Services.AddDbContext<AccountDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
+            // EmailOptions phục vụ gửi token reset/ thông báo tới user.
             builder.Services.AddSingleton(sp =>
             {
                 var cfg = sp.GetRequiredService<IConfiguration>().GetSection("Email");
@@ -47,6 +50,7 @@ namespace AccountAPI
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
+            // ---- Cấu hình xác thực JWT cho toàn bộ API endpoints.
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];
             if (string.IsNullOrWhiteSpace(signingKey))
@@ -96,6 +100,7 @@ namespace AccountAPI
                 app.UseSwaggerUI();
             }
 
+            // Chuỗi middleware chuẩn cho Web API có JWT.
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

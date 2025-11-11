@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AccountAPI.DTOs
 {
+    // DTO gửi từ client khi đăng ký tài khoản tại AccountAPI.
     public class RegisterDTO
     {
         [Required]

@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MVCApplication.Models
 {
+    // ViewModel của form đăng ký (không bao gồm phone vì FE chưa yêu cầu).
     public class RegisterViewModel
     {
         [Required(ErrorMessage = "Tên đăng nhập là bắt buộc.")]

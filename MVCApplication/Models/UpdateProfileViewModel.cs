@@ -2,6 +2,7 @@
 
 namespace MVCApplication.Models
 {
+    // Form cập nhật profile phía MVC; chứa cả field đọc-only và field cho phép sửa.
     public class UpdateProfileViewModel
     {
         // ========== Các field không update (chỉ để hiển thị) ==========
