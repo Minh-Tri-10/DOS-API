@@ -50,4 +50,13 @@ public class ProductController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+
+    [HttpPut("reduce-stock")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ReduceStock([FromBody] ReduceStockDto dto)
+    {
+        var ok = await _service.ReduceStockAsync(dto.ProductId, dto.Quantity);
+        return ok ? NoContent() : BadRequest("Không đủ hàng trong kho hoặc sản phẩm không tồn tại");
+    }
+
 }

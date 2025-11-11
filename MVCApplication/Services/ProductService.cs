@@ -104,6 +104,31 @@ namespace MVCApplication.Services
             }
 
         }
+        // Hàm trừ hàng (Reduce Stock)
+        public async Task<bool> ReduceStockAsync(int productId, int quantity)
+        {
+            var token = _httpContextAccessor.HttpContext?.User.FindFirst("access_token")?.Value;
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new InvalidOperationException("Không tìm thấy access token. Vui lòng đăng nhập lại.");
+            }
+
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var dto = new { ProductId = productId, Quantity = quantity };
+
+            var response = await _httpClient.PutAsJsonAsync("api/Product/reduce-stock", dto);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"ReduceStock Error: {err}");
+                return false;
+            }
+
+            return true;
+        }
         public async Task<(IEnumerable<ProductDTO> Items, int TotalCount)> GetODataAsync(int page, int pageSize, string search, string orderBy, int? categoryId = null)
         {
             // Lấy token từ HttpContext.User.Claims (key "access_token" như trong controller)

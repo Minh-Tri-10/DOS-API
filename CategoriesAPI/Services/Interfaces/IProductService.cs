@@ -8,4 +8,6 @@ public interface IProductService
     Task<ProductDTO> CreateAsync(CreateProductDTO dto);
     Task UpdateAsync(int id, UpdateProductDTO dto);
     Task DeleteAsync(int id);
+    Task<bool> ReduceStockAsync(int productId, int quantity);
+
 }

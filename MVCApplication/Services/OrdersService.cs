@@ -13,12 +13,14 @@ namespace MVCApplication.Services
     public class OrdersService : IOrderService
     {
         private readonly IAccountService _accountService;
+        private readonly IProductService _productService;
         private readonly HttpClient _http;
 
-        public OrdersService(HttpClient http, IAccountService accountService)
+        public OrdersService(HttpClient http, IAccountService accountService, IProductService productService)
         {
             _http = http;
             _accountService = accountService;
+            _productService = productService;
         }
 
         public async Task<List<OrderDto>?> GetAllAsync()
@@ -52,9 +54,34 @@ namespace MVCApplication.Services
 
         public async Task<bool> UpdateAsync(int id, UpdateOrderDto dto)
         {
-            var res = await _http.PutAsJsonAsync($"api/order/{id}", dto);
-            return res.IsSuccessStatusCode;
+            var response = await _http.PutAsJsonAsync($"api/order/{id}", dto);
+            if (!response.IsSuccessStatusCode) return false;
+
+            // ✅ Nếu đơn hàng hoàn tất thì trừ kho
+            if (dto.OrderStatus?.Equals("completed", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                // 🔥 Gọi lại API để lấy đầy đủ thông tin đơn hàng (bao gồm Items)
+                var orderResponse = await _http.GetAsync($"api/order/{id}");
+                if (!orderResponse.IsSuccessStatusCode) return false;
+
+                var orderContent = await orderResponse.Content.ReadAsStringAsync();
+                var order = JsonSerializer.Deserialize<OrderDto>(orderContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (order?.Items != null)
+                {
+                    foreach (var item in order.Items)
+                    {
+                        await _productService.ReduceStockAsync(item.ProductId, item.Quantity);
+                    }
+                }
+            }
+
+            return true;
         }
+
         public async Task<List<OrderDto>?> GetOrdersByUserIdAsync(int userId)
         {
             try
