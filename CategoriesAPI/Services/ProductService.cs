@@ -101,5 +101,16 @@ public class ProductService : IProductService
             throw new Exception("Error deleting product", ex);
         }
     }
+
+    public async Task<bool> ReduceStockAsync(int productId, int quantity)
+    {
+        var product = await _repo.GetByIdAsync(productId);
+        if (product == null || product.Stock < quantity)
+            return false;
+
+        product.Stock -= quantity;
+        await _repo.UpdateAsync(product);
+        return true;
+    }
 }
 

@@ -10,5 +10,6 @@ namespace MVCApplication.DTOs
 
         [Display(Name = "Cancel Reason")]
         public string? CancelReason { get; set; }
+        public List<OrderItemDto>? OrderItems { get; set; }
     }
 }
