@@ -1061,19 +1061,13 @@
 
 
                                 @* HIỂN THỊ TRẠNG THÁI ĐƠN HÀNG (Dịch sang tiếng Việt) *@
-
-                                <td class="status-cell">
-
+                                <td class="status-cell order-status-cell">
                                     <span class="status-pill @GetStatusClass(order.OrderStatus)">
-
                                         @TranslateStatus(order.OrderStatus)
-
                                     </span>
-
                                 </td>
 
-                                @* Trạng thái thanh toán *@
-                                <td class="status-cell">
+                                <td class="status-cell payment-status-cell">
                                     <span class="status-pill @GetStatusClass(order.PaymentStatus)">
                                         @TranslateStatus(order.PaymentStatus)
                                     </span>
@@ -1083,7 +1077,7 @@
 
 
 
-                                <td class="total-amount-cell">@order.TotalAmount.ToString("N0")₫</td>
+                                <td class="total-amount-cell">@((order.TotalAmount + 30000).ToString("N0"))₫</td>
 
                                 <td class="date-cell">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
 
@@ -1393,15 +1387,11 @@
 
                             var statusCell = row.find('.status-cell');
 
-                            var statusSpan = statusCell.find('.status-pill');
-
-                            if (statusSpan.length) {
-
-                                statusSpan.text('Đã hủy');
-
-                                statusSpan.removeClass().addClass('status-pill cancelled');
-
-                            }
+                                   var statusSpan = row.find('.order-status-cell .status-pill');
+        if (statusSpan.length) {
+            statusSpan.text('Đã hủy');
+            statusSpan.removeClass().addClass('status-pill cancelled');
+        }
 
 
 

@@ -27,9 +27,9 @@ namespace MVCApplication.Controllers
 
         //    return View(orders);
         //}
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, string? status = null)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, string? status = null, string? paymentStatus = null)
         {
-            var result = await _service.GetPagedAsync(page, pageSize, search, status);
+            var result = await _service.GetPagedAsync(page, pageSize, search, status, paymentStatus);
             var orders = result?.Data ?? new List<OrderDto>();
             int totalCount = result?.TotalCount ?? 0;
 
@@ -39,9 +39,11 @@ namespace MVCApplication.Controllers
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             ViewBag.Search = search;
             ViewBag.Status = status;
+            ViewBag.PaymentStatus = paymentStatus;
 
             return View(orders);
         }
+
 
         // Chi tiết đơn hàng
         public async Task<IActionResult> Details(int id)

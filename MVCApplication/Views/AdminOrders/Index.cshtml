@@ -1,8 +1,5 @@
 ﻿@model IEnumerable<MVCApplication.DTOs.OrderDto>
 
-
-
-
 @{
     Layout = "_Layout.Admin";
 
@@ -63,6 +60,7 @@
     var totalPagesCount = ViewBag.TotalPages ?? 1;
     var search = ViewBag.Search ?? "";
     var status = ViewBag.Status ?? "";
+    var paymentStatus = ViewBag.PaymentStatus as string ?? "";
 }
 
 
@@ -2330,14 +2328,23 @@
                 <circle cx="11" cy="11" r="7"></circle>
                 <path d="M21 21l-4.3-4.3"></path>
             </svg>
-            <input name="search" value="@search" placeholder="Tìm kiếm theo tên, ID, ..." />
+            <input name="search" value="@search" placeholder="Tìm kiếm theo tên" />
         </div>
 
         <select name="status" class="orders-select">
-            <option value="">Tất cả trạng thái</option>
-            <option value="Pending" selected="@(status == "Pending")">Pending</option>
-            <option value="Completed" selected="@(status == "Completed")">Completed</option>
-            <option value="Cancelled" selected="@(status == "Cancelled")">Cancelled</option>
+            <option value="" selected="@(string.IsNullOrEmpty(status) ? "selected" : null)">Tất cả trạng thái</option>
+            <option value="pending" selected="@(status == "Pending" ? "selected" : null)">Đang chờ</option>
+            <option value="completed" selected="@(status == "Completed" ? "selected" : null)">Hoàn thành</option>
+            <option value="cancelled" selected="@(status == "Cancelled" ? "selected" : null)">Đã hủy</option>
+        </select>
+
+        <select name="paymentStatus" class="orders-select">
+            <option value="" selected="@(string.IsNullOrEmpty(paymentStatus) ? "selected" : null)">Tất cả TT Thanh toán</option>
+
+            <option value="Success" selected="@(paymentStatus == "paid" ? "selected" : null)">Đã thanh toán</option>
+            <option value="Pending" selected="@(paymentStatus == "pending" ? "selected" : null)">Đang chờ</option>
+            <option value="Failed" selected="@(paymentStatus == "failed" ? "selected" : null)">Thất bại</option>
+            <option value="Refunded" selected="@(paymentStatus == "refunded" ? "selected" : null)">Đã hoàn tiền</option>
         </select>
 
         <button type="submit" class="btn btn-primary">Lọc</button>
@@ -2366,7 +2373,7 @@
                             <td><span class="@StatusClass(order.OrderStatus)">@OrderStatusLabel(order.OrderStatus)</span></td>
                             <td><span class="@PaymentClass(order.PaymentStatus)">@PaymentLabel(order.PaymentStatus)</span></td>
                             <td class="orders-money">
-                                @order.TotalAmount.ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
+                                @((order.TotalAmount + 30000).ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")))
                             </td>
                             <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
                             <td class="orders-actions">

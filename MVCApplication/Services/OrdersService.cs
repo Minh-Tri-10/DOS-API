@@ -108,16 +108,20 @@ namespace MVCApplication.Services
         }
 
         public async Task<PagedResult<OrderDto>> GetPagedAsync(
-            int page = 1, int pageSize = 10,
-            string? search = null, string? status = null)
+    int page = 1, int pageSize = 10,
+    string? search = null, string? status = null,
+    string? paymentStatus = null) // thêm tham số paymentStatus
         {
             int skip = (page - 1) * pageSize;
             var sb = new StringBuilder($"odata/Orders?$top={pageSize}&$skip={skip}&$count=true");
 
             var filters = new List<string>();
-            // ❌ Không filter theo FullName nữa, vì FullName null khi API trả
+
             if (!string.IsNullOrWhiteSpace(status))
                 filters.Add($"OrderStatus eq '{status}'");
+
+            if (!string.IsNullOrWhiteSpace(paymentStatus))
+                filters.Add($"PaymentStatus eq '{paymentStatus}'"); // thêm filter PaymentStatus
 
             if (filters.Any())
                 sb.Append("&$filter=" + string.Join(" and ", filters));
@@ -170,6 +174,7 @@ namespace MVCApplication.Services
                 TotalCount = totalCount
             };
         }
+
 
 
         // OData response model
