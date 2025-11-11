@@ -25,8 +25,9 @@ namespace CategoriesAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<CatalogDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+
 
 
 

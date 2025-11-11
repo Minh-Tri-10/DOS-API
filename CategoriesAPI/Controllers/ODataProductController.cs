@@ -9,7 +9,7 @@ namespace CategoriesAPI.Controllers
 {
     [ApiController]
     [Route("odata/Products")]  // Endpoint mới: api/odata/products
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class ODataProductController : ControllerBase
     {
         private readonly IProductService _service;

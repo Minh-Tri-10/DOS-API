@@ -104,7 +104,7 @@ namespace MVCApplication.Services
             }
 
         }
-        public async Task<(IEnumerable<ProductDTO> Items, int TotalCount)> GetODataAsync(int page, int pageSize, string search, string orderBy)
+        public async Task<(IEnumerable<ProductDTO> Items, int TotalCount)> GetODataAsync(int page, int pageSize, string search, string orderBy, int? categoryId = null)
         {
             // Lấy token từ HttpContext.User.Claims (key "access_token" như trong controller)
             var token = _httpContextAccessor.HttpContext?.User.FindFirst("access_token")?.Value;
@@ -114,30 +114,53 @@ namespace MVCApplication.Services
             }
             // Set header Authorization
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
             // Build query
             var skip = (page - 1) * pageSize;
-            var filter = string.IsNullOrWhiteSpace(search) ? "" : $"contains(ProductName,'{Uri.EscapeDataString(search)}')"; // Thêm escape để tránh lỗi special char
+            var filterParts = new List<string>();
+
+            // Filter theo search (ProductName)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                filterParts.Add($"contains(ProductName,'{Uri.EscapeDataString(search)}')");
+            }
+
+            // Filter theo categoryId nếu có
+            if (categoryId.HasValue)
+            {
+                filterParts.Add($"CategoryId eq {categoryId.Value}");
+            }
+
+            var filter = string.Join(" and ", filterParts);
             var queryParts = new List<string>();
-            if (!string.IsNullOrWhiteSpace(filter))
+
+            if (!string.IsNullOrEmpty(filter))
             {
                 queryParts.Add($"$filter={filter}");
             }
+
             queryParts.Add($"$orderby={orderBy.Replace(" ", "%20")}"); // Encode space trong orderBy để tránh lỗi URL
             queryParts.Add($"$top={pageSize}");
             queryParts.Add($"$skip={skip}");
             queryParts.Add("$count=true");
+
             var query = $"odata/Products?{string.Join("&", queryParts)}";
+
             // Log query để debug
             Console.WriteLine("OData Query: " + query); // Hoặc dùng ILogger nếu có
+
             var response = await _httpClient.GetAsync(query);
             var content = await response.Content.ReadAsStringAsync();
+
             // Log content trước deserialize
             Console.WriteLine("OData Response Content: " + content);
             Console.WriteLine("Response Status: " + response.StatusCode);
+
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Lỗi gọi API: {response.StatusCode} - {content}");
             }
+
             // Deserialize với options linh hoạt hơn
             var jsonOptions = new JsonSerializerOptions
             {
@@ -145,6 +168,7 @@ namespace MVCApplication.Services
                 AllowTrailingCommas = true, // Cho phép dư dấu phẩy
                 ReadCommentHandling = JsonCommentHandling.Skip // Bỏ qua comment nếu có
             };
+
             try
             {
                 var odataResponse = JsonSerializer.Deserialize<ODataProductRespone>(content, _jsonOptions);
