@@ -109,7 +109,7 @@ namespace MVCApplication.Services
 
         public async Task<PagedResult<OrderDto>> GetPagedAsync(
             int page = 1, int pageSize = 10,
-            string? search = null, string? status = null, string? payment = null)
+            string? search = null, string? status = null)
         {
             int skip = (page - 1) * pageSize;
             var sb = new StringBuilder($"odata/Orders?$top={pageSize}&$skip={skip}&$count=true");
@@ -118,8 +118,6 @@ namespace MVCApplication.Services
             // ❌ Không filter theo FullName nữa, vì FullName null khi API trả
             if (!string.IsNullOrWhiteSpace(status))
                 filters.Add($"OrderStatus eq '{status}'");
-            if (!string.IsNullOrWhiteSpace(payment))
-                filters.Add($"PaymentStatus eq '{payment}'");
 
             if (filters.Any())
                 sb.Append("&$filter=" + string.Join(" and ", filters));

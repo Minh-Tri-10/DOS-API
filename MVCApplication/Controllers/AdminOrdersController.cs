@@ -27,9 +27,9 @@ namespace MVCApplication.Controllers
 
         //    return View(orders);
         //}
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, string? status = null, string? payment = null)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, string? status = null)
         {
-            var result = await _service.GetPagedAsync(page, pageSize, search, status, payment);
+            var result = await _service.GetPagedAsync(page, pageSize, search, status);
             var orders = result?.Data ?? new List<OrderDto>();
             int totalCount = result?.TotalCount ?? 0;
 
@@ -39,7 +39,6 @@ namespace MVCApplication.Controllers
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             ViewBag.Search = search;
             ViewBag.Status = status;
-            ViewBag.Payment = payment;
 
             return View(orders);
         }
@@ -80,8 +79,7 @@ namespace MVCApplication.Controllers
 
             var dto = new UpdateOrderDto
             {
-                OrderStatus = order.OrderStatus,
-                PaymentStatus = order.PaymentStatus
+                OrderStatus = order.OrderStatus
             };
 
             return View(dto);

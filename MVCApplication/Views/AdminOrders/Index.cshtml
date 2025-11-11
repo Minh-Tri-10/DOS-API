@@ -1,733 +1,2692 @@
 ﻿@model IEnumerable<MVCApplication.DTOs.OrderDto>
 
-@* @{ *@
-@*     int totalCount = ViewBag.TotalCount; *@
-@*     int page = ViewBag.Page; *@
-@*     int pageSize = ViewBag.PageSize; *@
-@*     int totalPages = (int)Math.Ceiling((double)totalCount / pageSize); *@
-@*     string StatusClass(string s) *@
-@*     { *@
-@*         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral"; *@
-@*         s = s.ToLowerInvariant(); *@
-@*         if (s.Contains("pending") || s.Contains("processing")) return "orders-pill warn"; *@
-@*         if (s.Contains("completed") || s.Contains("shipped") || s.Contains("delivered")) return "orders-pill ok"; *@
-@*         if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "orders-pill bad"; *@
-@*         return "orders-pill neutral"; *@
-@*     } *@
-@*     string PayClass(string s) *@
-@*     { *@
-@*         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral"; *@
-@*         s = s.ToLowerInvariant(); *@
-@*         if (s.Contains("paid") || s.Contains("captured")) return "orders-pill ok"; *@
-@*         if (s.Contains("refunded") || s.Contains("partial")) return "orders-pill warn"; *@
-@*         if (s.Contains("unpaid") || s.Contains("failed")) return "orders-pill bad"; *@
-@*         return "orders-pill neutral"; *@
-@*     } *@
-@* } *@
+
+
 @{
+
     Layout = "_Layout.Admin";
 
-    // Hàm xác định class cho trạng thái order
+
+
+    // Helper to style order status
+
     string StatusClass(string s)
+
     {
+
         if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
+
         s = s.ToLowerInvariant();
+
         if (s.Contains("pending")) return "orders-pill warn";
+
         if (s.Contains("completed") || s.Contains("shipped") || s.Contains("delivered")) return "orders-pill ok";
+
         if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "orders-pill bad";
-        return "orders-pill neutral";
-    }
 
-    // Hàm xác định class cho trạng thái thanh toán
-    string PayClass(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s)) return "orders-pill neutral";
-        s = s.ToLowerInvariant();
-
-        if (s.Contains("unpaid") || s.Contains("failed")) return "orders-pill bad";       // ❌ đỏ trước
-        if (s.Contains("refunded") || s.Contains("partial")) return "orders-pill warn";   // ⚠️ vàng
-        if (s.Contains("paid") || s.Contains("captured")) return "orders-pill ok";        // ✅ xanh lá
         return "orders-pill neutral";
+
     }
 
 
-    // Lấy các giá trị từ ViewBag
+
     var currentPage = ViewBag.Page ?? 1;
+
     var totalPagesCount = ViewBag.TotalPages ?? 1;
+
     var search = ViewBag.Search ?? "";
+
     var status = ViewBag.Status ?? "";
-    var payment = ViewBag.Payment ?? "";
+
 }
+
+
+
 <style>
+
+
+
     /* ===== Orders – WOW v3 (dark default; light via :root[data-theme="light"]) ===== */
+
+
+
     /* Fallback var nếu layout chưa khai báo */
+
+
+
     :root {
+
+
+
         --bg: #0b1020;
+
+
+
         --bg-soft: #0f172a;
+
+
+
         --text: #e7ebf0;
+
+
+
         --text-strong: #ffffff;
+
+
+
         --muted: #a3b0c2;
+
+
+
         --border: rgba(255,255,255,.14);
+
+
+
         --accent: #22d3ee;
+
+
+
         --accent2: #3b82f6;
+
+
+
         --ok: #22c55e;
+
+
+
         --warn: #f59e0b;
+
+
+
         --bad: #ef4444;
+
+
+
     }
+
+
+
+
+
+
 
         :root[data-theme="light"] {
+
+
+
             --bg: #f6f8fc;
+
+
+
             --bg-soft: #ffffff;
+
+
+
             --text: #111827;
+
+
+
             --text-strong: #0b1220;
+
+
+
             --muted: #475569;
+
+
+
             --border: rgba(15,23,42,.12);
+
+
+
             --accent: #0ea5e9;
+
+
+
             --accent2: #2563eb;
+
+
+
             --ok: #16a34a;
+
+
+
             --warn: #d97706;
+
+
+
             --bad: #dc2626;
+
+
+
         }
+
+
+
     /* === Thêm glow border động cho Orders card === */
+
+
+
     .orders-card {
+
+
+
         position: relative;
+
+
+
         overflow: hidden;
+
+
+
         background: color-mix(in oklab,var(--bg-soft) 98%, transparent);
+
+
+
         border: 1px solid var(--border);
+
+
+
         border-radius: 18px;
+
+
+
         box-shadow: 0 16px 36px rgba(2,8,23,.55), 0 1px 0 color-mix(in oklab,#fff 6%,transparent) inset;
+
+
+
     }
 
+
+
+
+
+
+
         .orders-card::before {
+
+
+
             content: "";
+
+
+
             position: absolute;
+
+
+
             inset: -1px;
+
+
+
             border-radius: inherit;
+
+
+
             z-index: -1;
+
+
+
             background: conic-gradient(from 180deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+
+
+
             filter: blur(12px) saturate(1.25);
+
+
+
             opacity: .45;
+
+
+
             animation: ordersGlow 16s linear infinite;
+
+
+
         }
+
+
+
     @@keyframes ordersGlow {
+
+
+
         to
 
+
+
+
+
+
+
     {
+
+
+
         transform: rotate(1turn)
+
+
+
     }
+
+
+
         /* === Neon Glow + Moving Background for Orders Card === */
+
+
+
         .orders-card {
+
+
+
             position: relative;
+
+
+
             overflow: hidden;
+
+
+
             background: color-mix(in oklab,var(--bg-soft) 95%, transparent);
+
+
+
             border: 1px solid var(--border);
+
+
+
             border-radius: 18px;
+
+
+
             box-shadow: 0 16px 36px rgba(2,8,23,.55), 0 1px 0 color-mix(in oklab,#fff 6%,transparent) inset;
+
+
+
         }
+
+
+
             /* 1️⃣ Vòng sáng xoay quanh viền */
+
+
+
             .orders-card::before {
+
+
+
                 content: "";
+
+
+
                 position: absolute;
+
+
+
                 inset: -1px;
+
+
+
                 border-radius: inherit;
+
+
+
                 z-index: -1;
+
+
+
                 background: conic-gradient(from 0deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35%);
+
+
+
                 filter: blur(14px) saturate(1.25);
+
+
+
                 opacity: .5;
+
+
+
                 animation: ordersGlow 14s linear infinite;
+
+
+
             }
+
+
+
             /* 2️⃣ Nền gradient chuyển động nhẹ bên trong */
+
+
+
             .orders-card::after {
+
+
+
                 content: "";
+
+
+
                 position: absolute;
+
+
+
                 inset: 0;
+
+
+
                 border-radius: inherit;
+
+
+
                 z-index: -2;
+
+
+
                 background: radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 18%, transparent), transparent 60%), radial-gradient(800px 400px at 110% 20%, color-mix(in oklab,var(--accent2) 16%, transparent), transparent 60%), linear-gradient(135deg, color-mix(in oklab,var(--accent) 8%, transparent), color-mix(in oklab,var(--accent2) 8%, transparent));
+
+
+
                 background-size: 300% 300%;
+
+
+
                 animation: ordersBG 18s ease-in-out infinite alternate;
+
+
+
                 opacity: .35;
+
+
+
                 filter: saturate(1.2);
+
+
+
             }
+
+
+
     @@keyframes ordersGlow {
+
+
+
             to
 
+
+
+
+
+
+
     {
+
+
+
         transform: rotate(1turn)
-    }
+
+
 
     }
+
+
+
+
+
+
+
+    }
+
+
+
     @@keyframes ordersBG {
+
+
+
         0%
 
+
+
+
+
+
+
     {
+
+
+
         background-position: 0% 50%;
+
+
+
     }
+
+
+
+
+
+
 
     50% {
+
+
+
         background-position: 100% 50%;
+
+
+
     }
+
+
+
+
+
+
 
     100% {
+
+
+
         background-position: 0% 50%;
-    }
+
+
 
     }
+
+
+
+
+
+
+
     }
+
+
+
+    }
+
+
+
+
+
+
 
     .orders-page {
+
+
+
         max-width: 1260px;
+
+
+
         margin: 26px auto;
+
+
+
         padding: 0 16px;
+
+
+
         color: var(--text);
+
+
+
     }
+
+
+
+
+
+
 
     .orders-head {
+
+
+
         display: flex;
+
+
+
         align-items: flex-end;
+
+
+
         gap: 12px;
+
+
+
         margin: 0 0 16px;
+
+
+
     }
+
+
+
+
+
+
 
         .orders-head h2 {
+
+
+
             margin: 0;
+
+
+
             font-weight: 800;
+
+
+
             letter-spacing: .2px;
+
+
+
             line-height: 1.1;
+
+
+
             font-size: 26px
+
+
+
         }
+
+
+
+
+
+
 
         .orders-head .under {
+
+
+
             flex: 1;
+
+
+
             min-width: 140px;
+
+
+
             height: 6px;
+
+
+
             border-radius: 999px;
+
+
+
             background: linear-gradient(90deg,var(--accent),var(--accent2));
+
+
+
             box-shadow: 0 0 22px color-mix(in oklab,var(--accent) 48%, transparent);
+
+
+
         }
+
+
+
+
+
+
 
     /* Controls */
+
+
+
     .orders-controls {
+
+
+
         display: grid;
+
+
+
         grid-template-columns: 1fr auto auto;
+
+
+
         gap: 10px;
+
+
+
         margin: 12px 0 16px;
+
+
+
     }
+
+
+
+
+
+
 
     .orders-search {
+
+
+
         display: flex;
+
+
+
         gap: 10px;
+
+
+
         align-items: center;
+
+
+
         background: var(--bg-soft);
+
+
+
         border: 1px solid var(--border);
+
+
+
         border-radius: 14px;
+
+
+
         padding: 12px 14px;
+
+
+
     }
+
+
+
+
+
+
 
         .orders-search input {
+
+
+
             flex: 1;
+
+
+
             background: transparent;
+
+
+
             border: 0;
+
+
+
             outline: 0;
+
+
+
             color: var(--text);
+
+
+
             font-size: 15px;
+
+
+
         }
+
+
+
+
+
+
 
     .orders-select {
+
+
+
         background: var(--bg-soft);
+
+
+
         color: var(--text);
+
+
+
         border: 1px solid var(--border);
+
+
+
         border-radius: 12px;
+
+
+
         padding: 12px 14px;
+
+
+
         font-weight: 700;
+
+
+
     }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-search {
+
+
+
         background: #fff
+
+
+
     }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-select {
+
+
+
         background: #fff;
+
+
+
         color: var(--text-strong)
+
+
+
     }
+
+
+
+
+
+
 
     /* Card + table */
+
+
+
     .orders-card {
+
+
+
         position: relative;
+
+
+
         overflow: hidden;
+
+
+
         background: color-mix(in oklab,var(--bg-soft) 98%, transparent);
+
+
+
         border: 1px solid var(--border);
+
+
+
         border-radius: 18px;
+
+
+
         box-shadow: 0 14px 34px rgba(2,8,23,.55), 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset;
+
+
+
     }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-card {
+
+
+
         background: #fff;
+
+
+
         box-shadow: 0 16px 36px rgba(2,8,23,.10)
+
+
+
     }
+
+
+
+
+
+
 
     .orders-wrap {
+
+
+
         overflow: auto;
+
+
+
         border-radius: 16px;
+
+
+
     }
+
+
+
+
+
+
 
         .orders-wrap::-webkit-scrollbar {
+
+
+
             height: 10px
+
+
+
         }
+
+
+
+
+
+
 
         .orders-wrap::-webkit-scrollbar-thumb {
+
+
+
             background: color-mix(in oklab,var(--muted) 38%, transparent);
+
+
+
             border-radius: 30px;
+
+
+
             border: 2px solid transparent;
+
+
+
             background-clip: content-box;
+
+
+
         }
+
+
+
+
+
+
 
     .orders-table {
+
+
+
         width: 100%;
+
+
+
         min-width: 980px;
+
+
+
         border-collapse: separate;
+
+
+
         border-spacing: 0;
+
+
+
         table-layout: fixed;
+
+
+
         font-size: 15px;
+
+
+
     }
+
+
+
+
+
+
 
         .orders-table thead th {
+
+
+
             position: sticky;
+
+
+
             top: 0;
+
+
+
             z-index: 1;
+
+
+
             background: linear-gradient(180deg, color-mix(in oklab,#fff 10%, transparent), transparent);
+
+
+
             backdrop-filter: blur(6px);
+
+
+
             text-align: left;
+
+
+
             font-weight: 800;
+
+
+
             color: var(--muted);
+
+
+
             padding: 16px 16px;
+
+
+
             font-size: 13.5px;
+
+
+
             border-bottom: 1px solid var(--border);
+
+
+
         }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-table thead th {
+
+
+
         background: #f8fafc;
+
+
+
         color: #334155;
+
+
+
         border-bottom: 1px solid var(--border);
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table thead th:first-child {
+
+
+
         border-top-left-radius: 16px
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table thead th:last-child {
+
+
+
         border-top-right-radius: 16px
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table tbody td {
+
+
+
         padding: 16px 16px;
+
+
+
         border-bottom: 1px dashed var(--border);
+
+
+
         vertical-align: middle;
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table tbody tr:nth-child(even) {
+
+
+
         background: linear-gradient(0deg, color-mix(in oklab,#fff 5%, transparent), transparent);
+
+
+
     }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-table tbody tr:nth-child(even) {
+
+
+
         background: #f7f9fe;
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table tbody tr {
+
+
+
         transition: transform .16s ease, background .25s ease, box-shadow .25s ease, border-color .25s ease;
+
+
+
     }
+
+
+
+
+
+
 
         .orders-table tbody tr:hover {
+
+
+
             transform: translateY(-1px);
+
+
+
             background: linear-gradient(0deg, color-mix(in oklab,#fff 8%, transparent), transparent), linear-gradient(90deg, color-mix(in oklab,var(--accent2) 16%, transparent), transparent 45%);
+
+
+
             box-shadow: 0 10px 24px color-mix(in oklab,#000 20%, transparent);
+
+
+
         }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-table tbody tr:hover {
+
+
+
         background: linear-gradient(0deg, #eef5ff, #eef5ff), linear-gradient(90deg, color-mix(in oklab,var(--accent2) 18%, transparent), transparent 50%);
+
+
+
     }
+
+
+
+
+
+
 
     /* Column widths */
+
+
+
     .orders-table th:nth-child(1), .orders-table td:nth-child(1) {
+
+
+
         width: 110px
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table th:nth-child(2), .orders-table td:nth-child(2) {
+
+
+
         width: 220px
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table th:nth-child(3), .orders-table td:nth-child(3) {
+
+
+
         width: 170px;
+
+
+
         text-align: center
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table th:nth-child(4), .orders-table td:nth-child(4) {
+
+
+
         width: 170px;
+
+
+
         text-align: center
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table th:nth-child(5), .orders-table td:nth-child(5) {
+
+
+
         width: 160px;
+
+
+
         text-align: right
+
+
+
     }
+
+
+
+
+
+
 
     orders-table th:nth-child(6), .orders-table td:nth-child(6) {
+
+
+
         width: 160px
+
+
+
     }
+
+
+
+
+
+
 
     .orders-table th:nth-child(7), .orders-table td:nth-child(7) {
+
+
+
         width: 180px;
+
+
+
         text-align: right
+
+
+
     }
+
+
+
+
+
+
 
     /* Cells */
+
+
+
     .orders-id {
+
+
+
         font-variant-numeric: tabular-nums;
+
+
+
         color: var(--muted);
+
+
+
         font-weight: 700
+
+
+
     }
+
+
+
+
+
+
 
     .orders-user {
+
+
+
         font-weight: 800;
+
+
+
         color: var(--text-strong);
+
+
+
         overflow: hidden;
+
+
+
         text-overflow: ellipsis;
+
+
+
         white-space: nowrap;
+
+
+
     }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-user {
+
+
+
         color: #0b1220
+
+
+
     }
+
+
+
+
+
+
 
     .orders-money {
+
+
+
         font-weight: 900;
+
+
+
         font-variant-numeric: tabular-nums;
+
+
+
         color: var(--text-strong)
+
+
+
     }
+
+
+
+
+
+
 
     /* Pills – HIGH CONTRAST for light mode */
+
+
+
     .orders-pill {
+
+
+
         display: inline-grid;
+
+
+
         place-items: center;
+
+
+
         min-width: 128px;
+
+
+
         padding: 8px 12px;
+
+
+
         border-radius: 999px;
+
+
+
         font-size: 12.5px;
+
+
+
         font-weight: 900;
+
+
+
         letter-spacing: .25px;
+
+
+
         border: 1px solid var(--border);
+
+
+
         background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+
+
+
         color: var(--text-strong);
+
+
+
     }
+
+
+
+
+
+
 
         .orders-pill.ok {
+
+
+
             background: linear-gradient(180deg, color-mix(in oklab,var(--ok) 26%, transparent), color-mix(in oklab,var(--ok) 10%, transparent));
+
+
+
             border-color: color-mix(in oklab,var(--ok) 45%, var(--border) 55%);
+
+
+
             color: #e8ffef;
+
+
+
             text-shadow: 0 1px 0 rgba(0,0,0,.35);
+
+
+
         }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-pill.ok {
+
+
+
         color: #064e3b;
+
+
+
         background: #bbf7d0;
+
+
+
         border-color: rgba(22,163,74,.35);
+
+
+
         text-shadow: none
+
+
+
     }
+
+
+
+
+
+
 
     .orders-pill.warn {
+
+
+
         background: linear-gradient(180deg, color-mix(in oklab,var(--warn) 26%, transparent), color-mix(in oklab,var(--warn) 10%, transparent));
+
+
+
         border-color: color-mix(in oklab,var(--warn) 45%, var(--border) 55%);
+
+
+
         color: #fff8e1;
+
+
+
         text-shadow: 0 1px 0 rgba(0,0,0,.35);
+
+
+
     }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-pill.warn {
+
+
+
         color: #7c2d12;
+
+
+
         background: #fde68a;
+
+
+
         border-color: rgba(217,119,6,.35);
+
+
+
         text-shadow: none
+
+
+
     }
+
+
+
+
+
+
 
     .orders-pill.bad {
+
+
+
         background: linear-gradient(180deg, color-mix(in oklab,var(--bad) 26%, transparent), color-mix(in oklab,var(--bad) 10%, transparent));
+
+
+
         border-color: color-mix(in oklab,var(--bad) 45%, var(--border) 55%);
+
+
+
         color: #ffe8e8;
+
+
+
         text-shadow: 0 1px 0 rgba(0,0,0,.35);
+
+
+
     }
+
+
+
+
+
+
 
     :root[data-theme="light"] .orders-pill.bad {
+
+
+
         color: #7f1d1d;
+
+
+
         background: #fecaca;
+
+
+
         border-color: rgba(220,38,38,.35);
+
+
+
         text-shadow: none
+
+
+
     }
+
+
+
+
+
+
 
     .orders-pill.neutral {
+
+
+
         background: #e2e8f0;
+
+
+
         color: #0f172a;
+
+
+
         border-color: rgba(0,0,0,.08)
+
+
+
     }
+
+
+
+
+
+
 
     /* Action links */
+
+
+
     .orders-actions {
+
+
+
         display: flex;
+
+
+
         justify-content: flex-end;
+
+
+
         gap: 10px;
+
+
+
     }
+
+
+
+
+
+
 
     .orders-link {
+
+
+
         text-decoration: none;
+
+
+
         display: inline-flex;
+
+
+
         align-items: center;
+
+
+
         gap: 6px;
+
+
+
         padding: 9px 12px;
+
+
+
         border-radius: 10px;
+
+
+
         border: 1px solid var(--border);
+
+
+
         background: linear-gradient(180deg, color-mix(in oklab,#fff 8%, transparent), transparent);
+
+
+
         color: var(--text-strong);
+
+
+
         font-weight: 800;
+
+
+
     }
+
+
+
+
+
+
 
         .orders-link:hover {
+
+
+
             transform: translateY(-1px);
+
+
+
             transition: transform .12s ease;
+
+
+
         }
+
+
+
+
+
+
 
     @@media (max-width: 980px) {
+
+
+
         .orders-controls
 
+
+
+
+
+
+
     {
+
+
+
         grid-template-columns: 1fr
-    }
+
+
 
     }
-    /* === FIX RING for .orders-card (layering chuẩn) === */
-    .orders-card {
-        position: relative;
-        isolation: isolate;
-        z-index: 0;
+
+
+
+
+
+
+
     }
+
+
+
+    /* === FIX RING for .orders-card (layering chuẩn) === */
+
+
+
+    .orders-card {
+
+
+
+        position: relative;
+
+
+
+        isolation: isolate;
+
+
+
+        z-index: 0;
+
+
+
+    }
+
+
+
+
+
+
 
         /* Nội dung nằm trên cùng */
+
+
+
         .orders-card > * {
+
+
+
             position: relative;
+
+
+
             z-index: 2;
+
+
+
         }
+
+
+
+
+
+
 
         /* RING xoay quanh viền – nằm dưới nội dung */
+
+
+
         .orders-card::before {
+
+
+
             content: "";
+
+
+
             position: absolute;
+
+
+
             inset: -1px;
+
+
+
             border-radius: inherit;
+
+
+
             z-index: 0; /* dưới content */
+
+
+
             background: conic-gradient( from 0deg, color-mix(in oklab,var(--accent) 40%, transparent), color-mix(in oklab,var(--accent2) 40%, transparent), transparent 35% );
+
+
+
             filter: blur(12px) saturate(1.15);
+
+
+
             opacity: .35; /* ↓ chỉnh mờ/đậm ở đây */
+
+
+
             animation: ordersGlow 14s linear infinite;
+
+
+
         }
+
+
+
+
+
+
 
         /* Nền trong card (nếu muốn giữ pattern động, để ở ::after và z-index:-1) */
+
+
+
         .orders-card::after {
+
+
+
             content: "";
+
+
+
             position: absolute;
+
+
+
             inset: 0;
+
+
+
             border-radius: inherit;
+
+
+
             z-index: -1; /* thấp nhất */
+
+
+
             background: radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 14%, transparent), transparent 60%), radial-gradient(800px 400px at 110% 20%, color-mix(in oklab,var(--accent2) 12%, transparent), transparent 60%);
+
+
+
             opacity: .28;
+
+
+
             filter: saturate(1.1);
+
+
+
             animation: ordersBG 18s ease-in-out infinite alternate;
+
+
+
         }
+
+
+
+
+
+
 
     /* Razor cần @@ */
+
+
+
     @@keyframes ordersGlow {
+
+
+
         to {
+
+
+
             transform: rotate(1turn);
+
+
+
         }
+
+
+
     }
+
+
+
+
+
+
 
     @@keyframes ordersBG {
+
+
+
         0% {
+
+
+
             background-position: 0% 50%;
+
+
+
         }
+
+
+
+
+
+
 
         50% {
+
+
+
             background-position: 100% 50%;
+
+
+
         }
 
+
+
+
+
+
+
         100% {
+
+
+
             background-position: 0% 50%;
+
+
+
         }
+
+
+
     }
+
+
+
     /* Nội dung luôn cao nhất */
+
+
+
     .orders-card > * {
+
+
+
         position: relative;
+
+
+
         z-index: 3;
+
+
+
     }
+
+
+
+
+
+
 
     /* Vòng sáng xoay (đã có) */
+
+
+
     .orders-card::before {
+
+
+
         /* giữ như patch trước, chỉ chắc chắn z-index thấp hơn ly */
+
+
+
         z-index: 0;
+
+
+
     }
+
+
+
+
+
+
 
     /* Ly nước + pattern */
+
+
+
     .orders-card::after {
+
+
+
         content: "";
+
+
+
         position: absolute;
+
+
+
         inset: 0;
+
+
+
         border-radius: inherit;
+
+
+
         pointer-events: none;
+
+
+
         z-index: 1; /* trên ring, dưới nội dung */
+
+
+
         /* LAYER ORDER: đầu tiên = ly nước, sau = pattern */
+
+
+
         background: url('/media/overlays/neon-drink.png') center 35% / 480px no-repeat, /* Ly nước */
+
+
+
         radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 14%, transparent), transparent 60%), radial-gradient(800px 400px at 110% 20%, color-mix(in oklab,var(--accent2) 12%, transparent), transparent 60%);
+
+
+
         opacity: .30; /* độ trong tổng */
+
+
+
         filter: saturate(1.2);
+
+
+
         animation: drinkPulse 6s ease-in-out infinite, ordersBG 18s ease-in-out infinite alternate;
+
+
+
     }
+
+
+
+
+
+
 
     /* Tắt ảnh ly khi theme sáng – chỉ giữ pattern */
+
+
+
     :root[data-theme="light"] .orders-card::after {
+
+
+
         background: radial-gradient(1000px 500px at 10% -10%, color-mix(in oklab,var(--accent) 14%, transparent), transparent 60%), radial-gradient(800px 400px at 110% 20%, color-mix(in oklab,var(--accent2) 12%, transparent), transparent 60%);
+
+
+
         opacity: .25; /* chỉ pattern */
+
+
+
     }
+
+
+
+
+
+
 
     /* Razor cần @@ cho keyframes */
+
+
+
     @@keyframes drinkPulse {
+
+
+
         0% {
+
+
+
             opacity: .18;
+
+
+
             filter: blur(14px) saturate(1.1);
+
+
+
             transform: scale(.98);
+
+
+
         }
+
+
+
+
+
+
 
         50% {
+
+
+
             opacity: .38;
+
+
+
             filter: blur(8px) saturate(1.3);
+
+
+
             transform: scale(1.02);
+
+
+
         }
+
+
+
+
+
+
 
         100% {
+
+
+
             opacity: .18;
+
+
+
             filter: blur(14px) saturate(1.1);
+
+
+
             transform: scale(.98);
+
+
+
         }
+
+
+
     }
+
+
+
+
+
+
 
     .orders-pagination-center {
+
+
+
         display: flex; /* Bật Flexbox cho container */
+
+
+
         justify-content: center; /* Căn giữa theo chiều ngang */
+
+
+
         margin-top: 20px; /* Thêm khoảng cách phía trên */
+
+
+
     }
+
+
+
 </style>
+
+
+
 <div class="orders-page">
+
+
+
     <div class="orders-head">
+
+
+
         <h2>Danh sách Orders</h2>
+
+
+
         <div class="under"></div>
+
+
+
     </div>
 
+
+
+
+
+
+
     <!-- Controls -->
+
+
+
     <form method="get" class="orders-controls">
+
+
+
         <div class="orders-search">
+
+
+
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted)">
+
+
+
                 <circle cx="11" cy="11" r="7"></circle>
+
+
+
                 <path d="M21 21l-4.3-4.3"></path>
+
+
+
             </svg>
+
+
+
             <input name="search" value="@search" placeholder="Tìm kiếm theo tên, ID, ..." />
+
+
+
         </div>
+
+
+
         <select name="status" class="orders-select">
+
+
+
             <option value="">Tất cả trạng thái</option>
+
+
+
             <option value="Pending" selected="@(status == "Pending")">Pending</option>
+
+
+
             <option value="Completed" selected="@(status == "Completed")">Completed</option>
+
+
+
             <option value="Cancelled" selected="@(status == "Cancelled")">Cancelled</option>
+
+
+
         </select>
 
-        <select name="payment" class="orders-select">
-            <option value="">Tất cả thanh toán</option>
-            <option value="Paid" selected="@(payment == "Paid")">Paid</option>
-            <option value="Unpaid" selected="@(payment == "Unpaid")">Unpaid</option>
-            <option value="Refunded" selected="@(payment == "Refunded")">Refunded</option>
-            <option value="Failed" selected="@(payment == "Failed")">Failed</option>
-        </select>
+
+
+
+
 
 
         <button type="submit" class="btn btn-primary">Lọc</button>
+
+
+
     </form>
 
+
+
+
+
+
+
     <div class="orders-card">
+
+
+
         <div class="orders-wrap">
+
+
+
             <table class="orders-table" id="ordersTable">
+
+
+
                 <thead>
+
+
+
                     <tr>
+
+
+
                         <th>ID</th>
+
+
+
                         <th>User</th>
+
+
+
                         <th>Status</th>
-                        <th>Payment</th>
+
+
+
                         <th>Total</th>
+
+
+
                         <th>Ngày tạo</th>
+
+
+
                         <th></th>
+
+
+
                     </tr>
+
+
+
                 </thead>
+
+
+
                 <tbody>
+
+
+
                     @foreach (var order in Model)
+
+
+
                     {
+
+
+
                         <tr>
+
+
+
                             <td class="orders-id">#@order.OrderId</td>
+
+
+
                             <td class="orders-user">@order.FullName</td>
+
+
+
                             <td><span class="@StatusClass(order.OrderStatus)">@order.OrderStatus</span></td>
-                            <td><span class="@PayClass(order.PaymentStatus)">@order.PaymentStatus</span></td>
+
+
+
                             <td class="orders-money">
-                                @((order.TotalAmount + 30000).ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")))
+
+
+
+                                @order.TotalAmount.ToString("c0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
+
+
+
                             </td>
+
+
+
                             <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+
+
+
                             <td class="orders-actions">
+
+
+
                                 <a class="orders-link" asp-action="Details" asp-route-id="@order.OrderId">Chi tiết</a>
 
+
+
+
+
+
+
                                 <a class="orders-link" asp-controller="Payments" asp-action="PaymentsByOrder" asp-route-orderId="@order.OrderId">Thanh toán</a>
+
+
+
                                 <a class="orders-link" asp-action="Edit" asp-route-id="@order.OrderId">Sửa</a>
+
+
+
                             </td>
+
+
+
                         </tr>
+
+
+
                     }
+
+
+
                 </tbody>
+
+
+
             </table>
 
+
+
+
+
+
+
             <!-- Pagination -->
+
+
+
             @if (totalPagesCount > 1)
+
+
+
             {
+
+
+
                 <nav class="orders-pagination-center mt-4">
+
+
+
                     <ul class="pagination justify-content-center">
+
+
+
                         <!-- First page -->
+
+
+
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" href="?page=1&search=@search&status=@status&payment=@payment" aria-label="Trang đầu">«</a>
+
+
+
+                            <a class="page-link" href="?page=1&search=@search&status=@status" aria-label="Trang đầu">«</a>
+
+
+
                         </li>
+
+
+
                         <!-- Previous page -->
+
+
+
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" href="?page=@(currentPage-1)&search=@search&status=@status&payment=@payment" aria-label="Trang trước">‹</a>
+
+
+
+                            <a class="page-link" href="?page=@(currentPage-1)&search=@search&status=@status" aria-label="Trang trước">‹</a>
+
+
+
                         </li>
+
+
+
+
+
+
 
                         @{
+
+
+
                             int start = Math.Max(1, currentPage - 2);
+
+
+
                             int end = Math.Min(totalPagesCount, currentPage + 2);
-                        }
-                        @for (int i = start; i <= end; i++) 
-                        {
-                            <li class="page-item @(i == currentPage ? "active" : "")">
-                                <a class="page-link" href="?page=@i&search=@search&status=@status&payment=@payment">@i</a>
-                            </li>
+
+
+
                         }
 
+
+
+                        @for (int i = start; i <= end; i++) 
+
+
+
+                        {
+
+
+
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+
+
+
+                                <a class="page-link" href="?page=@i&search=@search&status=@status">@i</a>
+
+
+
+                            </li>
+
+
+
+                        }
+
+
+
+
+
+
+
                         <!-- Next page -->
+
+
+
                         <li class="page-item @(currentPage == totalPagesCount ? "disabled" : "")">
-                            <a class="page-link" href="?page=@(currentPage+1)&search=@search&status=@status&payment=@payment" aria-label="Trang sau">›</a>
+
+
+
+                            <a class="page-link" href="?page=@(currentPage+1)&search=@search&status=@status" aria-label="Trang sau">›</a>
+
+
+
                         </li>
+
+
+
                         <!-- Last page -->
+
+
+
                         <li class="page-item @(currentPage == totalPagesCount ? "disabled" : "")">
-                            <a class="page-link" href="?page=@totalPagesCount&search=@search&status=@status&payment=@payment" aria-label="Trang cuối">»</a>
+
+
+
+                            <a class="page-link" href="?page=@totalPagesCount&search=@search&status=@status" aria-label="Trang cuối">»</a>
+
+
+
                         </li>
+
+
+
                     </ul>
+
+
+
                 </nav>
+
+
+
             }
+
+
+
         </div>
+
+
+
     </div>
+
+
+
 </div>
+
+
+

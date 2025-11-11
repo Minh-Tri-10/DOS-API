@@ -312,26 +312,13 @@
                     <span asp-validation-for="OrderStatus" class="ou-error"></span>
                 </div>
 
-                <!-- Payment Status -->
-                <div class="ou-field">
-                    <label asp-for="PaymentStatus" class="ou-label">Trạng thái thanh toán</label>
-                    <select asp-for="PaymentStatus" class="ou-select"
-                            asp-items="@(new SelectList(new[] { "paid", "unpaid", "refunded" }, Model?.PaymentStatus))">
-                        <option value="">-- Chọn trạng thái thanh toán --</option>
-                    </select>
-                    <span asp-validation-for="PaymentStatus" class="ou-error"></span>
-                </div>
             </div>
 
             <!-- Pills preview -->
             <div class="ou-grid" style="align-items:end">
                 <div class="ou-field">
                     <div class="ou-label">Preview trạng thái</div>
-                    <div id="statusPreview" class="ou-pill">—</div>
-                </div>
-                <div class="ou-field">
-                    <div class="ou-label">Preview thanh toán</div>
-                    <div id="paymentPreview" class="ou-pill">—</div>
+                    <div id="statusPreview" class="ou-pill">-</div>
                 </div>
             </div>
 
@@ -358,41 +345,33 @@
         // Frontend: pill preview + show/hide cancel reason
         (function(){
           const selStatus = document.getElementById('OrderStatus');
-          const selPayment = document.getElementById('PaymentStatus');
           const prevStatus = document.getElementById('statusPreview');
-          const prevPayment = document.getElementById('paymentPreview');
           const cancelField = document.getElementById('cancelField');
 
-          function pillClass(v, type){
+          function pillClass(v){
             const t = (v||'').toLowerCase();
-            if(type==='status'){
-              if(t.includes('completed')) return 'ou-pill ok';
-              if(t.includes('pending') || t.includes('processing')) return 'ou-pill warn';
-              if(t.includes('cancel')) return 'ou-pill bad';
-            }else{
-              if(t.includes('paid')) return 'ou-pill ok';
-              if(t.includes('refunded') || t.includes('partial')) return 'ou-pill warn';
-              if(t.includes('unpaid') || t.includes('fail')) return 'ou-pill bad';
-            }
+            if(t.includes('completed')) return 'ou-pill ok';
+            if(t.includes('pending') || t.includes('processing')) return 'ou-pill warn';
+            if(t.includes('cancel')) return 'ou-pill bad';
             return 'ou-pill';
           }
 
           function render(){
-            const s = selStatus.value;
-            const p = selPayment.value;
-            prevStatus.className = pillClass(s,'status');
-            prevStatus.textContent = s ? s : '—';
-            prevPayment.className = pillClass(p,'payment');
-            prevPayment.textContent = p ? p : '—';
+            const s = selStatus?.value || '';
+            if(prevStatus){
+              prevStatus.className = pillClass(s);
+              prevStatus.textContent = s || '-';
+            }
 
-            const isCancel = (s||'').toLowerCase().includes('cancel');
-            cancelField.style.display = isCancel ? '' : 'none';
+            if(cancelField){
+              const isCancel = s.toLowerCase().includes('cancel');
+              cancelField.style.display = isCancel ? '' : 'none';
+            }
           }
 
-          if(selStatus && selPayment){
+          if(selStatus){
             render();
             selStatus.addEventListener('change', render);
-            selPayment.addEventListener('change', render);
           }
         })();
     </script>

@@ -5,13 +5,14 @@
 - Giam phu thuoc chéo, chuan bi cho phan tac event-driven/queuing.
 
 ## Ten database de xuat
-| Service         | DbContext             | Ten database goi y |
-|-----------------|----------------------|---------------------|
-| AccountAPI      | `AccountDbContext`    | `DOSAccountDb`      |
-| CartAPI         | `CartDbContext`       | `DOSCartDb`         |
-| CategoriesAPI   | `CatalogDbContext`    | `DOSCatalogDb`      |
-| OrderAPI        | `OrderDbContext`      | `DOSOrderDb`        |
-| PaymentAPI      | `PaymentDbContext`    | `DOSPaymentDb`      |
+| Service         | DbContext               | Ten database goi y |
+|-----------------|------------------------|---------------------|
+| AccountAPI      | `AccountDbContext`      | `DOSAccountDb`      |
+| CartAPI         | `CartDbContext`         | `DOSCartDb`         |
+| CategoriesAPI   | `CatalogDbContext`      | `DOSCatalogDb`      |
+| OrderAPI        | `OrderDbContext`        | `DOSOrderDb`        |
+| PaymentAPI      | `PaymentDbContext`      | `DOSPaymentDb`      |
+| FeedbackAPI     | `DosfeedbackDbContext`  | `DOSFeedbackDb`     |
 
 ## Tao database & schema co ban
 Thuc thi cac doan SQL sau trong SQL Server Management Studio (hoac Azure Data Studio). Co the chay tung khoi phan theo nhu cau.
@@ -117,7 +118,6 @@ BEGIN
         OrderStatus   NVARCHAR(20)  NULL,
         OrderDate     DATETIME      NOT NULL CONSTRAINT DF_Orders_OrderDate DEFAULT(GETDATE()),
         TotalAmount   DECIMAL(10,2) NULL,
-        PaymentStatus NVARCHAR(20)  NULL,
         CancelReason  NVARCHAR(255) NULL,
         CreatedAt     DATETIME      NOT NULL CONSTRAINT DF_Orders_CreatedAt DEFAULT(GETDATE()),
         UpdatedAt     DATETIME      NULL
@@ -153,6 +153,25 @@ BEGIN
         PaymentMethod NVARCHAR(50)  NULL,
         PaymentDate   DATETIME      NULL CONSTRAINT DF_Payments_PaymentDate DEFAULT(GETDATE()),
         PaymentStatus NVARCHAR(20)  NULL CONSTRAINT DF_Payments_Status DEFAULT('pending')
+    );
+END
+GO
+
+-- 6. Feedback service
+IF DB_ID('DOSFeedbackDb') IS NULL
+    CREATE DATABASE DOSFeedbackDb;
+GO
+USE DOSFeedbackDb;
+GO
+IF OBJECT_ID('dbo.Feedbacks','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Feedbacks (
+        FeedbackID   INT IDENTITY(1,1) PRIMARY KEY,
+        OrderID      INT           NOT NULL,
+        Rating       INT           NOT NULL,
+        Comment      NVARCHAR(1000) NULL,
+        FeedbackDate DATETIME      NULL CONSTRAINT DF_Feedbacks_FeedbackDate DEFAULT(GETDATE()),
+        CONSTRAINT UQ_Feedbacks_Order UNIQUE (OrderID)
     );
 END
 GO
@@ -202,8 +221,8 @@ GO
 
 -- Order data
 SET IDENTITY_INSERT DOSOrderDb.dbo.Orders ON;
-INSERT INTO DOSOrderDb.dbo.Orders (OrderID, UserID, OrderStatus, OrderDate, TotalAmount, PaymentStatus, CancelReason, CreatedAt, UpdatedAt)
-SELECT OrderID, UserID, OrderStatus, OrderDate, TotalAmount, PaymentStatus, CancelReason, CreatedAt, UpdatedAt
+INSERT INTO DOSOrderDb.dbo.Orders (OrderID, UserID, OrderStatus, OrderDate, TotalAmount, CancelReason, CreatedAt, UpdatedAt)
+SELECT OrderID, UserID, OrderStatus, OrderDate, TotalAmount, CancelReason, CreatedAt, UpdatedAt
 FROM DrinkOrderDB.dbo.Orders;
 SET IDENTITY_INSERT DOSOrderDb.dbo.Orders OFF;
 GO
@@ -220,6 +239,14 @@ INSERT INTO DOSPaymentDb.dbo.Payments (PaymentID, OrderID, PaidAmount, PaymentMe
 SELECT PaymentID, OrderID, PaidAmount, PaymentMethod, PaymentDate, PaymentStatus
 FROM DrinkOrderDB.dbo.Payments;
 SET IDENTITY_INSERT DOSPaymentDb.dbo.Payments OFF;
+GO
+
+-- Feedback data
+SET IDENTITY_INSERT DOSFeedbackDb.dbo.Feedbacks ON;
+INSERT INTO DOSFeedbackDb.dbo.Feedbacks (FeedbackID, OrderID, Rating, Comment, FeedbackDate)
+SELECT FeedbackID, OrderID, Rating, Comment, FeedbackDate
+FROM DrinkOrderDB.dbo.Feedbacks;
+SET IDENTITY_INSERT DOSFeedbackDb.dbo.Feedbacks OFF;
 GO
 ```
 
