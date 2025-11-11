@@ -28,7 +28,7 @@ namespace OrderAPI
 
             builder.Services.AddDbContext<OrderDbContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 

@@ -26,7 +26,7 @@ namespace CategoriesAPI
 
             builder.Services.AddDbContext<CatalogDbContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 
