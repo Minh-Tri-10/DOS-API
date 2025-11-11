@@ -22,7 +22,7 @@
                 <tbody>
                     @foreach (var u in Model)
                     {
-                        <tr>
+                        <tr data-user-id="@u.UserId">
                             <td class="cell-id">#@u.UserId</td>
                             <td class="cell-username">@u.Username</td>
                             <td class="cell-email">@u.Email</td>
@@ -39,40 +39,26 @@
                                 }
                             </td>
                             <td>
-                                @if (u.IsBanned)
-                                {
-                                    <!-- UNBAN -->
-                                    <form asp-controller="AdminAccounts"
-                                          asp-action="ToggleBan"
-                                          asp-route-id="@u.UserId"
-                                          method="post"
-                                          style="display:inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="isBanned" value="false" />
-                                        <button type="submit"
-                                                class="btn-ban unban"
-                                                onclick="return confirm('Unban tài khoản này?');">
-                                            Unban
-                                        </button>
-                                    </form>
+                                @{
+                                    var nextIsBanned = !u.IsBanned;
+                                    var confirmMessage = nextIsBanned ? "Ban tài khoản này?" : "Unban tài khoản này?";
                                 }
-                                else
-                                {
-                                    <!-- BAN -->
-                                    <form asp-controller="AdminAccounts"
-                                          asp-action="ToggleBan"
-                                          asp-route-id="@u.UserId"
-                                          method="post"
-                                          style="display:inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="isBanned" value="true" />
-                                        <button type="submit"
-                                                class="btn-ban ban"
-                                                onclick="return confirm('Ban tài khoản này?');">
-                                            Ban
-                                        </button>
-                                    </form>
-                                }
+                                <form asp-controller="AdminAccounts"
+                                      asp-action="ToggleBan"
+                                      asp-route-id="@u.UserId"
+                                      method="post"
+                                      class="ban-form"
+                                      data-user-id="@u.UserId"
+                                      data-current-state="@(u.IsBanned.ToString().ToLowerInvariant())"
+                                      style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="isBanned" value="@(nextIsBanned.ToString().ToLowerInvariant())" />
+                                    <button type="submit"
+                                            class="btn-ban @(nextIsBanned ? "ban" : "unban")"
+                                            onclick="return confirm('@confirmMessage');">
+                                        @(nextIsBanned ? "Ban" : "Unban")
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     }
@@ -597,3 +583,83 @@
         }
 
 </style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.ban-form').forEach(form => {
+                form.addEventListener('submit', handleBanForm);
+            });
+        });
+
+        async function handleBanForm(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (!submitButton) {
+                return;
+            }
+
+            const payload = new URLSearchParams(new FormData(form));
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: payload
+                });
+
+                const body = await safeParseJson(response);
+
+                if (!response.ok || !body || !body.success) {
+                    const message = body && body.message ? body.message : 'Không thể cập nhật trạng thái tài khoản.';
+                    throw new Error(message);
+                }
+
+                refreshRowState(form, body.isBanned);
+            } catch (error) {
+                console.error(error);
+                const alertMessage = error && error.message ? error.message : 'Đã có lỗi xảy ra khi cập nhật trạng thái tài khoản.';
+                alert(alertMessage);
+            }
+        }
+
+        async function safeParseJson(response) {
+            try {
+                return await response.json();
+            } catch {
+                return null;
+            }
+        }
+
+        function refreshRowState(form, isBanned) {
+            const row = form.closest('tr');
+            const statusPill = row ? row.querySelector('.pill.status') : null;
+            if (statusPill) {
+                statusPill.textContent = isBanned ? 'Banned' : 'Active';
+                statusPill.classList.toggle('banned', isBanned);
+                statusPill.classList.toggle('active', !isBanned);
+            }
+
+            const hiddenInput = form.querySelector('input[name="isBanned"]');
+            const submitButton = form.querySelector('button[type="submit"]');
+            const nextState = !isBanned;
+
+            if (hiddenInput) {
+                hiddenInput.value = nextState.toString().toLowerCase();
+            }
+
+            if (submitButton) {
+                submitButton.textContent = nextState ? 'Ban' : 'Unban';
+                submitButton.classList.remove('ban', 'unban');
+                submitButton.classList.add(nextState ? 'ban' : 'unban');
+                const nextConfirm = nextState ? 'Ban tài khoản này?' : 'Unban tài khoản này?';
+                submitButton.setAttribute('onclick', `return confirm('${nextConfirm}');`);
+            }
+
+            form.dataset.currentState = isBanned ? 'true' : 'false';
+        }
+    </script>
+}
