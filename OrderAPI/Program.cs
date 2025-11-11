@@ -53,6 +53,7 @@ namespace OrderAPI
             builder.Services.AddScoped<IStatsRepository, StatsRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddHttpClient<IPaymentClient, PaymentClient>();
 
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var signingKey = jwtSection["Key"];

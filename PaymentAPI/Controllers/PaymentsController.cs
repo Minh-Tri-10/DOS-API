@@ -26,7 +26,7 @@ namespace PaymentAPI.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")] // 🔹 Chỉ Admin mới xem tất cả payments
+        //[Authorize(Roles = "Admin")] // 🔹 Chỉ Admin mới xem tất cả payments
         public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
         [HttpGet("{id}")]
@@ -61,7 +61,7 @@ namespace PaymentAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] PaymentUpdateDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -70,7 +70,7 @@ namespace PaymentAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var removed = await _service.DeleteAsync(id);
@@ -78,7 +78,7 @@ namespace PaymentAPI.Controllers
         }
 
         [HttpPost("{id}/confirm")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Confirm(int id, [FromQuery] string status)
         {
             var result = await _service.ConfirmPaymentAsync(id, status);

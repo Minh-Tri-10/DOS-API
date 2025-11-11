@@ -373,7 +373,9 @@
                 </div>
                 <div class="od-field">
                     <div class="od-label">Trạng thái</div>
-                    <div class="od-value"><span class="@StatusClass(Model.OrderStatus)">@Model.OrderStatus</span></div>
+                    <div class="od-value">
+                        <span class="@StatusClass(Model.OrderStatus)">@TranslateOrderStatus(Model.OrderStatus)</span>
+                    </div>
                 </div>
                 <div class="od-field">
                     <div class="od-label">Tổng tiền</div>
@@ -435,3 +437,21 @@
         </div>
     </div>
 </div>
+@functions {
+    string TranslateOrderStatus(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return "Không xác định";
+        switch (status.ToLowerInvariant())
+        {
+            case "pending": return "Chờ xử lý";
+            case "processing": return "Đang xử lý";
+            case "completed": return "Hoàn thành";
+            case "shipped": return "Đã gửi";
+            case "delivered": return "Đã giao";
+            case "cancelled": return "Đã hủy";
+            case "failed": return "Thất bại";
+            case "rejected": return "Bị từ chối";
+            default: return status; // giữ nguyên nếu không có mapping
+        }
+    }
+}
