@@ -103,7 +103,6 @@ public partial class OrderDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.OrderStatus).HasMaxLength(20);
-            entity.Property(e => e.PaymentStatus).HasMaxLength(20);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.UserId).HasColumnName("UserID");
@@ -150,7 +149,6 @@ public partial class OrderDbContext : DbContext
         //    entity.Property(e => e.PaidAmount).HasColumnType("decimal(10, 2)");
         //    entity.Property(e => e.PaymentDate).HasColumnType("datetime");
         //    entity.Property(e => e.PaymentMethod).HasMaxLength(50);
-        //    entity.Property(e => e.PaymentStatus).HasMaxLength(20);
         //    entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
         //    entity.HasOne(d => d.Order).WithMany(p => p.Payments)

@@ -15,8 +15,6 @@ public partial class Order
 
     public decimal? TotalAmount { get; set; }
 
-    public string? PaymentStatus { get; set; }
-
     public string? CancelReason { get; set; }
 
     public DateTime CreatedAt { get; set; }

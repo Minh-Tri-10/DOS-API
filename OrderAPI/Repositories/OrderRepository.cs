@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OrderAPI.Models;
 using OrderAPI.Repositories.Interfaces;
+using System;
 
 namespace OrderAPI.Repositories
 {
@@ -38,7 +39,6 @@ namespace OrderAPI.Repositories
                     UserId = o.UserId,
                     //FullName = o.User.FullName,
                     OrderStatus = o.OrderStatus,
-                    PaymentStatus = o.PaymentStatus,
                     TotalAmount = o.TotalAmount,
                     OrderDate = o.OrderDate
                 })
@@ -115,7 +115,8 @@ namespace OrderAPI.Repositories
             var order = await _context.Orders.FindAsync(orderId);
             if (order != null)
             {
-                order.PaymentStatus = "Paid";
+                order.OrderStatus = "paid";
+                order.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
         }

@@ -13,15 +13,6 @@
         if (s.Contains("cancel") || s.Contains("failed") || s.Contains("rejected")) return "od-pill bad";
         return "od-pill neutral";
     }
-    string PayClass(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s)) return "od-pill neutral";
-        s = s.ToLowerInvariant();
-        if (s.Contains("paid") || s.Contains("captured")) return "od-pill ok";
-        if (s.Contains("refunded") || s.Contains("partial")) return "od-pill warn";
-        if (s.Contains("unpaid") || s.Contains("failed")) return "od-pill bad";
-        return "od-pill neutral";
-    }
     var vi = CultureInfo.GetCultureInfo("vi-VN");
 }
 
@@ -381,10 +372,6 @@
                 <div class="od-field">
                     <div class="od-label">Trạng thái</div>
                     <div class="od-value"><span class="@StatusClass(Model.OrderStatus)">@Model.OrderStatus</span></div>
-                </div>
-                <div class="od-field">
-                    <div class="od-label">Thanh toán</div>
-                    <div class="od-value"><span class="@PayClass(Model.PaymentStatus)">@Model.PaymentStatus</span></div>
                 </div>
                 <div class="od-field">
                     <div class="od-label">Tổng tiền</div>

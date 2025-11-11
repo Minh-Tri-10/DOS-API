@@ -8,10 +8,6 @@ namespace MVCApplication.DTOs
         [Display(Name = "Order Status")]
         public string? OrderStatus { get; set; }
 
-        [Required]
-        [Display(Name = "Payment Status")]
-        public string? PaymentStatus { get; set; }
-
         [Display(Name = "Cancel Reason")]
         public string? CancelReason { get; set; }
     }

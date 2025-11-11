@@ -3,6 +3,7 @@ using OrderAPI.DTOs;
 using OrderAPI.Models;
 using OrderAPI.Repositories.Interfaces;
 using OrderAPI.Services.Interfaces;
+using System.Linq;
 namespace OrderAPI.Repositories;
 
 public sealed class StatsRepository : IStatsRepository
@@ -10,6 +11,15 @@ public sealed class StatsRepository : IStatsRepository
     private readonly OrderDbContext _db;
     private readonly ICatalogProductClient _catalogProductClient;
     private readonly ICategoryClient _categoryClient;
+    private static readonly string[] RevenueEligibleStatuses = new[]
+    {
+        "paid",
+        "completed",
+        "confirmed",
+        "processing",
+        "delivering",
+        "shipped"
+    };
 
     public StatsRepository(OrderDbContext db, ICatalogProductClient productClient, ICategoryClient categoryClient)
     {
@@ -18,6 +28,14 @@ public sealed class StatsRepository : IStatsRepository
         _categoryClient = categoryClient;
     }
     // --- Helpers ---
+    private static IQueryable<Order> FilterRevenueOrders(IQueryable<Order> source) =>
+        source.Where(o => o.OrderStatus != null &&
+                          RevenueEligibleStatuses.Contains(o.OrderStatus.ToLower()));
+
+    private static IQueryable<OrderItem> FilterRevenueOrderItems(IQueryable<OrderItem> source) =>
+        source.Where(oi => oi.Order.OrderStatus != null &&
+                           RevenueEligibleStatuses.Contains(oi.Order.OrderStatus.ToLower()));
+
     private static DateTime NormalizeStart(DateTime start) => DateTime.SpecifyKind(start, DateTimeKind.Utc);
     private static DateTime NormalizeEnd(DateTime end)
     {
@@ -36,10 +54,10 @@ public sealed class StatsRepository : IStatsRepository
             .Where(o => o.OrderDate >= start && o.OrderDate < end);
 
         var total = await orders.CountAsync();
-        var paid = await orders.CountAsync(o => o.PaymentStatus == "paid");
+        var paidOrders = FilterRevenueOrders(orders);
+        var paid = await paidOrders.CountAsync();
         var cancelled = await orders.CountAsync(o => o.OrderStatus == "cancelled");
-        var revenue = await orders
-            .Where(o => o.PaymentStatus == "paid")
+        var revenue = await paidOrders
             .SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
 
         var aov = paid > 0 ? revenue / paid : 0m;
@@ -62,7 +80,7 @@ public sealed class StatsRepository : IStatsRepository
     //    // Dùng navigation, tránh Join + AsQueryable().Sum gây không d?ch du?c
     //    var rows = await _db.OrderItems
     //        .AsNoTracking()
-    //        .Where(oi => oi.Order.PaymentStatus == "paid"
+    //        .Where(oi => oi.Order.OrderStatus == "paid"
     //                  && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
     //        .GroupBy(oi => new
     //        {
@@ -88,7 +106,7 @@ public sealed class StatsRepository : IStatsRepository
 
     //    var rows = await _db.OrderItems
     //        .AsNoTracking()
-    //        .Where(oi => oi.Order.PaymentStatus == "paid"
+    //        .Where(oi => oi.Order.OrderStatus == "paid"
     //                  && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
     //        .GroupBy(oi => new
     //        {
@@ -113,9 +131,8 @@ public sealed class StatsRepository : IStatsRepository
         start = NormalizeStart(start);
         end = NormalizeEnd(end);
 
-        var items = await _db.OrderItems
-            .Where(oi => oi.Order.PaymentStatus == "paid"
-                      && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
+        var items = await FilterRevenueOrderItems(_db.OrderItems)
+            .Where(oi => oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
             .ToListAsync();
 
         var productIds = items.Select(x => x.ProductId).Distinct();
@@ -150,9 +167,8 @@ public sealed class StatsRepository : IStatsRepository
         start = NormalizeStart(start);
         end = NormalizeEnd(end);
 
-        var items = await _db.OrderItems
-            .Where(oi => oi.Order.PaymentStatus == "paid"
-                      && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
+        var items = await FilterRevenueOrderItems(_db.OrderItems)
+            .Where(oi => oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
             .ToListAsync();
 
         var productIds = items.Select(x => x.ProductId).Distinct();
@@ -194,10 +210,10 @@ public sealed class StatsRepository : IStatsRepository
 
         // Avoid translation issues when bucketing by week or month
         // Load minimal data and group in-memory (acceptable for demo workloads)
-        var baseData = await _db.Orders
-            .AsNoTracking()
-            .Where(o => o.PaymentStatus == "paid"
-                     && o.OrderDate >= start && o.OrderDate < end)
+        var baseQuery = FilterRevenueOrders(_db.Orders.AsNoTracking())
+            .Where(o => o.OrderDate >= start && o.OrderDate < end);
+
+        var baseData = await baseQuery
             .Select(o => new { o.OrderDate, Amount = (decimal)(o.TotalAmount ?? 0m), o.OrderId })
             .ToListAsync();
 
@@ -237,9 +253,8 @@ public sealed class StatsRepository : IStatsRepository
         start = NormalizeStart(start);
         end = NormalizeEnd(end);
 
-        var items = await _db.OrderItems
-            .Where(oi => oi.Order.PaymentStatus == "paid"
-                      && oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
+        var items = await FilterRevenueOrderItems(_db.OrderItems)
+            .Where(oi => oi.Order.OrderDate >= start && oi.Order.OrderDate < end)
             .ToListAsync();
 
         var productIds = items.Select(x => x.ProductId).Distinct();
