@@ -188,6 +188,24 @@ namespace OrderAPI.Services
             // Repository cần có hàm trả về IQueryable<Order> (như GetAllQueryable)
             return _repo.GetAllQueryable().ProjectTo<OrderDto>(_mapper.ConfigurationProvider);
         }
+
+        public async Task<bool> MarkOrderAsCompletedAsync(int orderId)
+        {
+            var order = await _repo.GetByIdAsync(orderId);
+            if (order == null) return false;
+
+            // Nếu muốn tránh set lại khi đã completed:
+            if (string.Equals(order.OrderStatus, "completed", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            order.OrderStatus = "completed";
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _repo.UpdateAsync(order);
+            return true;
+        }
+
+
     }
 }
 

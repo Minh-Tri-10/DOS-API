@@ -19,6 +19,9 @@ namespace OrderAPI.Repositories.Interfaces
         Task<int> CountOrdersContainingProductAsync(int productId);
         //OData
         IQueryable<Order> GetAllQueryable();
+        // cập nhật trạng thái cột payment status
+        Task<bool> MarkOrderAsCompletedAsync(int orderId);
+
 
     }
 }

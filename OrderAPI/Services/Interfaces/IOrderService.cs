@@ -18,6 +18,8 @@ namespace OrderAPI.Services.Interfaces
         Task<ProductUsageDto> CheckProductUsageAsync(int productId);
         //Odata
         IQueryable<OrderDto> GetAllQueryable();
+        Task<bool> MarkOrderAsCompletedAsync(int orderId);
+
 
     }
 }
