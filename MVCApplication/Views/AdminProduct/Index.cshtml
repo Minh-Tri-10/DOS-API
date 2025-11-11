@@ -47,6 +47,7 @@
     }
 
         .card-surface::before {
+            /* viền gradient mờ chạy nhẹ */
             content: "";
             position: absolute;
             inset: -1px;
@@ -64,7 +65,7 @@
             transform: rotate(1turn)
         }
     }
-
+    /* ---------- nền pattern siêu nhẹ bên trong bảng ---------- */
     .card-surface::after {
         content: "";
         position: absolute;
@@ -74,7 +75,7 @@
         background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab,var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab,var(--accent2) 10%, transparent), transparent 60%);
         opacity: .35;
     }
-
+    /* ---------- wrap bảng + scrollbar đẹp ---------- */
     .table-wrap {
         position: relative;
         z-index: 1;
@@ -92,12 +93,12 @@
             border: 2px solid transparent;
             background-clip: content-box;
         }
-
+    /* ---------- bảng glassy + hover “lifted row” ---------- */
     .user-table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        min-width: 860px;
+        min-width: 1200px; /* Tăng min-width để phù hợp với số cột mới, giảm scroll ngang bằng cách cho phép wrap nếu cần */
         color: var(--text);
         table-layout: fixed;
         backdrop-filter: saturate(1.05);
@@ -132,8 +133,9 @@
             vertical-align: middle;
             border-bottom: 1px dashed color-mix(in oklab,var(--border) 70%, transparent);
             background: color-mix(in oklab,transparent 100%, transparent);
+            word-wrap: break-word; /* Cho phép wrap text nếu nội dung dài */
         }
-
+        /* striping mờ và highlight trái khi hover */
         .user-table tbody tr:nth-child(even) {
             background: linear-gradient(0deg, color-mix(in oklab,#fff 3%, transparent), transparent);
         }
@@ -147,7 +149,7 @@
                 background: linear-gradient(0deg, color-mix(in oklab,#fff 5%, transparent), transparent), linear-gradient(90deg, color-mix(in oklab,var(--accent) 14%, transparent), transparent 40%);
                 box-shadow: 0 8px 22px color-mix(in oklab,#000 22%, transparent);
             }
-
+            /* bo góc cuối bảng */
             .user-table tbody tr:last-child td:first-child {
                 border-bottom-left-radius: 16px
             }
@@ -155,39 +157,46 @@
             .user-table tbody tr:last-child td:last-child {
                 border-bottom-right-radius: 16px
             }
-
+        /* ---------- layout cột sang chuẩn dashboard ---------- */
         .user-table th:nth-child(1), .user-table td:nth-child(1) {
-            width: 80px
+            width: 80px; /* Giảm width ID để tiết kiệm không gian */
         }
-
+        /* ID */
         .user-table th:nth-child(2), .user-table td:nth-child(2) {
-            width: 200px
+            width: 200px; /* Giảm width Tên sản phẩm */
         }
-
+        /* Tên Sản phẩm */
         .user-table th:nth-child(3), .user-table td:nth-child(3) {
-            width: 120px
+            width: 120px; /* Width cho Ảnh, trung tâm */
+            text-align: center;
         }
-
+        /* Ảnh */
         .user-table th:nth-child(4), .user-table td:nth-child(4) {
-            width: 250px
+            width: 250px; /* Giảm width Mô tả */
+            text-align: left; /* Align left cho mô tả dài */
         }
-
+        /* Mô tả */
         .user-table th:nth-child(5), .user-table td:nth-child(5) {
-            width: 100px
+            width: 120px; /* Giá */
+            text-align: right;
         }
-
+        /* Giá */
         .user-table th:nth-child(6), .user-table td:nth-child(6) {
-            width: 100px
+            width: 100px; /* Tồn kho */
+            text-align: center;
         }
-
+        /* Tồn kho */
         .user-table th:nth-child(7), .user-table td:nth-child(7) {
-            width: 150px
+            width: 150px; /* Danh mục */
         }
-
+        /* Danh mục */
         .user-table th:nth-child(8), .user-table td:nth-child(8) {
-            width: 220px /* Tăng width cột Hành động để tránh xuống dòng */
+            width: 220px; /* Hành động, đủ cho buttons */
+            text-align: center;
         }
-
+    /* Hành động */
+    /* Actions - increased width for horizontal buttons */
+    /* ---------- ID/Email/Username style ---------- */
     .cell-id {
         font-variant-numeric: tabular-nums;
         color: var(--muted)
@@ -201,12 +210,12 @@
         color: var(--muted);
         word-break: break-all
     }
-
+    /* ---------- SUPER PILL: gradient glass + glow nhẹ & width đồng bộ ---------- */
     .pill {
         display: inline-grid;
         place-items: center;
         width: 100%;
-        min-width: 120px;
+        min-width: 150px;
         padding: 10px 14px;
         border-radius: 999px;
         font-size: 13.5px;
@@ -223,6 +232,7 @@
     }
 
         .pill::before {
+            /* viền ánh sáng vòng trong */
             content: "";
             position: absolute;
             inset: 0;
@@ -237,7 +247,52 @@
             transform: translateY(-1px);
             box-shadow: 0 1px 0 color-mix(in oklab,#fff 8%, transparent) inset, 0 10px 26px color-mix(in oklab, var(--accent2) 26%, transparent);
         }
+        /* role tone xanh gradient */
+        .pill.role {
+            background: linear-gradient(180deg, color-mix(in oklab,var(--accent2) 16%, transparent), color-mix(in oklab,var(--accent) 12%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+            border-color: color-mix(in oklab, var(--accent2) 40%, var(--border) 60%);
+            text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+        }
+        /* status: active / banned – màu khác nhau + dot */
+        .pill.status {
+            position: relative;
+            padding-left: 34px
+        }
 
+            .pill.status::after {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                box-shadow: 0 0 0 3px color-mix(in oklab,#000 35%, transparent) inset, 0 0 10px currentColor;
+            }
+
+            .pill.status.active {
+                background: linear-gradient(180deg, color-mix(in oklab,#22c55e 22%, transparent), color-mix(in oklab,#16a34a 12%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+                border-color: color-mix(in oklab,#22c55e 45%, var(--border) 55%);
+                text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+                color: #dcfce7;
+            }
+
+                .pill.status.active::after {
+                    background: #22c55e
+                }
+
+            .pill.status.banned {
+                background: linear-gradient(180deg, color-mix(in oklab,#ef4444 22%, transparent), color-mix(in oklab,#dc2626 12%, transparent)), color-mix(in oklab, var(--bg-soft) 78%, transparent);
+                border-color: color-mix(in oklab,#ef4444 45%, var(--border) 55%);
+                text-shadow: 0 1px 0 color-mix(in oklab,#000 35%, transparent);
+                color: #fee2e2;
+            }
+
+                .pill.status.banned::after {
+                    background: #ef4444
+                }
+    /* ---------- empty state (nếu model rỗng) ---------- */
     .empty-state {
         display: grid;
         place-items: center;
@@ -257,7 +312,7 @@
             border: 1px solid color-mix(in oklab,var(--accent) 30%, var(--border) 70%);
             box-shadow: 0 10px 22px color-mix(in oklab,#000 26%, transparent);
         }
-
+    /* ---------- light theme tuning ---------- */
     :root[data-theme="light"] .card-surface {
         background: #fff;
         box-shadow: 0 10px 28px rgba(2,8,23,.08)
@@ -287,6 +342,29 @@
         background: linear-gradient(180deg, #fff, #f7f8fb);
     }
 
+        :root[data-theme="light"] .pill.role {
+            background: linear-gradient(180deg, rgba(59,130,246,.18), rgba(14,165,233,.14), #fff 75%);
+            border-color: rgba(59,130,246,.35);
+        }
+
+        :root[data-theme="light"] .pill.status.active {
+            background: linear-gradient(180deg, rgba(34,197,94,.20), rgba(34,197,94,.12), #fff 75%);
+            border-color: rgba(34,197,94,.30);
+            color: #064e3b;
+        }
+
+        :root[data-theme="light"] .pill.status.banned {
+            background: linear-gradient(180deg, rgba(239,68,68,.20), rgba(239,68,68,.12), #fff 75%);
+            border-color: rgba(239,68,68,.28);
+            color: #7f1d1d;
+        }
+    /* ---------- responsive ---------- */
+    @@media (max-width: 992px) {
+        .user-table {
+            min-width: 1000px; /* Giảm min-width cho mobile, vẫn có scroll nếu cần nhưng ít hơn */
+        }
+    }
+    /* ===== ACTION BUTTON ===== */
     .btn-ban {
         display: inline-flex;
         align-items: center;
@@ -303,14 +381,13 @@
         background: linear-gradient(180deg, color-mix(in oklab,var(--accent) 12%, transparent), color-mix(in oklab,var(--accent2) 12%, transparent));
         color: var(--text);
         box-shadow: 0 1px 0 color-mix(in oklab,#fff 6%, transparent) inset, 0 6px 18px color-mix(in oklab,#000 30%, transparent);
-        white-space: nowrap; /* Ngăn text trong nút bị xuống dòng */
     }
 
         .btn-ban:hover {
             filter: brightness(1.08);
             transform: translateY(-1px);
         }
-
+        /* hai trạng thái riêng */
         .btn-ban.ban {
             background: linear-gradient(180deg, color-mix(in oklab,#ef4444 20%, transparent), color-mix(in oklab,#dc2626 15%, transparent));
             border-color: rgba(239,68,68,.35);
@@ -412,18 +489,112 @@
         border-color: rgba(59,130,246,.35);
         color: #0f172a;
     }
-
+    /* New styles for horizontal buttons */
     .actions {
         display: flex;
         justify-content: center;
         gap: 8px;
         align-items: center;
-        flex-wrap: nowrap; /* Đảm bảo các nút không wrap xuống dòng */
     }
 
     .btn-sm {
         padding: 6px 12px;
         font-size: 12px;
+    }
+    /* Thêm style cho form tìm kiếm để đồng bộ glassy và gradient */
+    .search-form {
+        padding: 16px;
+        margin-bottom: 18px;
+        border-radius: 18px;
+        background: color-mix(in oklab, var(--bg-soft) 92%, transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: 0 10px 30px color-mix(in oklab, #000 35%, transparent), 0 1px 0 color-mix(in oklab, #fff 6%, transparent) inset;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+        .search-form::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            z-index: -1;
+            background: conic-gradient(from 180deg, color-mix(in oklab, var(--accent) 40%, transparent), color-mix(in oklab, var(--accent2) 40%, transparent), transparent 40%);
+            filter: blur(10px) saturate(1.2);
+            opacity: .45;
+            mask: linear-gradient(#000 0 0);
+            animation: ringFloat 12s linear infinite;
+        }
+
+        .search-form::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background: radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 60%), radial-gradient(800px 500px at 110% 30%, color-mix(in oklab, var(--accent2) 10%, transparent), transparent 60%);
+            opacity: .25;
+        }
+    /* Style cho input và select để trông glassy pill-like */
+    .form-control {
+        border-radius: 999px;
+        padding: 10px 18px;
+        background: linear-gradient(180deg, color-mix(in oklab, #fff 6%, transparent), transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 4%, transparent) inset;
+        transition: box-shadow .25s ease;
+        color: #fff; /* Màu chữ trắng cho input text */
+    }
+
+    .form-select {
+        border-radius: 999px;
+        padding: 10px 18px;
+        background: linear-gradient(180deg, color-mix(in oklab, #fff 6%, transparent), transparent);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+        box-shadow: 0 1px 0 color-mix(in oklab, #fff 4%, transparent) inset;
+        transition: box-shadow .25s ease;
+        color: #fff; /* Màu chữ trắng cho giá trị hiển thị của select */
+    }
+
+        .form-select option {
+            color: #000; /* Màu chữ đen cho các option trong dropdown để dễ đọc trên nền trắng */
+            background: #fff; /* Nền trắng cho dropdown options */
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent);
+            border-color: var(--accent);
+        }
+    /* Điều chỉnh cho light theme */
+    :root[data-theme="light"] .form-control,
+    :root[data-theme="light"] .form-select {
+        color: #000; /* Màu chữ đen ở light mode */
+    }
+
+        :root[data-theme="light"] .form-select option {
+            color: #000;
+            background: #fff;
+        }
+    /* Đồng bộ button trong form */
+    .btn-apply {
+        background: linear-gradient(180deg, color-mix(in oklab, #22c55e 20%, transparent), color-mix(in oklab, #16a34a 15%, transparent));
+        border-color: rgba(34,197,94,.35);
+        color: #dcfce7;
+    }
+
+    .btn-reset {
+        background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 12%, transparent), color-mix(in oklab, var(--accent2) 12%, transparent));
+        color: var(--text);
+    }
+    /* Light theme cho form */
+    :root[data-theme="light"] .search-form {
+        background: #fff;
+        box-shadow: 0 10px 28px rgba(2,8,23,.08);
+    }
+
+    :root[data-theme="light"] .form-control, :root[data-theme="light"] .form-select {
+        background: linear-gradient(180deg, rgba(0,0,0,.02), transparent);
     }
 </style>
 <div class="page-block">
@@ -431,44 +602,46 @@
         <h2>Danh sách Sản phẩm</h2>
         <div class="under"></div>
     </div>
-    <!-- Form tìm kiếm và sắp xếp sản phẩm -->
-    <form asp-action="Index" method="get" class="mb-3">
-        <div class="row g-2">
-            <!-- Search -->
-            <div class="col-md-4">
-                <input type="text" name="search" value="@ViewBag.Search"
-                       class="form-control" placeholder="Tìm kiếm theo tên sản phẩm..." />
+    <!-- Form tìm kiếm và sắp xếp sản phẩm - wrap vào glassy card -->
+    <div class="search-form card-surface">
+        <form asp-action="Index" method="get">
+            <div class="row g-2">
+                <!-- Search -->
+                <div class="col-md-4">
+                    <input type="text" name="search" value="@ViewBag.Search"
+                           class="form-control" placeholder="Tìm kiếm theo tên sản phẩm..." />
+                </div>
+                <!-- Sort -->
+                <div class="col-md-3">
+                    <select name="orderBy" class="form-select">
+                        <option value="ProductId asc" selected="@(ViewBag.OrderBy == "ProductId asc")">ID tăng dần</option>
+                        <option value="ProductId desc" selected="@(ViewBag.OrderBy == "ProductId desc")">ID giảm dần</option>
+                        <option value="ProductName asc" selected="@(ViewBag.OrderBy == "ProductName asc")">Tên tăng dần</option>
+                        <option value="ProductName desc" selected="@(ViewBag.OrderBy == "ProductName desc")">Tên giảm dần</option>
+                        <option value="Price asc" selected="@(ViewBag.OrderBy == "Price asc")">Giá thấp đến cao</option>
+                        <option value="Price desc" selected="@(ViewBag.OrderBy == "Price desc")">Giá cao đến thấp</option>
+                        <option value="Stock asc" selected="@(ViewBag.OrderBy == "Stock asc")">Tồn kho tăng dần</option>
+                        <option value="Stock desc" selected="@(ViewBag.OrderBy == "Stock desc")">Tồn kho giảm dần</option>
+                    </select>
+                </div>
+                <!-- PageSize -->
+                <div class="col-md-2">
+                    <select name="pageSize" class="form-select">
+                        <option value="10" selected="@(ViewBag.PageSize == 10)">10 / trang</option>
+                        <option value="20" selected="@(ViewBag.PageSize == 20)">20 / trang</option>
+                        <option value="50" selected="@(ViewBag.PageSize == 50)">50 / trang</option>
+                    </select>
+                </div>
+                <!-- Buttons -->
+                <div class="col-md-3 mb-2">
+                    <button type="submit" class="btn-ban unban btn-apply">Áp dụng</button>
+                    <a asp-action="Index" class="btn-ban btn-reset">Reset</a>
+                </div>
             </div>
-            <!-- Sort -->
-            <div class="col-md-3">
-                <select name="orderBy" class="form-select">
-                    <option value="ProductId asc" selected="@(ViewBag.OrderBy == "ProductId asc")">ID tăng dần</option>
-                    <option value="ProductId desc" selected="@(ViewBag.OrderBy == "ProductId desc")">ID giảm dần</option>
-                    <option value="ProductName asc" selected="@(ViewBag.OrderBy == "ProductName asc")">Tên tăng dần</option>
-                    <option value="ProductName desc" selected="@(ViewBag.OrderBy == "ProductName desc")">Tên giảm dần</option>
-                    <option value="Price asc" selected="@(ViewBag.OrderBy == "Price asc")">Giá thấp đến cao</option>
-                    <option value="Price desc" selected="@(ViewBag.OrderBy == "Price desc")">Giá cao đến thấp</option>
-                    <option value="Stock asc" selected="@(ViewBag.OrderBy == "Stock asc")">Tồn kho tăng dần</option>
-                    <option value="Stock desc" selected="@(ViewBag.OrderBy == "Stock desc")">Tồn kho giảm dần</option>
-                </select>
-            </div>
-            <!-- PageSize -->
-            <div class="col-md-2">
-                <select name="pageSize" class="form-select">
-                    <option value="10" selected="@(ViewBag.PageSize == 10)">10 / trang</option>
-                    <option value="20" selected="@(ViewBag.PageSize == 20)">20 / trang</option>
-                    <option value="50" selected="@(ViewBag.PageSize == 50)">50 / trang</option>
-                </select>
-            </div>
-            <!-- Buttons -->
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">Áp dụng</button>
-                <a asp-action="Index" class="btn btn-secondary flex-grow-1">Reset</a>
-            </div>
-        </div>
-        <!-- Reset page to 1 when searching -->
-        <input type="hidden" name="page" value="1" />
-    </form>
+            <!-- Reset page to 1 when searching -->
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success" role="alert">@TempData["Success"]</div>
@@ -572,21 +745,17 @@
             setTimeout(function() {
                 $('.alert').fadeOut(300);
             }, 5000);
-
             // Sự kiện xóa sản phẩm bằng AJAX
             $(document).on('click', '.delete-btn', function() {
                 var row = $(this).closest('tr');
                 var productId = row.data('id');
-
                 if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
                     return;
                 }
-
                 // Lấy AntiForgeryToken
                 var token = $('input[name="__RequestVerificationToken"]').val();
-
                 $.ajax({
-                    url: '/AdminProduct/Delete/' + productId,  // Điều chỉnh nếu controller khác
+                    url: '/AdminProduct/Delete/' + productId, // Điều chỉnh nếu controller khác
                     type: 'POST',
                     data: {
                         id: productId,
@@ -594,9 +763,8 @@
                     },
                     success: function(result) {
                         if (result.success) {
-                            row.remove();  // Chỉ xóa row nếu success == true
+                            row.remove(); // Chỉ xóa row nếu success == true
                             alert(result.message || 'Xóa sản phẩm thành công!');
-
                             // Kiểm tra nếu bảng rỗng, hiển thị empty state
                             if ($('.user-table tbody tr').length === 0) {
                                 $('.table-wrap').html(`

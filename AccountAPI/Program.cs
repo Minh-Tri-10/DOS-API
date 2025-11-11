@@ -30,6 +30,8 @@ namespace AccountAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
 
 
+               
+
 
             // EmailOptions phục vụ gửi token reset/ thông báo tới user.
             builder.Services.AddSingleton(sp =>

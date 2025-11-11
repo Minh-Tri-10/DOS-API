@@ -27,7 +27,15 @@
             {
                 var payload = await res.Content.ReadAsStringAsync();
                 _logger.LogWarning("POST api/accounts/login failed with {StatusCode}. Body: {Body}", (int)res.StatusCode, payload);
-                return null;
+
+                var message = ExtractErrorMessage(payload);
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    message = res.StatusCode == HttpStatusCode.Forbidden
+                        ? "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ."
+                        : "Sai tài khoản hoặc mật khẩu.";
+                }
+                throw new InvalidOperationException(message);
             }
             return await res.Content.ReadFromJsonAsync<AuthResponseViewModel>();
         }

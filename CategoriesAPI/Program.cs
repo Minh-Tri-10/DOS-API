@@ -32,6 +32,7 @@ namespace CategoriesAPI
 
 
 
+
             builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Net.Http;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
@@ -41,21 +41,30 @@ namespace MVCApplication.Controllers
         {
             if (!ModelState.IsValid) return View(dto);
 
-            var auth = await _service.LoginAsync(dto);
-            if (auth == null)
+            AuthResponseViewModel? auth;
+            try
             {
-                ViewBag.Error = "Sai tai khoan hoac mat khau.";
+                auth = await _service.LoginAsync(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
+            catch (HttpRequestException)
+            {
+                ModelState.AddModelError(string.Empty, "Khong the ket noi may chu. Vui long thu lai.");
                 return View(dto);
             }
 
             JwtSecurityToken jwt;
             try
             {
-                jwt = new JwtSecurityTokenHandler().ReadJwtToken(auth.AccessToken);
+                jwt = new JwtSecurityTokenHandler().ReadJwtToken(auth!.AccessToken);
             }
             catch
             {
-                ViewBag.Error = "Token dang nhap khong hop le.";
+                ModelState.AddModelError(string.Empty, "Token dang nhap khong hop le.");
                 return View(dto);
             }
 
@@ -109,11 +118,11 @@ namespace MVCApplication.Controllers
                 var user = await _service.RegisterAsync(dto);
                 if (user == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Ðang ký th?t b?i.");
+                    ModelState.AddModelError(string.Empty, "Dang ky that bai.");
                     return View(dto);
                 }
 
-                TempData["RegisterSuccess"] = "Ðang ký thành công! Vui lòng dang nh?p.";
+                TempData["RegisterSuccess"] = "Dang ky thanh cong! Vui long dang nhap.";
                 return RedirectToAction("Login");
             }
             catch (InvalidOperationException ex)
@@ -123,7 +132,7 @@ namespace MVCApplication.Controllers
             }
             catch (HttpRequestException)
             {
-                ModelState.AddModelError(string.Empty, "Không th? k?t n?i t?i máy ch?. Vui lòng th? l?i.");
+                ModelState.AddModelError(string.Empty, "Khong the ket noi toi may chu. Vui long thu lai.");
                 return View(dto);
             }
         }
@@ -259,12 +268,12 @@ namespace MVCApplication.Controllers
                 return View("Profile", dto);
             }
 
-            // ? G?i formdata t?i API và Upload lên Cloudinary t?i API
+            // Goi formdata toi API va Upload len Cloudinary tai API
             var updatedUser = await _service.UpdateProfileAsync(userId, dto, avatarFile);
 
             if (updatedUser == null)
             {
-                ViewBag.Error = "C?p nh?t th?t b?i.";
+                ViewBag.Error = "Cap nhat that bai.";
                 ViewBag.KeepEditing = true;
                 return View("Profile", dto);
             }
@@ -284,7 +293,7 @@ namespace MVCApplication.Controllers
             };
 
             ViewBag.KeepEditing = false;
-            ViewBag.Success = "C?p nh?t thành công!";
+            ViewBag.Success = "Cap nhat thanh cong!";
             return View("Profile", vm);
         }
 

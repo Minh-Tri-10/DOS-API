@@ -8,6 +8,7 @@ namespace AccountAPI.Services.Interfaces
     public interface IAccountService
     {
         Task<AuthResponseDTO?> LoginAsync(LoginDTO dto);
+        Task<bool?> IsBannedAsync(string username);
         Task<UserDTO> RegisterAsync(RegisterDTO dto);
         Task<IEnumerable<UserDTO>> GetAllAsync();
         Task<UserDTO?> GetByIdAsync(int id);
