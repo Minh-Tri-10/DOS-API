@@ -621,32 +621,25 @@
                 // Lấy giá trị token từ input hidden
                 var token = $('input[name="__RequestVerificationToken"]').val();
 
-                $.ajax({
-                    url: '/AdminCategory/Delete/' + categoryId,  // URL đúng với controller
-                    type: 'POST',  // Khớp với [HttpPost]
-                    data: {
-                        id: categoryId,  // Gửi id nếu cần (action dùng id từ route)
-                        __RequestVerificationToken: token  // Gửi token qua data
-                    },
-                    success: function(result) {
-                        row.remove();  // Xóa hàng khỏi bảng
-                        alert('Xóa danh mục thành công!');
+                        $.ajax({
+            url: '/AdminCategory/DeleteAjax/' + categoryId,
+            type: 'POST',
+            data: {
+                __RequestVerificationToken: token
+            },
+            success: function(result) {
+                if (result.success) {
+                    row.remove();
+                    alert('Xóa danh mục thành công!');
+                } else {
+                    alert(result.message || 'Không thể xóa danh mục này.');
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Lỗi máy chủ: ' + (xhr.responseText || error));
+            }
+        });
 
-                        // Kiểm tra nếu bảng rỗng, hiển thị empty state
-                        if ($('.user-table tbody tr').length === 0) {
-                            $('.table-wrap').html(`
-                                <div class="empty-state">
-                                    <div class="badge">!</div>
-                                    <h3>Không tìm thấy danh mục</h3>
-                                    <p>Tạo một danh mục mới để bắt đầu.</p>
-                                </div>
-                            `);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        alert('Lỗi khi xóa danh mục: ' + (xhr.responseText || error));
-                    }
-                });
             });
         });
     </script>
