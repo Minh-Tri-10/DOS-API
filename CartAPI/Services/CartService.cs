@@ -21,8 +21,37 @@ namespace CartAPI.Services
 
         public async Task<Cart> GetOrCreateUserCartAsync(int userId)
         {
-            var cart = await _repo.GetCartByUserIdAsync(userId);
-            return cart ?? await _repo.CreateCartForUserAsync(userId);
+            var cart = await _repo.GetCartByUserIdAsync(userId) ?? await _repo.CreateCartForUserAsync(userId);
+
+            // ✅ Kiểm tra và xóa sản phẩm hết hàng
+            if (cart.CartItems != null && cart.CartItems.Any())
+            {
+                var itemsToRemove = new List<int>();
+
+                foreach (var item in cart.CartItems.ToList())
+                {
+                    var product = await _productApi.GetProductByIdAsync(item.ProductId);
+                    if (product == null || product.Stock <= 0)
+                    {
+                        itemsToRemove.Add(item.CartItemId);
+                    }
+                }
+
+                if (itemsToRemove.Count > 0)
+                {
+                    foreach (var id in itemsToRemove)
+                    {
+                        await _repo.RemoveCartItemAsync(id);
+                    }
+
+                    await _repo.SaveChangesAsync();
+
+                    // Sau khi xóa xong, load lại cart sạch sẽ
+                    cart = await _repo.GetCartByUserIdAsync(userId);
+                }
+            }
+
+            return cart;
         }
 
         public async Task AddItemToCartAsync(int cartId, int productId, int quantity)
@@ -70,5 +99,11 @@ namespace CartAPI.Services
 
         public Task RemoveItemFromCartAsync(int cartItemId) => _repo.RemoveCartItemAsync(cartItemId);
         public Task DeleteCartAsync(int cartId) => _repo.DeleteCartAsync(cartId);
+
+        // ✅ Thêm hàm này để implement interface
+        public async Task SaveChangesAsync()
+        {
+            await _repo.SaveChangesAsync();
+        }
     }
 }
