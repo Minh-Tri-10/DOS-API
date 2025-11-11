@@ -26,11 +26,8 @@ namespace CategoriesAPI
 
             builder.Services.AddDbContext<CatalogDbContext>(options =>
 
-<<<<<<< HEAD
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-=======
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HuyConnection")));
->>>>>>> 755e32c84004c9a195dab6d0de778ada6688ebdc
+
 
 
 
