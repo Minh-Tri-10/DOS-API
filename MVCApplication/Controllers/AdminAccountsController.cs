@@ -41,8 +41,24 @@ namespace MVCApplication.Controllers
             var ok = await _service.SetBanAsync(id, isBanned);
             if (!ok)
             {
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Không thể cập nhật trạng thái tài khoản."
+                    });
+                }
+
                 TempData["Error"] = "Khong the cap nhat trang thai tai khoan.";
+                return RedirectToAction(nameof(Index));
             }
+
+            if (IsAjaxRequest())
+            {
+                return Json(new { success = true, isBanned });
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -169,6 +185,11 @@ namespace MVCApplication.Controllers
         private async Task SignOutAsync()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        }
+
+        private bool IsAjaxRequest()
+        {
+            return string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", System.StringComparison.OrdinalIgnoreCase);
         }
     }
 }
