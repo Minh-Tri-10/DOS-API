@@ -41,7 +41,7 @@ namespace CartAPI.Controllers
             var cart = await _service.GetOrCreateUserCartAsync(dto.UserId);
             await _service.AddItemToCartAsync(cart.CartId, dto.ProductId, dto.Quantity);
 
-            return Ok(new { message = "Da them hoac cap nhat san pham vao gio!" });
+            return Ok(new { message = " đã thêm vào giỏ hàng!" });
         }
 
         [HttpPut("update/{cartItemId}")]

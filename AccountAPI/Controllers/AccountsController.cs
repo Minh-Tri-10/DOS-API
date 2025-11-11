@@ -1,10 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using AccountAPI.DTOs;
+using AccountAPI.Models;
 using AccountAPI.Services.Interfaces;
+using AccountAPI.Validations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 
 // API chịu trách nhiệm cho mọi thao tác liên quan đến tài khoản người dùng.
 // Bộ lọc [Authorize] mặc định khóa toàn bộ action, các action anonymous phải ghi chú rõ.
@@ -69,14 +73,22 @@ public class AccountsController : ControllerBase
 
     // Cập nhật thông tin hồ sơ và/hoặc ảnh đại diện; body là form-data.
     [HttpPut("{id:int}/profile")]
-    public async Task<ActionResult<UserDTO>> UpdateProfile(
-    int id,
-    [FromForm] UpdateProfileDTO dto,
-    IFormFile? avatarFile)
+    [Authorize]
+    public async Task<ActionResult<UserDTO>> UpdateProfile(int id, [FromForm] UpdateProfileDTO dto)
     {
-        var result = await _service.UpdateProfileAsync(id, dto, avatarFile);
-        return result is null ? NotFound() : Ok(result);
+        dto.UserId = id;
+
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState); // ASP.NET tự bind lỗi từ các attribute luôn
+
+        var result = await _service.UpdateProfileAsync(id, dto, dto.AvatarFile);
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
     }
+
+
 
     // Điều chỉnh trạng thái ban; khi bị ban user không thể đăng nhập (kiểm tra tại AccountService.LoginAsync).
     [HttpPatch("{id:int}/ban")]

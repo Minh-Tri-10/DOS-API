@@ -1,5 +1,4 @@
 ﻿using MVCApplication.DTOs;
-using OrderAPI.DTOs;
 
 namespace MVCApplication.Services.Interfaces
 {

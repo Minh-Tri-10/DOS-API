@@ -1,12 +1,13 @@
 ﻿namespace MVCApplication.Services
 {
-    using System;
-    using System.Net;
-    using System.Net.Http.Json;
-    using System.Text.Json;
     using Microsoft.Extensions.Logging;
     using MVCApplication.Models;
     using MVCApplication.Services.Interfaces;
+    using System;
+    using System.ComponentModel.DataAnnotations;
+    using System.Net;
+    using System.Net.Http.Json;
+    using System.Text.Json;
 
     // Bao dong wrapper HttpClient de giao tiep voi Gateway/AccountAPI tu MVC.
     public class AccountService : IAccountService
@@ -129,25 +130,79 @@
             return res.IsSuccessStatusCode; // 204 NoContent => true
         }
         // Upload form-data (text + ảnh) tới AccountAPI để cập nhật hồ sơ người dùng.
-        public async Task<UserViewModel?> UpdateProfileAsync(int id, UpdateProfileViewModel dto, IFormFile? avatarFile)
+        public async Task<UserViewModel?> UpdateProfileAsync(int userId, UpdateProfileViewModel dto, IFormFile? avatarFile)
         {
-            using var formData = new MultipartFormDataContent();
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(userId.ToString()), "UserId");
+            if (!string.IsNullOrWhiteSpace(dto.FullName))
+                content.Add(new StringContent(dto.FullName), "FullName");
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                content.Add(new StringContent(dto.Email), "Email");
+            if (!string.IsNullOrWhiteSpace(dto.Phone))
+                content.Add(new StringContent(dto.Phone), "Phone");
+            if (!string.IsNullOrWhiteSpace(dto.AvatarUrl))
+                content.Add(new StringContent(dto.AvatarUrl), "AvatarUrl");
 
-            formData.Add(new StringContent(dto.FullName ?? ""), "FullName");
-            formData.Add(new StringContent(dto.Email ?? ""), "Email");
-            formData.Add(new StringContent(dto.Phone ?? ""), "Phone");
-
-            if (avatarFile != null)
+            if (avatarFile != null && avatarFile.Length > 0)
             {
                 var stream = avatarFile.OpenReadStream();
-                formData.Add(new StreamContent(stream), "avatarFile", avatarFile.FileName);
+                content.Add(new StreamContent(stream), "avatarFile", avatarFile.FileName);
             }
 
-            var res = await _http.PutAsync($"api/accounts/{id}/profile", formData);
-            if (!res.IsSuccessStatusCode) return null;
+            var response = await _http.PutAsync($"api/accounts/{userId}/profile", content);
 
-            return await res.Content.ReadFromJsonAsync<UserViewModel>();
+            if (response.IsSuccessStatusCode)
+            {
+                var user = await response.Content.ReadFromJsonAsync<UserViewModel>();
+                return user;
+            }
+
+            // ✅ Nếu lỗi 400 => lấy thông điệp lỗi cụ thể từ API
+            if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                var errorJson = await response.Content.ReadAsStringAsync();
+
+                try
+                {
+                    var err = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(errorJson);
+
+                    // ASP.NET Core ModelState trả về {"errors":{"Phone":["Số điện thoại đã được sử dụng."]}}
+                    if (err.TryGetProperty("errors", out var errorsProp) && errorsProp.ValueKind == JsonValueKind.Object)
+                    {
+                        var errorsDict = new Dictionary<string, string[]>();
+                        foreach (var kv in errorsProp.EnumerateObject())
+                        {
+                            var messages = kv.Value.EnumerateArray().Select(v => v.GetString() ?? "").ToArray();
+                            errorsDict[kv.Name] = messages;
+                        }
+
+                        // Ném lỗi ValidationException có JSON để controller MVC đọc lại
+                        throw new ValidationException(System.Text.Json.JsonSerializer.Serialize(errorsDict));
+                    }
+
+                    // Nếu API trả message trực tiếp
+                    if (err.TryGetProperty("message", out var msg))
+                        throw new ValidationException(msg.GetString() ?? "Dữ liệu không hợp lệ.");
+                }
+                catch (ValidationException)
+                {
+                    throw; // Giữ nguyên
+                }
+                catch
+                {
+                    throw new ValidationException("Dữ liệu không hợp lệ.");
+                }
+            }
+
+
+            // ✅ Nếu lỗi 404
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                throw new InvalidOperationException("Không tìm thấy người dùng.");
+
+            // ✅ Nếu lỗi khác
+            throw new HttpRequestException($"API Error: {response.StatusCode}");
         }
+
 
         // Cố gắng rút ra thông báo cụ thể từ response JSON (ModelState/ProblemDetails).
         private static string? ExtractErrorMessage(string? payload)

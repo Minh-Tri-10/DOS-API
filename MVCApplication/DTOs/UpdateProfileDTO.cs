@@ -2,6 +2,7 @@
 
 namespace MVCApplication.DTOs
 {
+
     public class UpdateProfileDTO
     {
         [Required, StringLength(100)]

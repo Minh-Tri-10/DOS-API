@@ -1,7 +1,8 @@
-﻿@{
+﻿@model MVCApplication.Models.UpdateProfileViewModel
+@{
     Layout = "_Layout.Admin";   // layout admin
 }
-@model MVCApplication.Models.UpdateProfileViewModel
+
 <style>
     /* ===== Profile WOW Card (dark default, light via :root[data-theme="light"]) ===== */
     .profile-wrap {
@@ -168,6 +169,7 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0,1fr));
         gap: 18px;
+        align-items: start;
     }
 
     .field {
@@ -321,12 +323,21 @@
 
     <div class="profile-card" id="profileCard" data-editing="false">
         <div class="profile-head">
-            <img class="avatar" id="previewAvatar"
+            <img class="avatar" id="headerAvatar"
                  src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "https://i.pravatar.cc/180?img=47" : Model.AvatarUrl)"
                  alt="Avatar" />
+            @{
+                var header = ViewBag.Header ?? new
+                {
+                    FullName = Model.FullName,
+                    Email = Model.Email,
+                    Role = Model.Role,
+                    AvatarUrl = Model.AvatarUrl
+                };
+            }
             <div class="head-meta">
-                <div class="name">@Model.FullName</div>
-                <div class="sub">@Model.Email • <span>@Model.Role</span></div>
+                <div class="name">@header.FullName</div>
+                <div class="sub">@header.Email • <span>@header.Role</span></div>
             </div>
             <div class="profile-actions">
                 <a asp-controller="Accounts" asp-action="Logout" class="btn-ghost">Đăng xuất</a>
@@ -335,15 +346,16 @@
         </div>
 
         <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data" id="profileForm">
+            @Html.AntiForgeryToken()
             <div class="profile-body">
 
                 <!-- Ảnh đại diện -->
                 <div class="field" style="grid-column: span 2;">
                     <label class="label">Ảnh đại diện</label>
                     <div style="display:flex;align-items:center;gap:16px;">
-                        <img id="previewAvatarSmall" class="avatar"
-                             src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "https://i.pravatar.cc/180?img=47" : Model.AvatarUrl)"
-                             alt="Avatar nhỏ" style="width:72px;height:72px;border-radius:16px;" />
+                        <img class="avatar" id="previewAvatar"
+                             src="@(string.IsNullOrEmpty(header.AvatarUrl) ? "https://i.pravatar.cc/180?img=47" : header.AvatarUrl)"
+                             alt="Avatar" />
                         <div style="display:grid;gap:6px;">
                             <input type="file" id="avatarFile" name="avatarFile" accept="image/*" style="display:none;" disabled />
                             <button type="button" class="btn-ghost" id="btnChooseAvatar" disabled>Chọn ảnh mới</button>
@@ -356,8 +368,7 @@
                 <!-- Username -->
                 <div class="field">
                     <label class="label">Tên đăng nhập</label>
-                    <input class="input" type="text" value="@Model.Username" readonly disabled />
-                    <small class="text-muted">Không thể thay đổi tên đăng nhập</small>
+                    <input class="input" type="text" value="@Model.Username" disabled />
                 </div>
 
                 <!-- Full name -->
@@ -409,92 +420,10 @@
     </div>
 </div>
 
-@if (ViewBag.KeepEditing != null && (bool)ViewBag.KeepEditing)
-{
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById('btnEdit').click();
-        });
-    </script>
-}
-
+<script>
+    window.keepEditing = @(ViewBag.KeepEditing != null && (bool)ViewBag.KeepEditing ? "true" : "false");
+</script>
 @section Scripts {
-    @if (ViewBag.Success != null || TempData["Success"] != null)
-    {
-        <script>
-            (() => {
-                const avatarNew = "@Model.AvatarUrl";
-                const timestamp = "?t=" + Date.now();
-
-                document.querySelectorAll(".avatar-img, #userModal .avatar-lg")
-                    .forEach(img => img.src = avatarNew + timestamp);
-
-                const nameEl = document.querySelector("#userModal .fw-bold");
-                if (nameEl) nameEl.textContent = "@Html.Raw(Model.FullName)";
-
-                const infoEl = document.querySelector("#userModal .text-muted.small");
-                if (infoEl)
-                    infoEl.innerHTML = "@Html.Raw(Model.Email) • @Html.Raw(Model.Role)";
-            })();
-        </script>
-    }
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        (() => {
-            const card = document.getElementById('profileCard');
-            const btnEdit = document.getElementById('btnEdit');
-            const btnSave = document.getElementById('btnSave');
-            const btnCancel = document.getElementById('btnCancel');
-            const btnChooseAvatar = document.getElementById('btnChooseAvatar');
-            const avatarFile = document.getElementById('avatarFile');
-            const preview = document.getElementById('previewAvatarSmall');
-            const editable = ['inpFullName', 'inpEmail', 'inpPhone', 'btnChooseAvatar']
-                .map(id => document.getElementById(id)).filter(x => x);
-
-            function setEditing(on) {
-                card.dataset.editing = on ? 'true' : 'false';
-                editable.forEach(i => i.disabled = !on);
-                avatarFile.disabled = !on;
-                btnSave.classList.toggle('hidden', !on);
-                btnCancel.classList.toggle('hidden', !on);
-                btnEdit.textContent = on ? 'Đang chỉnh sửa…' : 'Edit';
-                if (on) btnSave.disabled = true;
-            }
-
-
-            btnEdit.addEventListener('click', () => setEditing(true));
-            btnCancel.addEventListener('click', () => {
-                editable.forEach(i => {
-                    if (i.tagName === 'INPUT' && i.type !== 'file') {
-                        i.value = i.defaultValue;
-                    }
-                });
-                preview.src = document.getElementById('inpAvatarUrl').value;
-                setEditing(false);
-            });
-
-            editable.forEach(i => {
-                if (i && i.tagName === 'INPUT') {
-                    i.addEventListener('input', () => {
-                        if (card.dataset.editing === 'true') btnSave.disabled = false;
-                    });
-                }
-            });
-
-            btnChooseAvatar.addEventListener('click', () => {
-                if (!btnChooseAvatar.disabled) avatarFile.click();
-            });
-
-            avatarFile.addEventListener('change', e => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    preview.src = ev.target.result;
-                    btnSave.disabled = false;
-                };
-                reader.readAsDataURL(file);
-            });
-        })();
-    </script>
+    <script src="~/js/admin-profile.js"></script>
 }

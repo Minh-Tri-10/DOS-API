@@ -329,83 +329,128 @@
     </div>
 
 @section Scripts {
-        <script>
-            (() => {
-              const chips = document.getElementById('drinkChips');
-              const grid = document.getElementById('drinkGrid');
-              const search = document.getElementById('drinkSearch');
-              const CURRENT_USER_ID = @ViewBag.CurrentUserId;  // Sử dụng ViewBag.CurrentUserId từ controller
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (() => {
+            const chips = document.getElementById('drinkChips');
+            const grid = document.getElementById('drinkGrid');
+            const search = document.getElementById('drinkSearch');
+            const CURRENT_USER_ID = @currentUserId;
 
-              // Hàm để redirect với params
-              function redirectWithParams(categoryId = null, searchQuery = '') {
+            // 🔹 Hàm toast chung, tự đổi màu theo theme
+            const showToast = (message, icon = "info", time = 2200) => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+                const style = theme === 'light'
+                    ? { bg: '#ffffff', text: '#0f172a' }
+                    : { bg: '#1e293b', text: '#e2e8f0' };
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon,
+                    title: message,
+                    background: style.bg,
+                    color: style.text,
+                    showConfirmButton: false,
+                    timer: time,
+                    timerProgressBar: true,
+                    customClass: { popup: 'swal2-toast-custom' }
+                });
+            };
+
+            // 🔸 Redirect có tham số (lọc & tìm kiếm)
+            function redirectWithParams(categoryId = null, searchQuery = '') {
                 let url = '/Customer/Index';
                 if (categoryId || searchQuery) {
-                  url += '?';
-                  if (categoryId) url += `categoryId=${categoryId}`;
-                  if (searchQuery) url += `${categoryId ? '&' : ''}search=${encodeURIComponent(searchQuery)}`;
+                    url += '?';
+                    if (categoryId) url += `categoryId=${categoryId}`;
+                    if (searchQuery) url += `${categoryId ? '&' : ''}search=${encodeURIComponent(searchQuery)}`;
                 }
                 window.location.href = url;
-              }
+            }
 
-              // Xử lý click chip để filter server-side
-              chips.addEventListener('click', (e) => {
-                const btn = e.target.closest('.drink-chip'); if (!btn) return;
+            // 🔸 Xử lý click chip filter
+            chips.addEventListener('click', (e) => {
+                const btn = e.target.closest('.drink-chip'); 
+                if (!btn) return;
                 chips.querySelectorAll('.drink-chip').forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
 
                 const cat = btn.dataset.filter;
-                const catId = btn.dataset.catId;  // Lấy CategoryId nếu có
+                const catId = btn.dataset.catId;
                 const q = search.value.trim();
 
                 if (cat === 'all') {
-                  redirectWithParams(null, q);
+                    redirectWithParams(null, q);
                 } else {
-                  redirectWithParams(catId, q);
+                    redirectWithParams(catId, q);
                 }
-              });
+            });
 
-              // Xử lý search input với debounce để tránh redirect liên tục
-              let debounceTimer;
-              search.addEventListener('input', () => {
+            // 🔸 Search debounce
+            let debounceTimer;
+            search.addEventListener('input', () => {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
-                  const activeChip = chips.querySelector('.drink-chip.active');
-                  const catId = activeChip.dataset.catId || null;
-                  const q = search.value.trim();
-                  redirectWithParams(catId, q);
-                }, 500);  // Debounce 500ms
-              });
+                    const activeChip = chips.querySelector('.drink-chip.active');
+                    const catId = activeChip?.dataset.catId || null;
+                    const q = search.value.trim();
+                    redirectWithParams(catId, q);
+                }, 500);
+            });
 
-              // --- Thêm vào giỏ --- (giữ nguyên)
-              grid.addEventListener('click', async (e) => {
+            // 🔹 Thêm vào giỏ hàng với SweetAlert toast
+            grid.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.drink-btn');
                 if (!btn) return;
+
                 if (!CURRENT_USER_ID) {
-                  window.location.href = '/Accounts/Login';
-                  return;
+                    window.location.href = '/Accounts/Login';
+                    return;
                 }
+
                 const card = btn.closest('.drink-card');
                 const pid = parseInt(btn.dataset.id, 10);
-                if (!pid) { alert('❌ Không xác định được sản phẩm'); return; }
-                try {
-                  const res = await fetch('/api/cart/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: CURRENT_USER_ID, productId: pid, quantity: 1 })
-                  });
-                  if (res.status === 401) { window.location.href = '/Accounts/Login'; return; }
-                  const data = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
-                  if (res.ok) {
-                    alert('✅ ' + (data.message || 'Đã thêm/cộng dồn sản phẩm vào giỏ!'));
-                    if (window.updateCartBadge) window.updateCartBadge(); // 🔹 cập nhật badge ngay
-                  } else {
-                    alert('❌ ' + (data.message || 'Không thể thêm sản phẩm'));
-                  }
-                } catch (err) {
-                  console.error(err);
-                  alert('⚠️ Không thể kết nối server!');
+                if (!pid) {
+                    showToast('Không xác định được sản phẩm!', 'error');
+                    return;
                 }
-              });
-            })();
-        </script>
+
+                try {
+                    const res = await fetch('/api/cart/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: CURRENT_USER_ID, productId: pid, quantity: 1 })
+                    });
+
+                    if (res.status === 401) {
+                        window.location.href = '/Accounts/Login';
+                        return;
+                    }
+
+                    const data = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
+
+                    if (res.ok) {
+                        showToast(data.message || 'Đã thêm/cộng dồn sản phẩm vào giỏ hàng!', 'success');
+                        if (window.updateCartBadge) window.updateCartBadge();
+                    } else {
+                        showToast(data.message || 'Không thể thêm sản phẩm vào giỏ!', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('⚠️ Không thể kết nối server!', 'warning');
+                }
+            });
+        })();
+    </script>
+
+    <style>
+        .swal2-toast-custom {
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+            font-weight: 600;
+        }
+    </style>
 }
+

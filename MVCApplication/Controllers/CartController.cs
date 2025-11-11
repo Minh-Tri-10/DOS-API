@@ -48,7 +48,7 @@ namespace MVCApplication.Controllers
             );
 
             return ok
-                ? Ok(new { message = "Da them hoac cap nhat san pham vao gio." })
+                ? Ok(new { message = " Da them san pham vao gio hang" })
                 : StatusCode(500, new { message = "Khong the them san pham." });
         }
 
@@ -94,6 +94,18 @@ namespace MVCApplication.Controllers
             int count = cart?.CartItems?.Count ?? 0;
 
             return Ok(new { count });
+        }
+
+        [HttpGet("/Cart/Refresh")]
+        public async Task<IActionResult> RefreshCart()
+        {
+            if (CurrentUserId == null) return PartialView("_CartEmptyPartial");
+
+            var cart = await _cartService.GetCartWithProductsAsync(CurrentUserId.Value);
+            if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+                return PartialView("_CartEmptyPartial");
+
+            return PartialView("_CartContentPartial", cart);
         }
     }
 }
