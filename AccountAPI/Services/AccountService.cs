@@ -63,6 +63,14 @@ namespace AccountAPI.Services
             };
         }
 
+        // Kiểm tra nhanh trạng thái ban theo username (null nếu không tìm thấy user)
+        public async Task<bool?> IsBannedAsync(string username)
+        {
+            var user = await _repo.GetByUsernameAsync(username);
+            if (user == null) return null;
+            return user.IsBanned ?? false;
+        }
+
         private static bool IsBcryptHash(string? hash) =>
             !string.IsNullOrWhiteSpace(hash) &&
             (hash!.StartsWith("$2a$") || hash.StartsWith("$2b$") || hash.StartsWith("$2y$"));

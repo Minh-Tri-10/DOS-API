@@ -41,6 +41,13 @@ public class AccountsController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDTO>> Login(LoginDTO dto)
     {
+        // Nếu user bị ban, trả về 403 với thông điệp rõ ràng
+        var banned = await _service.IsBannedAsync(dto.Username);
+        if (banned == true)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ." });
+        }
+
         var auth = await _service.LoginAsync(dto);
         if (auth == null) return Unauthorized("Invalid username or password");
         return Ok(auth);
