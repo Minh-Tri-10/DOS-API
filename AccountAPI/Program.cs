@@ -30,6 +30,7 @@ namespace AccountAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
+
             // EmailOptions phục vụ gửi token reset/ thông báo tới user.
             builder.Services.AddSingleton(sp =>
             {

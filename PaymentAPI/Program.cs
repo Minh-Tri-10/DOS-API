@@ -21,6 +21,7 @@ namespace PaymentAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
+
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddAutoMapper(typeof(PaymentProfile));
