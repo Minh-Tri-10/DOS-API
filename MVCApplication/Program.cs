@@ -13,6 +13,7 @@ namespace MVCApplication
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // MVC front-end đọc JSON từ API nên bật case-insensitive cho tiện.
             builder.Services.AddControllersWithViews()
                 .AddJsonOptions(opts =>
                 {
@@ -22,6 +23,7 @@ namespace MVCApplication
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddTransient<AccessTokenHandler>();
 
+            // Cookie auth giữ JWT (trong claims) để MVC xác thực người dùng.
             builder.Services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -35,6 +37,7 @@ namespace MVCApplication
 
             builder.Services.AddAuthorization();
 
+            // HttpClient gọi qua API Gateway (https://localhost:7001) cho AccountAPI và các dịch vụ khác.
             builder.Services.AddHttpClient<IAccountService, AccountService>(c =>
             {
                 c.BaseAddress = new Uri("https://localhost:7001/");
