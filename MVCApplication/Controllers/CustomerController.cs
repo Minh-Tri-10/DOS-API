@@ -28,6 +28,7 @@ namespace MVCApplication.Controllers
 
         public async Task<IActionResult> Index(int? categoryId = null, int page = 1, int pageSize = 100, string search = "", string orderBy = "ProductName asc")
         {
+            if (CurrentUserId == null) return RedirectToAction("Login", "Accounts");
             // Fetch products với filter categoryId và search
             var (products, totalCount) = await _productService.GetODataAsync(page, pageSize, search, orderBy, categoryId);
 
