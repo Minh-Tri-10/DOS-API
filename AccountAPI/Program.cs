@@ -28,7 +28,7 @@ namespace AccountAPI
             // DbContext kết nối tới database chứa bảng Users.
             builder.Services.AddDbContext<AccountDbContext>(options =>
 
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TriConnection")));
 
 
             // EmailOptions phục vụ gửi token reset/ thông báo tới user.
